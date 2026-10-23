@@ -84,8 +84,9 @@ The App wraps the session in one `@MainActor @Observable final class CookingScre
 - No `DispatchQueue`, no completion handlers, no Combine in new code.
 - `@unchecked Sendable` needs a comment explaining the invariant, and a reviewer should question it.
 
-## 5. SwiftUI on iOS (App layer)
+## 5. SwiftUI on iOS 27 (App layer)
 
+- **Deployment target is iOS 27, nothing older.** No `#available` / `@available` checks for iOS 26 or earlier, no fallback code paths, no `UIDesignRequiresCompatibility`. Where iOS 26 and 27 offer different APIs for the same thing, use the iOS 27 one. If a skill or reference describes a fallback, ignore that part.
 - `@Observable` models, not `ObservableObject`. Inject with `.environment(model)` for app-wide services, pass directly for screen models.
 - Navigation with `NavigationStack` and a typed path (`[Route]`, `Route: Hashable`). Deep links map to `Route`.
 - One screen = one view file + one model. Subviews take plain values and closures, so previews need no model.
@@ -95,25 +96,38 @@ The App wraps the session in one `@MainActor @Observable final class CookingScre
 - Timer end: local notification + haptic + sound, scheduled at `endsAt` so it fires when the app is in the background. Consider a Live Activity for the running timer.
 - Liquid Glass: use the `liquid-glass` and `liquid-glass-motion` skills. Glass is for chrome (toolbars, the timer control, floating buttons), not for content cards or the step text.
 
-## 6. Persistence and data
+## 6. Motion: modern and high fidelity
+
+Motion is part of the product, not decoration. The bar is "feels like a first-party Apple app on iOS 27", not "animates".
+
+- **Presets are the floor, not the target.** `.smooth`, `.snappy`, `.bouncy` are fine for a first pass. Every motion the cook sees often (step change, timer start/finish, servings stepper, glass controls morphing) gets tuned on device: `Spring(duration:bounce:)` chosen per interaction and checked on a real iPhone at 120 Hz.
+- **Named motion tokens.** All values live in one `enum Motion` in the App target (`Motion.stepAdvance`, `Motion.timerPulse`, `Motion.glassMorph` ...). No magic numbers in views.
+- **Interruptible and continuous.** Every animation can be interrupted mid-flight without a jump. Gesture-driven motion (swipe between steps, drag on the timer) follows the finger and hands its release velocity to the spring.
+- **Choreography over single tweens.** Multi-part moments (a step completes, the next one arrives, the timer appears) use `KeyframeAnimator` / `PhaseAnimator`, matched geometry, `navigationTransition(.zoom)` and Liquid Glass morphing (`glassEffectID`, `GlassEffectContainer`) so elements travel instead of popping.
+- **Sensory feedback in sync.** `sensoryFeedback` fires on the frame the motion lands (step done, timer finished), not when the tap starts.
+- **Reduce Motion is a design, not an off switch.** With `accessibilityReduceMotion` on, replace travel and bounce with cross-fades and opacity, keep the timing and the feedback.
+- **Performance is part of fidelity.** No hitches while scrolling glass chrome; profile with Instruments as the `liquid-glass-motion` skill describes before calling a motion done.
+- Pick values with the `apple-motion-feel` skill; build them with `liquid-glass-motion`.
+
+## 7. Persistence and data
 
 - Bundled recipes: JSON in `Sources/KitchenCore/Resources`, decoded by KitchenCore, validated by a test that loads every file.
 - User data (favourites, last servings, own recipes): App layer behind the `RecipeStore` protocol. SwiftData is fine there; never let `@Model` types leak into KitchenCore. Map at the boundary.
 - Schema changes to bundled JSON get a version field and a decoding test for the old shape.
 
-## 7. Dependencies
+## 8. Dependencies
 
 - Default answer to a new package is no. Foundation, SwiftUI and Swift Testing cover this app.
 - A dependency must build on Linux if KitchenCore uses it, be actively maintained, and be pinned by version in `Package.resolved`.
 
-## 8. Testing
+## 9. Testing
 
 - Swift Testing (`import Testing`, `@Test`, `#expect`), not XCTest, for new tests.
 - Every public KitchenCore function and every `CookingAction` has tests. Parameterised tests for scaling tables.
 - No sleeping in tests. Inject a clock or pass instants.
 - `swift test` must pass in the cloud container before a PR. UI code is verified on the Mac in Xcode; say so in the PR when a change could not be compiled here.
 
-## 9. Naming and style
+## 10. Naming and style
 
 - Code, identifiers and comments in English. User-facing strings in German via String Catalogs (`Localizable.xcstrings`) in the App target; KitchenCore returns values, not sentences.
 - `swift format` with the repo config before committing.
@@ -126,4 +140,6 @@ The App wraps the session in one `@MainActor @Observable final class CookingScre
 3. Are new types `Sendable` values, and is UI state `@MainActor`?
 4. Does the timer depend on instants, not on counting ticks?
 5. Can a wet hand use the new UI? Dynamic Type, contrast, target size?
-6. Does `swift build` and `swift test` pass on Linux?
+6. Is the code iOS 27 only, with no fallback paths for older systems?
+7. Does every visible motion use a named token, survive interruption, and have a Reduce Motion variant?
+8. Does `swift build` and `swift test` pass on Linux?

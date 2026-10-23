@@ -2,6 +2,8 @@
 
 Swift 6 iOS/iPadOS cooking app: guided step-by-step cooking for a multicooker, with device settings per step, timers and portion scaling.
 
+**Targets iOS 27 only** (Swift 6.4.1, `swift-tools-version: 6.4`). No fallbacks for older systems. Motion is modern and high fidelity: tuned, interruptible, tokenised (see `app-architecture`, section 6).
+
 ## Layout
 
 - `Package.swift`, `Sources/KitchenCore`, `Tests/KitchenCoreTests`: platform-neutral logic. Builds and tests on Linux.

@@ -3,6 +3,8 @@ name: liquid-glass-motion
 description: 'Animation, morphing, and shader best practices for Liquid Glass and SwiftUI motion on iOS 26+/macOS 26+ through iOS 27. Use when animating glass or building UI motion: glassEffectID, @Namespace morphing, GlassEffectContainer spacing, glassEffectUnion, glassEffectTransition (.matchedGeometry/.materialize), withAnimation, springs, UnitCurve, PhaseAnimator, KeyframeAnimator, @Animatable, matchedTransitionSource, navigationTransition zoom, scrollTransition, visualEffect, Metal shaders (colorEffect, distortionEffect, layerEffect, [[stitchable]]), accessibilityReduceMotion gating, Instruments/xctrace profiling of hangs and animation hitches. Also fires on symptoms: glass morph not animating, view pops in instead of morphing, glass fades instead of materializing, morph flickers with Reduce Motion, menu glass morphs as a rectangle, animation runs on insert but not removal, PhaseAnimator loops forever or fires once, shader shows clipped edges (maxSampleOffset), animation hitches or main-thread hangs while scrolling glass chrome. For static glass, availability gating, toolbars, UIKit/AppKit glass, or accessibility of the material itself use the liquid-glass skill first.'
 ---
 
+> **ClaudeKitchen override (takes precedence over this skill):** the app targets **iOS 27 only** and aims for **modern, high-fidelity motion**. Skip iOS 26 fallbacks and `#available` gating. Presets are the floor, not the target: every visible motion is tuned on purpose, interruptible, carries gesture velocity, and its values live in named motion tokens. See the `app-architecture` skill, section 6.
+
 # Liquid Glass — motion, animation, and shaders
 
 Companion to the **liquid-glass** skill (`~/.claude/skills/liquid-glass/`). Same tag system:

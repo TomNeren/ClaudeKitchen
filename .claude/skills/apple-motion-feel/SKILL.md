@@ -3,6 +3,8 @@ name: apple-motion-feel
 description: 'Choose animation values that feel native on Apple platforms instead of guessing springs. Use when: picking a spring/duration/easing for any transition; an animation "feels off", sluggish, floaty, wobbly, or cheap; tuning a sheet, drawer, panel, selection lens, button press, or drag release; wiring gesture-driven motion; or someone asks "what spring should I use", "why does this feel wrong", "make it feel native/premium", "match Apple''s feel". Also fires on hand-picked magic numbers in .spring(), on animations that jump when interrupted, and on motion that only starts after a gesture ends.'
 ---
 
+> **ClaudeKitchen override (takes precedence over this skill):** the app targets **iOS 27 only** and aims for **modern, high-fidelity motion**. Skip iOS 26 fallbacks and `#available` gating. Presets are the floor, not the target: every visible motion is tuned on purpose, interruptible, carries gesture velocity, and its values live in named motion tokens. See the `app-architecture` skill, section 6.
+
 # Apple motion feel
 
 Most "this animation feels off" bugs are not timing bugs. They are one of four category errors:

@@ -8,6 +8,8 @@ metadata:
   version: '1.0.0'
 ---
 
+> **ClaudeKitchen note:** this project is an **iOS 27** app. Use this skill's observation, concurrency, performance and data references; ignore AppKit and macOS window specifics. The `app-architecture` skill takes precedence.
+
 Guide SwiftUI development for macOS apps. Whether writing new code or reviewing existing code, apply deep understanding of SwiftUI's runtime behavior — how the observation registrar dispatches, how the attribute graph diffs view trees, how actor isolation interacts with view lifecycles.
 
 ## How to Use

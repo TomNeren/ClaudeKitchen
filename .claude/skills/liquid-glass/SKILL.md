@@ -3,6 +3,8 @@ name: liquid-glass
 description: 'Liquid Glass material best practices for SwiftUI, UIKit, and AppKit on iOS 26+/macOS 26+ (Tahoe) through iOS 27/macOS 27. Use when implementing, reviewing, or migrating to glass: glassEffect, Glass variants (.regular/.clear/.identity), tint, interactive(), GlassEffectContainer, glassEffectUnion, toolbar glass, ToolbarSpacer, scrollEdgeEffectStyle, sharedBackgroundVisibility, tabBarMinimizeBehavior, backgroundExtensionEffect, NSGlassEffectView, UIGlassEffect, Tahoe window chrome, glass accessibility (Reduce Transparency/Increase Contrast), pre-26 Material fallbacks, UIDesignRequiresCompatibility. Also fires on symptoms: glass renders dark or muddy, glass looks like a flat tinted rectangle, glass button doesn''t register taps, tap passes through glass, "''glassEffect'' is only available in iOS 26.0 or newer", "ambiguous use of ''opacity''", "''cornerRadius'' was deprecated", glass looks different in simulator vs device, screenshots of glass UI don''t match. For glass animation, morphing, glassEffectID, transitions, Metal shaders, or performance profiling use the liquid-glass-motion skill instead.'
 ---
 
+> **ClaudeKitchen override (takes precedence over this skill):** the app targets **iOS 27 only**. Skip everything about iOS 26, pre-26 fallbacks, `#available` gating, `UIDesignRequiresCompatibility` and migration (`references/fallback-and-migration.md` does not apply). Where 26 and 27 offer different APIs, use the iOS 27 one. See the `app-architecture` skill, section 5.
+
 # Liquid Glass — the material
 
 Composed 2026-08 and verified against developer.apple.com and SDK interfaces. Every rule
