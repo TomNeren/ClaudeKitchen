@@ -1,6 +1,6 @@
 ---
 name: app-architecture
-description: Architecture rules for ClaudeKitchen, a Swift 6 iOS/iPadOS cooking app with guided step-by-step cooking for a multicooker. Use before adding a feature, a new type, a module, a dependency, persistence, networking, a timer or any background work; when deciding where code belongs (KitchenCore package vs. app target); when writing @Observable models, view models or SwiftUI screens; when touching concurrency, actors, Sendable or @MainActor; when writing tests; and when reviewing a change for structure. Also covers iOS-specific SwiftUI patterns that the swiftui-macos skill does not.
+description: Architecture rules for ClaudeKitchen, a Swift 6 iOS/iPadOS cooking app with guided step-by-step cooking for a multicooker. Use before adding a feature, a new type, a module, a dependency, persistence, networking, a timer or any background work; when deciding where code belongs (KitchenCore package vs. app target); when writing @Observable models, view models or SwiftUI screens; when touching concurrency, actors, Sendable or @MainActor; when writing tests; and when reviewing a change for structure. Project rules here take precedence over swiftui-expert-skill and the Liquid Glass skills.
 ---
 
 # ClaudeKitchen architecture

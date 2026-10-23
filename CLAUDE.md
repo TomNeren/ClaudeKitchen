@@ -27,4 +27,4 @@ Cloud sessions run on Linux: there is no Xcode, iOS SDK, SwiftUI or simulator. W
 
 - `app-architecture`: our own rules for structure, concurrency, state, testing.
 - `liquid-glass`, `liquid-glass-motion`, `apple-motion-feel`: Liquid Glass material, motion and spring values (MIT, Yordi de Kleijn).
-- `swiftui-macos`: deep SwiftUI runtime guidance (MIT, kageroumado). Written for macOS; its observation, concurrency and performance references apply to iOS too.
+- `swiftui-expert-skill`: SwiftUI for iOS with SDK 27 API reference (`references/latest-apis.md`), state, layout, lists, performance, Instruments traces (MIT, Antoine van der Lee).
