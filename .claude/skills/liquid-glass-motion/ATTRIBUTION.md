@@ -6,8 +6,9 @@ beta 4 documentation). All prose in this skill is written fresh; no source prose
 
 ## Vendored
 
-- `scripts/` — Antoine van der Lee, SwiftUI-Agent-Skill (MIT, © 2026). License ships beside the
-  scripts as `scripts/LICENSE-AvdLee-SwiftUI-Agent-Skill`. Trace-interpretation guidance in
+- `scripts/` — Antoine van der Lee, SwiftUI-Agent-Skill (MIT, © 2026). In ClaudeKitchen this
+  directory was removed as an exact duplicate; the same scripts and their license live in
+  `.claude/skills/swiftui-expert-skill/`. Trace-interpretation guidance in
   references/performance-and-instrumentation.md derives from the same source.
 
 ## Adapted code (permissive licenses)

@@ -68,9 +68,9 @@ SKILL.md. Composed 2026-08 and verified against Apple documentation and SDK inte
 
 ## Scripts
 
-`scripts/record_trace.py` and `scripts/analyze_trace.py` (+ `instruments_parser/`) — vendored
-from Antoine van der Lee's SwiftUI-Agent-Skill (MIT; licence ships beside them as
-`scripts/LICENSE-AvdLee-SwiftUI-Agent-Skill`). Record and parse Instruments traces (Time
+ClaudeKitchen: the scripts live once, in `.claude/skills/swiftui-expert-skill/scripts/`
+(`record_trace.py`, `analyze_trace.py`, `instruments_parser/`; Antoine van der Lee's
+SwiftUI-Agent-Skill, MIT, licence in `swiftui-expert-skill/LICENSE`). Record and parse Instruments traces (Time
 Profiler, Hangs, Animation Hitches, SwiftUI lanes) into JSON/markdown. Usage and interpretation:
 `references/performance-and-instrumentation.md`.
 
