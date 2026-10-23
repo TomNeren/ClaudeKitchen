@@ -19,6 +19,10 @@ swift test
 swift format lint --recursive Sources Tests
 ```
 
+## CI
+
+`.github/workflows/ci.yml` runs build, test and strict lint on a self-hosted runner (the owner's Mac, labels `self-hosted, macOS`, Xcode 27). Jobs wait while the Mac is offline.
+
 ## Cloud sessions
 
 Cloud sessions run on Linux: there is no Xcode, iOS SDK, SwiftUI or simulator. Write and test logic in KitchenCore. App code written in the cloud is not compiled there; say so in the PR.
