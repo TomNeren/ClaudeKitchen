@@ -39,6 +39,7 @@ struct StepEditorView: View {
                 }
             }
         }
+        .editorKeyboard()
         .navigationTitle(step.wrappedValue.phase.isEmpty ? "Schritt \(index + 1)" : step.wrappedValue.phase)
         .toolbarTitleDisplayMode(.inline)
         .onAppear {
@@ -144,6 +145,7 @@ private struct DeviceSection: View {
         }
         .pickerStyle(.segmented)
         if case .celsius(let celsius) = step.setting?.heat {
+            QuickPicks(values: profile.quickTemperatures, selection: celsiusBinding(celsius)) { "\($0)°" }
             Stepper(value: celsiusBinding(celsius), in: profile.temperatureRange, step: profile.temperatureStep) {
                 LabeledContent("Temperatur", value: "\(celsius) °C")
             }
@@ -190,9 +192,8 @@ private struct DeviceSection: View {
             .pickerStyle(.segmented)
             if let current = step.setting?.rotation {
                 let range = isReverse(current) ? profile.reverseSpeeds : profile.forwardSpeeds
-                Stepper(value: speedBinding(current), in: range) {
-                    LabeledContent("Stufe", value: "\(current.speed)")
-                }
+                QuickPicks(values: Array(range), selection: speedBinding(current)) { "\($0)" }
+                    .accessibilityLabel("Stufe")
             }
         }
     }
@@ -236,6 +237,7 @@ private struct DeviceSection: View {
         Toggle("Laufzeit", isOn: hasDuration)
         if let total = step.setting?.duration.map({ Int($0 / .seconds(1)) }) {
             let maxMinutes = Int(profile.maxDuration / .seconds(60))
+            QuickPicks(values: profile.quickDurations, selection: durationBinding) { SettingFormatter.duration($0) }
             Stepper(value: minutesBinding(total), in: 0...maxMinutes) {
                 LabeledContent("Minuten", value: "\(total / 60)")
             }
@@ -243,6 +245,13 @@ private struct DeviceSection: View {
                 LabeledContent("Sekunden", value: "\(total % 60)")
             }
         }
+    }
+
+    private var durationBinding: Binding<Duration> {
+        Binding(
+            get: { step.setting?.duration ?? profile.suggestedDuration },
+            set: { step.setting?.duration = $0 }
+        )
     }
 
     private var hasDuration: Binding<Bool> {
@@ -275,5 +284,38 @@ private struct DeviceSection: View {
             get: { step.setting ?? DeviceSetting() },
             set: { step.setting = $0 }
         )
+    }
+}
+
+/// A row of large one-tap values above a stepper, so common settings need one tap instead of many. The current
+/// value is highlighted; the row scrolls sideways when it does not fit.
+private struct QuickPicks<Value: Hashable>: View {
+    let values: [Value]
+    @Binding var selection: Value
+    let label: (Value) -> String
+
+    var body: some View {
+        ScrollView(.horizontal) {
+            HStack(spacing: 8) {
+                ForEach(values, id: \.self) { value in
+                    let isSelected = value == selection
+                    Button {
+                        selection = value
+                    } label: {
+                        Text(label(value))
+                            .font(.callout.weight(.semibold).monospacedDigit())
+                            .frame(minWidth: 36, minHeight: 36)
+                    }
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
+                    .tint(isSelected ? Palette.accent : .secondary)
+                    .accessibilityAddTraits(isSelected ? .isSelected : [])
+                }
+            }
+            .padding(.vertical, 2)
+        }
+        .scrollIndicators(.hidden)
+        .sensoryFeedback(.selection, trigger: selection)
+        .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
     }
 }

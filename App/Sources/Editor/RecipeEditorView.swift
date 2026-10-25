@@ -1,5 +1,6 @@
 import KitchenCore
 import SwiftUI
+import UIKit
 
 /// Editing an own recipe on the phone: one form with recipe, ingredients and steps, details one tap deeper.
 /// Saving is possible once nothing blocks cooking; warnings stay visible but do not block.
@@ -29,6 +30,7 @@ struct RecipeEditorView: View {
                 CheckSection(model: model)
             }
             .environment(\.editMode, $editMode)
+            .editorKeyboard()
             .navigationTitle(model.isNew ? "Neues Rezept" : "Rezept bearbeiten")
             .toolbarTitleDisplayMode(.inline)
             .navigationDestination(for: EditorRoute.self) { route in
@@ -107,6 +109,10 @@ private struct RecipeSection: View {
 private struct IngredientSection: View {
     @Bindable var model: RecipeEditorModel
     let onAdd: () -> Void
+    @State private var quickLine = ""
+    @State private var addedCount = 0
+    @State private var isPasting = false
+    @FocusState private var focusesQuickLine: Bool
 
     var body: some View {
         Section {
@@ -126,12 +132,99 @@ private struct IngredientSection: View {
                 }
             }
             .onMove { model.recipe.moveIngredients(fromOffsets: $0, toOffset: $1) }
-            Button("Zutat hinzufügen", systemImage: "plus.circle.fill", action: onAdd)
+            // Fast entry: type "200 g Rote Linsen", return, next one. The keyboard stays up.
+            HStack {
+                Image(systemName: "plus.circle.fill")
+                    .foregroundStyle(Palette.accent)
+                    .font(.title3)
+                    .accessibilityHidden(true)
+                TextField("z. B. 200 g Rote Linsen", text: $quickLine)
+                    .focused($focusesQuickLine)
+                    .submitLabel(.next)
+                    .onSubmit(addQuickLine)
+            }
+            .sensoryFeedback(.success, trigger: addedCount)
+            Button("Liste einfügen", systemImage: "list.bullet.clipboard") { isPasting = true }
+            Button("Zutat mit Details anlegen", systemImage: "square.and.pencil", action: onAdd)
         } header: {
             Text("Zutaten (\(model.recipe.ingredients.count))")
         } footer: {
-            Text("Mengen für \(model.recipe.baseServings) Portionen. Wischen zum Löschen.")
+            Text("Mengen für \(model.recipe.baseServings) Portionen. Tippen öffnet Details mit Ersatz, Wischen löscht.")
         }
+        .sheet(isPresented: $isPasting) {
+            PasteIngredientsView { model.addIngredients($0) }
+        }
+    }
+
+    private func addQuickLine() {
+        if let line = IngredientLine.parse(quickLine) {
+            model.addIngredients([line])
+            addedCount += 1
+        }
+        quickLine = ""
+        focusesQuickLine = true
+    }
+}
+
+/// Paste a whole ingredient list, one per line; shows what will be added before it is.
+private struct PasteIngredientsView: View {
+    let onAdd: ([IngredientLine]) -> Void
+    @State private var text = ""
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        let lines = IngredientLine.parseList(text)
+        NavigationStack {
+            Form {
+                Section {
+                    TextEditor(text: $text)
+                        .frame(minHeight: 160)
+                        .overlay(alignment: .topLeading) {
+                            if text.isEmpty {
+                                Text("200 g Rote Linsen\n1 Zwiebel\n2 EL Olivenöl\nSalz")
+                                    .foregroundStyle(.tertiary)
+                                    .padding(.top, 8)
+                                    .padding(.leading, 5)
+                                    .allowsHitTesting(false)
+                            }
+                        }
+                    if text.isEmpty {
+                        // The system paste button needs no permission prompt.
+                        PasteButton(payloadType: String.self) { strings in
+                            let pasted = strings.joined(separator: "\n")
+                            Task { @MainActor in text = pasted }
+                        }
+                    }
+                } footer: {
+                    Text(
+                        "Eine Zutat pro Zeile. Mengen in g, kg, ml, l, TL, EL, Stk oder Zehen; ohne Menge heißt nach Geschmack."
+                    )
+                }
+                if !lines.isEmpty {
+                    Section("Wird hinzugefügt (\(lines.count))") {
+                        ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
+                            LabeledContent(line.name, value: AmountFormatter.string(for: line.amount))
+                        }
+                    }
+                }
+            }
+            .editorKeyboard()
+            .navigationTitle("Zutatenliste")
+            .toolbarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Abbrechen", role: .cancel) { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Hinzufügen") {
+                        onAdd(lines)
+                        dismiss()
+                    }
+                    .disabled(lines.isEmpty)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
     }
 }
 
@@ -145,6 +238,17 @@ private struct StepSection: View {
                 NavigationLink(value: EditorRoute.step(step.id)) {
                     StepRow(number: index + 1, step: step, hasIssue: !model.issues(for: step.id).isEmpty)
                 }
+                .swipeActions(edge: .leading) {
+                    Button("Duplizieren", systemImage: "plus.square.on.square") {
+                        withAnimation(Motion.searchResults) { _ = model.recipe.duplicateStep(step.id) }
+                    }
+                    .tint(Palette.herb)
+                }
+                .swipeActions(edge: .trailing) {
+                    Button("Löschen", systemImage: "trash", role: .destructive) {
+                        model.recipe.removeStep(step.id)
+                    }
+                }
             }
             .onDelete { offsets in
                 for id in offsets.map({ model.recipe.steps[$0].id }) {
@@ -155,6 +259,8 @@ private struct StepSection: View {
             Button("Schritt hinzufügen", systemImage: "plus.circle.fill", action: onAdd)
         } header: {
             Text("Schritte (\(model.recipe.steps.count))")
+        } footer: {
+            Text("Nach rechts wischen dupliziert einen Schritt, nach links löscht ihn.")
         }
     }
 }
@@ -218,5 +324,22 @@ private struct CheckSection: View {
 #Preview {
     if let recipe = Recipe.fixtures.first {
         RecipeEditorView(recipe: recipe, isNew: false) { _ in true }
+    }
+}
+
+extension View {
+    /// Phone keyboard comfort for the editor forms: a Fertig button above number pads, and dragging the form
+    /// lowers the keyboard.
+    func editorKeyboard() -> some View {
+        scrollDismissesKeyboard(.interactively)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Fertig") {
+                        UIApplication.shared.sendAction(
+                            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                }
+            }
     }
 }

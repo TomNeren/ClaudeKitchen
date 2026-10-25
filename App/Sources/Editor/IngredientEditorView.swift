@@ -31,6 +31,7 @@ struct IngredientEditorView: View {
             }
             SubstituteSection(ingredient: ingredient, servings: model.recipe.baseServings)
         }
+        .editorKeyboard()
         .navigationTitle(ingredient.wrappedValue.name.isEmpty ? "Neue Zutat" : ingredient.wrappedValue.name)
         .toolbarTitleDisplayMode(.inline)
         .onAppear {

@@ -22,6 +22,16 @@ extension DeviceProfile {
     /// One minute, or less on a device that cannot run that long.
     public var suggestedDuration: Duration { min(.seconds(60), maxDuration) }
 
+    /// One-tap temperatures for the editor: common cooking temperatures the device can do.
+    public var quickTemperatures: [Int] {
+        [37, 60, 80, 90, 100, 120, 160].filter(temperatureRange.contains)
+    }
+
+    /// One-tap run times for the editor, up to the longest the device allows.
+    public var quickDurations: [Duration] {
+        [5, 10, 30, 60, 120, 180, 300, 600, 900, 1200, 1800].map { Duration.seconds($0) }.filter { $0 <= maxDuration }
+    }
+
     /// Makes `step` a steam step the way `validate` expects it: steam program and heat, no blade, steamer on.
     public func applySteam(to step: inout Step) {
         var setting = step.setting ?? DeviceSetting()
@@ -77,6 +87,19 @@ extension Recipe {
         let position = index.map { min($0 + 1, steps.count) } ?? steps.count
         steps.insert(step, at: position)
         return step.id
+    }
+
+    /// Inserts a copy of the step right after it, with a free id, and returns that id.
+    @discardableResult
+    public mutating func duplicateStep(_ id: StepID) -> StepID? {
+        guard let index = steps.firstIndex(where: { $0.id == id }) else { return nil }
+        let copyID = addStep(after: index)
+        let original = steps[index]
+        steps[index + 1] = Step(
+            id: copyID, phase: original.phase, text: original.text, note: original.note,
+            ingredientIDs: original.ingredientIDs, setting: original.setting, accessory: original.accessory,
+            freshPot: original.freshPot)
+        return copyID
     }
 
     public mutating func removeStep(_ id: StepID) {

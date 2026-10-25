@@ -79,4 +79,22 @@ struct RecipeEditingTests {
         #expect(profile.validate(recipe).filter { $0.stepID == recipe.steps[2].id }.isEmpty)
         #expect(profile.suggestedCelsius == 100 && profile.suggestedSpeed == 1)
     }
+
+    @Test func duplicatesAStepRightAfterIt() throws {
+        var recipe = try curry
+        let duplicated = recipe.duplicateStep("s2")
+        let copy = try #require(duplicated)
+        #expect(recipe.steps.map(\.id.rawValue) == ["s1", "s2", copy.rawValue, "s3", "s4", "s5", "s6"])
+        #expect(recipe.steps[2].setting == recipe.steps[1].setting && recipe.steps[2].text == recipe.steps[1].text)
+        #expect(DeviceProfile.omniCook.validate(recipe).isEmpty)
+    }
+
+    @Test func quickValuesStayWithinTheDevice() {
+        var small = DeviceProfile.omniCook
+        small.temperatureRange = 40...100
+        small.maxDuration = .seconds(600)
+        #expect(small.quickTemperatures == [60, 80, 90, 100])
+        #expect(small.quickDurations.last == .seconds(600))
+        #expect(DeviceProfile.omniCook.quickTemperatures.first == 37)
+    }
 }
