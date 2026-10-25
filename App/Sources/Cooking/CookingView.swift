@@ -62,7 +62,10 @@ struct CookingView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { model.tick() }
         }
-        .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
+        .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
+            model.begin()
+        }
         .onDisappear {
             UIApplication.shared.isIdleTimerDisabled = false
             model.end()

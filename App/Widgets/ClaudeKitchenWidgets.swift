@@ -5,5 +5,6 @@ import WidgetKit
 struct ClaudeKitchenWidgets: WidgetBundle {
     var body: some Widget {
         CookingTimerActivity()
+        CookingGuideActivity()
     }
 }
