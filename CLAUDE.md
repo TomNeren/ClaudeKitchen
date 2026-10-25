@@ -7,7 +7,7 @@ Swift 6 iOS/iPadOS cooking app: guided step-by-step cooking for a multicooker, w
 ## Layout
 
 - `Package.swift`, `Sources/KitchenCore`, `Tests/KitchenCoreTests`: platform-neutral logic. Builds and tests on Linux.
-- `App/` (to come): Xcode project with the SwiftUI app. Builds only on a Mac with Xcode.
+- `App/`: SwiftUI app. `App/project.yml` is the XcodeGen spec; run `xcodegen generate --spec App/project.yml` on a Mac to get `App/ClaudeKitchen.xcodeproj` (not checked in). Builds only with Xcode 27.
 
 Read the `app-architecture` skill before adding features or types. KitchenCore imports only Foundation.
 
@@ -21,7 +21,7 @@ swift format lint --recursive Sources Tests
 
 ## CI
 
-`.github/workflows/ci.yml` runs build, test and strict lint on a GitHub-hosted `ubuntu-24.04` runner with Swift 6.4.1 (installed via swiftly, cached), read-only permissions. The repo is public: never use a self-hosted runner for pull request jobs, since fork PRs could run code on it.
+`.github/workflows/ci.yml` runs build, test and strict lint on a GitHub-hosted `ubuntu-24.04` runner with Swift 6.4.1 (installed via swiftly, cached), read-only permissions. A second job, `app-ios`, runs on a GitHub-hosted `macos-26` runner: it selects Xcode 27, generates the project with XcodeGen and builds the app for the iOS Simulator without signing. The repo is public: never use a self-hosted runner for pull request jobs, since fork PRs could run code on it.
 
 ## Cloud sessions
 

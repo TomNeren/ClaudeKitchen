@@ -1,6 +1,6 @@
 # ClaudeKitchen: Aufbauplan
 
-Stand: 2026-10-25 · Status: Entwurf zur Freigabe
+Stand: 2026-10-25 · Status: freigegeben, abgeglichen mit PR #1 (KitchenCore, Projekt-Skills)
 
 ## 1. Ziel
 
@@ -10,7 +10,7 @@ Temperatur, Stufe, Laufrichtung, Zeit), mit mitlaufendem Timer und skalierbaren 
 
 Vorbild ist das Artefakt **„Omni Cook Kochführung“** (claude.ai/artifact/QBwd6P2ymkX53jfTrn5fay).
 Übernommen werden Informationsarchitektur, Datenstruktur und Farbcharakter, umgesetzt im
-**Liquid-Glass-Design** von iOS 26.
+**Liquid-Glass-Design** von iOS 27.
 
 ## 2. Was das Artefakt vorgibt (Ausgangslage)
 
@@ -54,71 +54,81 @@ Vorbild ist das Artefakt **„Omni Cook Kochführung“** (claude.ai/artifact/QB
 
 | Entscheidung | Empfehlung | Begründung | Alternative |
 |---|---|---|---|
-| Plattform | **iOS 26 / iPadOS 26**, iPhone + iPad | In der Küche liegt meist das iPad, unterwegs (Einkauf) das iPhone | macOS 26 als Phase 3 über denselben Code |
-| Mindestversion | **iOS 26.0** | Liquid Glass ohne Fallback-Zweige, halbiert den Designaufwand | iOS 18 mit Material-Fallback, nur sinnvoll bei Veröffentlichung im Store für breites Publikum |
+| Plattform | **iOS 27 / iPadOS 27**, iPhone + iPad, nur für den Eigengebrauch | In der Küche liegt meist das iPad, unterwegs (Einkauf) das iPhone | macOS 27 als Phase 3 über denselben Code |
+| Mindestversion | **iOS 27**, keine Fallbacks (Vorgabe aus `app-architecture`) | Liquid Glass ohne Ausweichzweige, neueste APIs | |
 | UI | SwiftUI, `@Observable`, Swift 6 strikte Nebenläufigkeit | Stand der Technik, passt zu Liquid Glass | |
-| Navigation | `NavigationSplitView` (iPad) / `NavigationStack` (iPhone), `Tab`-Modell | Standardkomponenten bekommen Glas automatisch | |
-| Daten v1 | Rezepte als versioniertes **JSON im Bundle** (`Codable`) | Einfach, versionierbar, von Claude leicht erzeugbar und prüfbar | SwiftData sofort, lohnt erst mit eigenen Rezepten |
+| Navigation | `NavigationStack` mit typisiertem Pfad (`[Route]`), auf dem iPad `NavigationSplitView`, `Tab`-Modell | Standardkomponenten bekommen Glas automatisch | |
+| Daten v1 | Rezepte als versioniertes **JSON in `Sources/KitchenCore/Resources`** (`Codable`) | Einfach, versionierbar, von Claude leicht erzeugbar und prüfbar | SwiftData sofort, lohnt erst mit eigenen Rezepten |
 | Daten v2 | **SwiftData** für Favoriten, eigene Rezepte; optional CloudKit-Sync | Gerätesync ohne Server | |
-| Projektstruktur | **XcodeGen** (`project.yml`) statt eingechecktem `.xcodeproj` | Keine Merge-Konflikte in `project.pbxproj`, Projekt aus Text erzeugbar | Tuist, oder reines SwiftPM-App-Paket |
-| Kernlogik | eigenes Swift Package **`OmniKit`** (Modelle, Skalierung, Geräteregeln, Timerlogik), ohne UI-Abhängigkeit | Läuft und testet auch unter Linux, also hier in der Cloud-Umgebung | |
-| Tests | Swift Testing für `OmniKit`, UI-Tests für Kochmodus | | |
-| CI | **GitHub Actions auf macOS-Runner** (Xcode 26): `xcodegen`, `xcodebuild build test` | Hier gibt es kein Xcode; ohne CI kann ich App-Code nicht kompilieren | Nur lokal auf deinem Mac bauen |
+| Projektstruktur | **XcodeGen** (`App/project.yml`) statt eingechecktem `.xcodeproj` | Keine Merge-Konflikte in `project.pbxproj`, Projekt aus Text erzeugbar | Tuist, oder reines SwiftPM-App-Paket |
+| Kernlogik | Swift Package **`KitchenCore`** (aus PR #1: Modelle, Skalierung, Geräteregeln, Kochsitzung als Zustandsautomat, Timer), importiert nur Foundation | Läuft und testet auch unter Linux, also hier in der Cloud-Umgebung | |
+| Tests | Swift Testing für `KitchenCore`, UI-Tests für Kochmodus | | |
+| CI | GitHub Actions, gehostete Runner (Repo ist öffentlich, Minuten kostenlos): Linux-Job für `KitchenCore` (Build, Test, Lint) und **macOS-Job** (`xcodegen`, `xcodebuild` für den Simulator) | Hier gibt es kein Xcode; ohne macOS-Job kann ich App-Code nicht kompilieren | Nur lokal auf deinem Mac bauen |
 
 **Wichtig zur Arbeitsweise:** In dieser Cloud-Umgebung läuft Linux ohne Xcode. Ich kann hier
-`OmniKit` mit einer Swift-Toolchain für Linux bauen und testen, die SwiftUI-App selbst aber nur über
+`KitchenCore` mit Swift 6.4.1 für Linux bauen und testen, die SwiftUI-App selbst aber nur über
 den macOS-Runner in GitHub Actions kompilieren. Optische Prüfung von Liquid Glass geht nur auf
 echtem Gerät oder im Simulator auf deinem Mac (Simulator-Darstellung von Glas ist nicht verlässlich).
 
-## 5. Datenmodell (OmniKit)
+## 5. Datenmodell (KitchenCore)
+
+Skizze nach den Regeln des Skills `app-architecture`: Werttypen, ungültige Zustände nicht darstellbar,
+`Duration` statt Sekunden, typisierte IDs. `Amount` und `MeasureUnit` gibt es schon aus PR #1.
 
 ```swift
-struct Recipe: Codable, Identifiable {
-    let id: String
-    var name: String
-    var tag: String                 // "Mediterran · Ikaria"
-    var cuisine: Cuisine
-    var baseServings: Int
-    var totalMinutes: Int
-    var heroImage: String?          // Asset-Name
-    var ingredients: [Ingredient]
-    var steps: [Step]
-    var schemaVersion: Int
+public struct Recipe: Sendable, Hashable, Codable, Identifiable {
+    public let id: RecipeID
+    public var name: String
+    public var tag: String                  // "Mediterran · Ikaria"
+    public var baseServings: Int
+    public var totalTime: Duration
+    public var heroImage: String?           // asset name
+    public var ingredients: [Ingredient]
+    public var steps: [Step]
+    public var verified: Bool               // cooked once on the real device
+    public var schemaVersion: Int
 }
 
-struct Ingredient: Codable, Identifiable {
-    let id: String
-    var name: String
-    var amount: Amount              // .grams(30), .pieces(1), .teaspoons(2), .toTaste
-    var scales: Bool                // Lorbeerblatt skaliert nicht linear
+public struct Ingredient: Sendable, Hashable, Codable, Identifiable {
+    public let id: IngredientID
+    public var name: String
+    public var amount: Amount               // .measured(30, .gram) | .toTaste
+    public var scales: Bool                 // a bay leaf does not scale linearly
 }
 
-struct Step: Codable, Identifiable {
-    let id: String
-    var phase: String               // "Anschwitzen"
-    var text: String
-    var note: String?
-    var ingredientIDs: [String]     // Zutaten, die in diesem Schritt dazukommen
-    var setting: DeviceSetting?
-    var accessory: Accessory?       // .steamer, .basket, .whisk
+public struct Step: Sendable, Hashable, Codable, Identifiable {
+    public let id: StepID
+    public var phase: String                // "Anschwitzen"
+    public var text: String
+    public var note: String?
+    public var ingredientIDs: [IngredientID]
+    public var setting: DeviceSetting?
+    public var accessory: Accessory?        // .steamer, .basket, .whisk
 }
 
-struct DeviceSetting: Codable {
-    var mode: Mode                  // .manual, .steam, .knead, .sousVide, .ferment, .weigh ...
-    var temperature: Temperature?   // .celsius(120) | .steam
-    var speed: Speed?               // .level(5) | .reverse(1) | .turbo
-    var duration: Duration?
+public enum Heat: Sendable, Hashable, Codable { case celsius(Int), steam }
+public enum Rotation: Sendable, Hashable, Codable { case forward(speed: Int), reverse(speed: Int) }
+public struct DeviceSetting: Sendable, Hashable, Codable {
+    public var program: Program             // .manual, .steam, .knead, .sousVide, .yogurt ...
+    public var heat: Heat?
+    public var rotation: Rotation?
+    public var duration: Duration?
 }
 
-struct DeviceProfile {              // Grenzwerte und Regeln je Modellvariante
-    var temperatureRange: ClosedRange<Int>
-    var temperatureStep: Int
-    var speedLevels: ClosedRange<Int>
-    var maxFillLiters: Double
-    var ownedAccessories: Set<Accessory>   // Bestand: Dampfaufsatz, Garkorb, Schneebesen
-    var rules: [Rule]               // z. B. "über 60 °C keine hohe Stufe"
+public struct DeviceProfile: Sendable {     // limits and rules per model
+    public var temperature: ClosedRange<Int>        // 35...180
+    public var forwardSpeeds: ClosedRange<Int>      // 1...10
+    public var reverseSpeeds: ClosedRange<Int>
+    public var maxDuration: Duration                // 99 min
+    public var maxFillLiters: Double                // 2.2
+    public var maxSteamerLoadGrams: Int             // 2000 per layer
+    public var ownedAccessories: Set<Accessory>     // steamer is owned
+    public var rules: [Rule]                        // each rule has severity .error or .warning
 }
 ```
+
+Die Kochsitzung (`CookingSession` mit `send(_ action:)`) und der Timer mit Endzeitpunkt statt
+Countdown folgen direkt dem Skill `app-architecture`, Abschnitt 3.
 
 `DeviceProfile.validate(recipe)` prüft jedes Rezept gegen die Gerätegrenzen. Diese Prüfung läuft
 als Test über alle Bundle-Rezepte und später für jedes importierte Rezept.
@@ -145,14 +155,14 @@ Wo beide sich widersprechen, gilt das Handbuch. Alle Werte gehören in ein austa
 | Temperatur (manuell) | bis 180 °C; Untergrenze laut Tests 35 °C, Schrittweite unbekannt | Handbuch (Obergrenze), Tests (Untergrenze) |
 | Zeit (manuell) | bis 99 Min | Handbuch |
 | Stufen | **1 bis 10 vorwärts, dazu Linkslauf** (sanftes Rühren mit der Messerrückseite) | Handbuch. Ein Testbericht nennt 20 vorwärts / 10 rückwärts, das ist damit überholt |
-| Sicherheitsregel | **über 60 °C keine hohe Stufe** (sonst spritzt es) | Handbuch |
+| Sicherheitsregel | „über 60 °C keine hohe Stufe“ (sonst spritzt es) | **unbestätigt**: stand in der früheren Handbuch-Auswertung, ist dir aber nicht bekannt. Kann eine Thermomix-Faustregel sein. Wird nur als Warnung geführt |
 | Dampfgaren | nur mit separatem Aufsatz, max. 2 kg in einer Lage. **Aufsatz ist vorhanden** und wird eingeplant | Handbuch, Bestand bestätigt |
 | Programme | manuell + ca. 15 Programme: Wiegen, Kneten, Hacken, Mahlen, Entsaften, Dämpfen, Schmoren, Sous-vide, Joghurt | Tests, belegt |
 | Waage | integriert, ±1 g | Test, unsicher |
 | Zubehör | Dampfkorb, Schneebesen, Spatel, Messlöffel; Dampfaufsatz-Set separat | Tests, belegt |
 
-Offen bleiben: Untergrenze und Schrittweite der Temperatur, ab welcher Stufe „hoch“ beginnt (für die
-60-°C-Regel brauchen wir eine Zahl), Turbo-Funktion. Eine Variante **Omni Cook C2** (3 l,
+Offen bleiben: Untergrenze und Schrittweite der Temperatur, ob es die 60-°C-Regel wirklich gibt (sonst entfällt
+die Warnung), Turbo-Funktion. Eine Variante **Omni Cook C2** (3 l,
 7-Zoll-Display) taucht bei Händlern auf. Das Profil wird deshalb pro Modell gepflegt.
 
 Die Rezepte im Artefakt (Stufe 5, Linkslauf 1, 120 °C, Dampf) passen zu diesen Handbuchwerten.
@@ -244,23 +254,29 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 
 | # | Inhalt | Ergebnis / Abnahme |
 |---|---|---|
-| M0 | Repo-Gerüst: `CLAUDE.md`, `project.yml`, `OmniKit`-Paket, GitHub Actions (macOS), SessionStart-Hook | CI baut leere App grün |
-| M1 | `OmniKit`: Modelle, JSON-Schema, 3 Rezepte migriert, Skalierung, `DeviceProfile.validate`, Timer-Logik | Alle Tests grün, auch unter Linux |
+| M0 | Repo-Gerüst. Erledigt durch PR #1: `KitchenCore`, Projekt-Skills, Linux-CI, Umgebung „ClaudeKitchen“. Neu: `App/project.yml` (XcodeGen), leere App, macOS-Job in der CI | CI baut KitchenCore und die leere App grün |
+| M1 | `KitchenCore`: Modelle, JSON-Schema, 3 Rezepte migriert, Skalierung, `DeviceProfile.validate`, Timer-Logik | Alle Tests grün, auch unter Linux |
 | M2 | Bibliothek + Rezeptdetail mit Glas-Chrome, Palette, Hero/MeshGradient | Screenshots vom Gerät |
 | M3 | Kochmodus mit Gerätekonsole, Timer, Bildschirm-wach | Ein Rezept komplett durchkochbar |
 | M4 | Hintergrund-Timer, Mitteilungen, Live Activity | Timer überlebt Sperren und App-Wechsel |
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion | Test-Checkliste abgehakt |
 | M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Importiertes Rezept besteht Validierung |
 
-## 9. Offene Entscheidungen (mit Empfehlung)
+## 9. Entscheidungen
 
-1. **Nur für dich oder App Store?** Empfehlung: zunächst privat (TestFlight/eigenes Gerät). Bei Store-Ziel
-   Markenrecht beachten: „TOKIT“ und „Omni Cook“ nicht im App-Namen, nur als „für TOKIT Omni Cook“.
-2. **Mindestversion iOS 26.** Empfehlung: ja.
-3. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
+Getroffen (2026-10-25):
+1. **Nur für den Eigengebrauch**, kein App Store. Markenrecht und Store-Prüfung entfallen.
+2. **iOS 27 als Mindestversion**, keine Fallbacks (Vorgabe aus PR #1).
+3. **Dampfaufsatz vorhanden**, Dampfrezepte gehören in den Startbestand.
+4. **Herstelleranfrage an TOKIT ist verschickt**, Antwort steht aus.
+5. **Repo bleibt öffentlich**, CI läuft auf gehosteten GitHub-Runnern (kostenlos für öffentliche Repos).
+   Folge: keine Geheimnisse ins Repo, nie ein selbst gehosteter Runner für Pull Requests.
+
+Offen (mit Empfehlung):
+1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
    Empfehlung: MeshGradient für M2, Bilder später austauschbar.
-4. **Rezeptquelle langfristig:** handkuratiert als JSON oder Import per Claude API. Empfehlung: beides,
+2. **Rezeptquelle langfristig:** handkuratiert als JSON oder Import per Claude API. Empfehlung: beides,
    Import ab M6.
-5. **Apple Developer Account / Signing** für Gerätetests und Live Activities nötig.
-6. **Herstelleranfrage an TOKIT:** Wurde sie verschickt? Falls nicht, empfehle ich sie jetzt abzuschicken.
-   Sie ist der einzige saubere Weg zu Import oder Steuerung.
+3. **Apple Developer Account / Signing** für Gerätetests und Live Activities. Für den Eigengebrauch reicht
+   ein kostenloses Konto (Apps laufen 7 Tage), mit bezahltem Konto entfällt das Neusignieren.
+4. **60-°C-Regel:** einmal am Gerät ausprobieren oder im Handbuch nachsehen. Bis dahin nur Warnung.

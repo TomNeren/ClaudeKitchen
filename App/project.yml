@@ -1,0 +1,38 @@
+name: ClaudeKitchen
+options:
+  bundleIdPrefix: de.tomneren
+  deploymentTarget:
+    iOS: "27.0"
+  createIntermediateGroups: true
+
+packages:
+  KitchenCore:
+    path: ..
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  ClaudeKitchen:
+    type: application
+    platform: iOS
+    sources:
+      - Sources
+    dependencies:
+      - package: KitchenCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: de.tomneren.ClaudeKitchen
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Omni Cook
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: >-
+          UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown
+          UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+    scheme: {}
