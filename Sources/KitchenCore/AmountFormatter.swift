@@ -12,8 +12,13 @@ public enum AmountFormatter {
         case .toTaste:
             return toTasteText
         case .measured(let value, let unit):
-            return "\(number(rounded(value, unit: unit), unit: unit)) \(unit.rawValue)"
+            return "\(quantity(value, unit: unit)) \(unit.rawValue)"
         }
+    }
+
+    /// The rounded number without its unit, for example "1½" or "135", so the unit can be written or spoken.
+    public static func quantity(_ value: Double, unit: MeasureUnit) -> String {
+        number(rounded(value, unit: unit), unit: unit)
     }
 
     /// The value as it should be measured.

@@ -3,7 +3,8 @@ import AVFoundation
 /// Speaks German answers with the best installed German voice and waits until each one is done.
 @MainActor
 final class Speaker: NSObject {
-    private let synthesizer = AVSpeechSynthesizer()
+    /// Created with the first answer, so a cook without voice mode never sets up speech.
+    private var synthesizer: AVSpeechSynthesizer?
     /// The utterance being spoken and who waits for it. A late callback for an earlier utterance is ignored.
     private var pending: (utterance: ObjectIdentifier, continuation: CheckedContinuation<Void, Never>)?
 
@@ -13,16 +14,16 @@ final class Speaker: NSObject {
         .max { $0.quality.rawValue < $1.quality.rawValue }
         ?? AVSpeechSynthesisVoice(language: "de-DE")
 
-    override init() {
-        super.init()
-        synthesizer.delegate = self
-    }
-
     /// Returns once `text` has been spoken or `stop()` cut it off.
     func say(_ text: String) async {
         stop()
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = Self.voice
+        let synthesizer = self.synthesizer ?? AVSpeechSynthesizer()
+        if self.synthesizer == nil {
+            synthesizer.delegate = self
+            self.synthesizer = synthesizer
+        }
         await withCheckedContinuation { continuation in
             pending = (ObjectIdentifier(utterance), continuation)
             synthesizer.speak(utterance)
@@ -30,7 +31,7 @@ final class Speaker: NSObject {
     }
 
     func stop() {
-        if synthesizer.isSpeaking {
+        if let synthesizer, synthesizer.isSpeaking {
             synthesizer.stopSpeaking(at: .immediate)
         }
         pending?.continuation.resume()

@@ -3,8 +3,9 @@ import Foundation
 /// What a spoken sentence asks for during a cook.
 ///
 /// The app listens all the time while the cooking mode is open, so talk in the kitchen must not trigger anything by
-/// accident: a fixed command only counts when the sentence is short and is essentially that command, and free
-/// questions only count after the wake word "Omni".
+/// accident: a fixed command only counts when the sentence is essentially that command, a substitution only in a
+/// short sentence (and the app stays silent when the ingredient is not in the recipe), and free questions only after
+/// the wake word "Omni".
 public enum VoiceCommand: Sendable, Equatable {
     case next
     case previous
@@ -13,15 +14,18 @@ public enum VoiceCommand: Sendable, Equatable {
     case startTimer
     case pauseTimer
     case stepIngredients
-    /// "Mir fehlt Feta", "Was kann ich statt Kokosmilch nehmen?"
-    case substitute(ingredient: String)
+    /// "Mir fehlt Feta", "Was kann ich statt Kokosmilch nehmen?". `addressed` when said after the wake word: then an
+    /// ingredient that is not in the recipe deserves an answer, otherwise the sentence was probably conversation.
+    case substitute(ingredient: String, addressed: Bool = false)
     /// Anything else said after the wake word, for the language model.
     case question(String)
 
     public static let wakeWord = "omni"
 
-    /// Sentences longer than this, without the wake word, are taken as conversation and ignored.
-    static let maxCommandWords = 6
+    /// Words besides the command phrase that still count as a command ("weiter bitte", "ok timer starten").
+    static let maxExtraWords = 2
+    /// Longer sentences without the wake word are conversation, even with "mir fehlt" in them.
+    static let maxSubstitutionWords = 8
 
     public static func parse(_ transcript: String) -> VoiceCommand? {
         var words = normalizedWords(transcript)
@@ -30,16 +34,21 @@ public enum VoiceCommand: Sendable, Equatable {
             words.removeFirst(words.first == "hey" ? 2 : 1)
         }
         guard !words.isEmpty else { return nil }
-        let sentence = words.joined(separator: " ")
 
-        if let ingredient = substitution(in: words) {
-            return .substitute(ingredient: ingredient)
-        }
-        if addressed || words.count <= maxCommandWords, let command = fixedCommand(in: sentence) {
+        if let command = fixedCommand(in: words) {
             return command
         }
-        return addressed
-            ? .question(cleaned(transcript, droppingLeading: transcript.lowercased().hasPrefix("hey") ? 2 : 1)) : nil
+        if addressed {
+            // "Omni, kann ich statt Spinat Mangold nehmen?" is a question for the model, which also knows the
+            // curated substitutes; only the plain forms stay substitutions.
+            if let ingredient = substitution(in: words, markers: plainSubstitutionMarkers) {
+                return .substitute(ingredient: ingredient, addressed: true)
+            }
+            return .question(cleaned(transcript, droppingLeading: transcript.lowercased().hasPrefix("hey") ? 2 : 1))
+        }
+        guard words.count <= maxSubstitutionWords else { return nil }
+        return substitution(in: words, markers: plainSubstitutionMarkers + insteadMarkers)
+            .map { .substitute(ingredient: $0) }
     }
 
     private static let patterns: [(VoiceCommand, [String])] = [
@@ -55,22 +64,29 @@ public enum VoiceCommand: Sendable, Equatable {
         (.stepIngredients, ["welche zutaten", "was kommt rein", "was brauche ich", "zutaten"]),
     ]
 
-    /// The first pattern found as whole words in the sentence; "pause" wins over "start" by order.
-    private static func fixedCommand(in sentence: String) -> VoiceCommand? {
-        let padded = " \(sentence) "
-        for (command, phrases) in patterns where phrases.contains(where: { padded.contains(" \($0) ") }) {
-            return command
+    /// The first pattern found as whole words in a sentence that is not much more than that pattern; "pause" wins
+    /// over "start" by order. "Was mache ich, wenn der Reis nicht fertig ist?" is not "fertig".
+    private static func fixedCommand(in words: [String]) -> VoiceCommand? {
+        let padded = " \(words.joined(separator: " ")) "
+        for (command, phrases) in patterns {
+            let fits = phrases.contains { phrase in
+                padded.contains(" \(phrase) ")
+                    && words.count - phrase.split(separator: " ").count <= maxExtraWords
+            }
+            if fits { return command }
         }
         return nil
     }
 
-    /// "mir fehlt X", "ich habe kein(e/en) X", "statt X", "ersatz fur X", "anstelle von X".
-    private static func substitution(in words: [String]) -> String? {
+    private static let plainSubstitutionMarkers = [
+        " mir fehlt ", " mir fehlen ", " ich habe keine ", " ich habe keinen ", " ich habe kein ", " hab keine ",
+        " hab keinen ", " hab kein ", " ersatz fur ",
+    ]
+    private static let insteadMarkers = [" statt ", " anstelle von ", " anstatt "]
+
+    /// The words after a marker such as "mir fehlt X" or "statt X", up to a verb like "nehmen".
+    private static func substitution(in words: [String], markers: [String]) -> String? {
         let sentence = " " + words.joined(separator: " ") + " "
-        let markers = [
-            " mir fehlt ", " mir fehlen ", " ich habe keine ", " ich habe keinen ", " ich habe kein ", " hab keine ",
-            " hab keinen ", " hab kein ", " statt ", " anstelle von ", " anstatt ", " ersatz fur ",
-        ]
         for marker in markers {
             guard let range = sentence.range(of: marker) else { continue }
             let rest = sentence[range.upperBound...].split(separator: " ").map(String.init)
@@ -100,8 +116,9 @@ public enum VoiceCommand: Sendable, Equatable {
 }
 
 extension CookingSession {
-    /// The recipe ingredient a spoken name means, matched without case and diacritics, by whole name first, then by
-    /// words of the name ("Linsen" finds "Rote Linsen", "Spinat" finds "Blattspinat").
+    /// The recipe ingredient a spoken name means, matched without case and diacritics: the whole name first, then
+    /// the ingredient sharing the most words with it ("Linsen" finds "Rote Linsen", "frischen Ingwer" finds "Ingwer",
+    /// "Spinat" finds "Blattspinat"). Nil when no word matches, so "keine Ahnung" finds nothing.
     public func ingredient(named spoken: String) -> Ingredient? {
         let wanted = VoiceCommand.normalizedWords(spoken)
         guard !wanted.isEmpty else { return nil }
@@ -109,14 +126,24 @@ extension CookingSession {
         if let exact = candidates.first(where: { $0.1 == wanted }) {
             return exact.0
         }
+        let meaningful = wanted.filter { $0.count >= 3 && !Self.fillerWords.contains($0) }
         // German compounds: "Spinat" means "Blattspinat". Short words must match from the start ("Ei" is not in
         // "Zwiebel").
-        return candidates.first { candidate in
-            wanted.allSatisfy { word in
+        let scored = candidates.map { candidate in
+            let hits = meaningful.count(where: { word in
                 candidate.1.contains { word.count >= 4 ? $0.contains(word) : $0.hasPrefix(word) }
-            }
-        }?.0
+            })
+            return (candidate.0, hits)
+        }
+        guard let best = scored.max(by: { $0.1 < $1.1 }), best.1 > 0 else { return nil }
+        return scored.first { $0.1 == best.1 }?.0
     }
+
+    private static let fillerWords: Set = [
+        "noch", "mehr", "mal", "haus", "hause", "gerade", "leider", "bitte", "wann", "was", "wie", "ich", "mir",
+        "frisch",
+        "frische", "frischen", "frischer",
+    ]
 }
 
 extension CookingSession {

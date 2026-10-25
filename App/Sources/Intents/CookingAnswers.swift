@@ -46,12 +46,16 @@ enum CookingAnswers {
 
     /// An amount for reading aloud: "200 Gramm", "1 Stück", "2 Esslöffel", "nach Geschmack".
     static func spoken(_ amount: Amount) -> String {
-        let text = AmountFormatter.string(for: amount)
-        let words = [" g": " Gramm", " Stk": " Stück", " TL": " Teelöffel", " EL": " Esslöffel"]
-        for (short, long) in words where text.hasSuffix(short) {
-            return String(text.dropLast(short.count)) + long
-        }
-        return text
+        guard case .measured(let value, let unit) = amount else { return AmountFormatter.toTasteText }
+        let word =
+            switch unit {
+            case .gram: "Gramm"
+            case .piece: "Stück"
+            case .clove: AmountFormatter.rounded(value, unit: unit) == 1 ? "Zehe" : "Zehen"
+            case .teaspoon: "Teelöffel"
+            case .tablespoon: "Esslöffel"
+            }
+        return "\(AmountFormatter.quantity(value, unit: unit)) \(word)"
     }
 
     static func spokenParts(_ setting: DeviceSetting) -> [String] {

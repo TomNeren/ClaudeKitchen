@@ -11,6 +11,7 @@ struct VoiceCommandTests {
         ("Wie lange noch?", .remainingTime), ("Timer starten", .startTimer), ("Timer pausieren", .pauseTimer),
         ("Pause", .pauseTimer), ("Welche Zutaten?", .stepIngredients),
         ("Omni, weiter", .next), ("Hey Omni wie lange noch", .remainingTime),
+        ("Okay, Timer starten bitte", .startTimer),
     ])
     func recognisesShortCommands(spoken: String, expected: VoiceCommand) {
         #expect(VoiceCommand.parse(spoken) == expected)
@@ -21,6 +22,20 @@ struct VoiceCommandTests {
         #expect(VoiceCommand.parse("Kannst du mir mal kurz das Salz geben") == nil)
         #expect(VoiceCommand.parse("") == nil)
         #expect(VoiceCommand.parse("Omni") == nil)
+        #expect(VoiceCommand.parse("Ich habe keine Ahnung, wann die anderen kommen und was sie mitbringen") == nil)
+    }
+
+    @Test(arguments: [
+        (
+            "Omni, was mache ich, wenn der Reis noch nicht fertig ist?",
+            "was mache ich, wenn der Reis noch nicht fertig ist"
+        ),
+        ("Omni, wie lange kann ich das lagern?", "wie lange kann ich das lagern"),
+        ("Omni, welche Zutaten kann ich weglassen?", "welche Zutaten kann ich weglassen"),
+        ("Omni, kann ich statt Spinat Mangold nehmen?", "kann ich statt Spinat Mangold nehmen"),
+    ])
+    func questionsContainingCommandWordsStayQuestions(spoken: String, question: String) {
+        #expect(VoiceCommand.parse(spoken) == .question(question))
     }
 
     @Test(arguments: [
@@ -30,7 +45,8 @@ struct VoiceCommandTests {
         ("Hab keinen Spinat mehr", "spinat"),
     ])
     func recognisesSubstitutions(spoken: String, ingredient: String) {
-        #expect(VoiceCommand.parse(spoken) == .substitute(ingredient: ingredient))
+        let addressed = spoken.hasPrefix("Omni")
+        #expect(VoiceCommand.parse(spoken) == .substitute(ingredient: ingredient, addressed: addressed))
     }
 
     @Test func passesFreeQuestionsAfterTheWakeWord() {
@@ -44,7 +60,10 @@ struct VoiceCommandTests {
         #expect(session.ingredient(named: "kokosmilch")?.id == "kokosmilch")
         #expect(session.ingredient(named: "ingwer")?.id == "ingwer")
         #expect(session.ingredient(named: "spinat")?.id == "spinat")
+        #expect(session.ingredient(named: "frischen ingwer")?.id == "ingwer")
+        #expect(session.ingredient(named: "noch kokosmilch")?.id == "kokosmilch")
         #expect(session.ingredient(named: "Feta") == nil)
+        #expect(session.ingredient(named: "ahnung wann anderen kommen") == nil)
     }
 
     @Test func substitutesFollowTheChosenServings() throws {

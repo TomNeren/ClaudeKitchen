@@ -31,6 +31,9 @@ final class VoiceModeModel {
     private var loop: Task<Void, Never>?
     /// The last shutdown of the listener; a new start waits for it.
     private var shutdown: Task<Void, Never>?
+    /// Restarts after audio was taken away, since the last sentence heard. Bounded, so a broken route cannot loop.
+    private var restarts = 0
+    private static let maxRestarts = 3
 
     init(cooking: CookingScreenModel, device: DeviceProfile = .omniCook) {
         self.cooking = cooking
@@ -59,12 +62,18 @@ final class VoiceModeModel {
                 guard !Task.isCancelled else { return }
                 state = .listening
                 for await sentence in sentences {
+                    restarts = 0
                     await handle(sentence)
                 }
                 guard !Task.isCancelled else { return }
-                // The stream only ends early when audio was taken away, for example by a call.
+                // Audio was taken away (a call, Siri, another route). Listen again once it is back; returning from
+                // the background restarts as well.
                 await listener.stop()
                 state = .off
+                guard restarts < Self.maxRestarts else { return }
+                restarts += 1
+                try? await Task.sleep(for: .seconds(1))
+                if !Task.isCancelled { start() }
             } catch {
                 guard !Task.isCancelled else { return }
                 await listener.stop()
@@ -92,29 +101,28 @@ final class VoiceModeModel {
     private func handle(_ sentence: String) async {
         guard state == .listening, let command = VoiceCommand.parse(sentence) else { return }
         state = .answering
-        let (reply, isUnchecked) = await reply(to: command)
+        defer { if state == .answering { state = .listening } }
+        guard case (let reply, let isUnchecked)? = await reply(to: command), !Task.isCancelled else { return }
         exchange = Exchange(heard: sentence, reply: reply, isUnchecked: isUnchecked)
         listener.isMuted = true
         await speaker.say(reply)
         listener.isMuted = false
-        if state == .answering { state = .listening }
     }
 
-    private func reply(to command: VoiceCommand) async -> (String, Bool) {
+    /// What to say, and whether it comes from the language model. Nil to stay silent.
+    private func reply(to command: VoiceCommand) async -> (String, Bool)? {
+        if let intent = command.intent {
+            return (await cooking.perform(intent), false)
+        }
         let session = cooking.session
         switch command {
-        case .next: return (await cooking.perform(.next), false)
-        case .previous: return (await cooking.perform(.previous), false)
-        case .repeatStep: return (await cooking.perform(.currentStep), false)
-        case .remainingTime: return (await cooking.perform(.remainingTime), false)
-        case .startTimer: return (await cooking.perform(.startTimer), false)
-        case .pauseTimer: return (await cooking.perform(.pauseTimer), false)
         case .stepIngredients:
             let items = session.currentStep.map(session.ingredients(for:)) ?? []
             return (CookingAnswers.ingredients(items), false)
-        case .substitute(let name):
+        case .substitute(let name, let addressed):
             guard let ingredient = session.ingredient(named: name) else {
-                return ("\(name) kommt in diesem Rezept nicht vor.", false)
+                // Without "Omni", "mir fehlt die Geduld" was conversation, not a question.
+                return addressed ? ("Das steht nicht in diesem Rezept.", false) : nil
             }
             let substitutions = session.substitutions(for: ingredient)
             if !substitutions.isEmpty {
@@ -130,6 +138,8 @@ final class VoiceModeModel {
                 return ("Freie Fragen gehen nur mit Apple Intelligence auf Deutsch.", false)
             }
             return (await CookingAssistant.answer(question, session: session, device: device), true)
+        case .next, .previous, .repeatStep, .remainingTime, .startTimer, .pauseTimer:
+            return nil
         }
     }
 
@@ -138,6 +148,21 @@ final class VoiceModeModel {
         case .microphoneDenied: "Kein Zugriff aufs Mikrofon. Erlaube ihn in den Einstellungen."
         case .germanUnsupported: "Deutsche Spracherkennung ist auf diesem Gerät nicht verfügbar."
         case .noAudioFormat, nil: "Zuhören ließ sich nicht starten."
+        }
+    }
+}
+
+extension VoiceCommand {
+    /// The Siri command a spoken step or timer command stands for, so both say the same.
+    fileprivate var intent: CookingIntentCommand? {
+        switch self {
+        case .next: .next
+        case .previous: .previous
+        case .repeatStep: .currentStep
+        case .remainingTime: .remainingTime
+        case .startTimer: .startTimer
+        case .pauseTimer: .pauseTimer
+        case .stepIngredients, .substitute, .question: nil
         }
     }
 }
