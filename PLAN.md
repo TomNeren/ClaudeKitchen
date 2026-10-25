@@ -46,7 +46,7 @@ Vorbild ist das Artefakt **„Omni Cook Kochführung“** (claude.ai/artifact/QB
 - **Wochenplan**.
 
 ### Bewusst nicht im Plan
-- Direkte Gerätesteuerung über Bluetooth/WLAN: siehe Abschnitt 6, nur falls eine offene Schnittstelle existiert.
+- Direkte Gerätesteuerung über WLAN: in einer früheren Session untersucht, derzeit nicht machbar (Abschnitt 6.2).
 
 ## 4. Plattform und Technik
 
@@ -129,34 +129,71 @@ Umrechnungen aus dem Artefakt, die korrigiert werden:
 
 ## 6. Gerät: TOKIT Omni Cook
 
-Recherchestand 2026-10-25. Es gibt nur Testberichte und Händlerseiten, Handbuch und Herstellerseite
-fehlen noch. Alle Werte gehören deshalb in ein austauschbares `DeviceProfile`, nicht fest in den Code.
+Stand 2026-10-25. Zwei Quellen: die Handbuch-Auswertung aus der früheren Session „Tokio Omni
+Fernsteuerung und Rezepte“ (11. bis 23.10.) und eine Webrecherche (nur Testberichte und Händler).
+Wo beide sich widersprechen, gilt das Handbuch. Alle Werte gehören in ein austauschbares
+`DeviceProfile`, nicht fest in den Code.
 
-| Parameter | Omni Cook (Original) | Sicherheit |
+### 6.1 Bedienwerte
+
+| Parameter | Wert | Quelle / Sicherheit |
 |---|---|---|
-| Topf | 2,2 l Edelstahl | belegt |
-| Temperatur | 35 bis 180 °C, Schrittweite unbekannt | mittel (eine Quelle nennt 30 °C) |
-| Drehzahl | ca. 40 bis 12.000 U/min, 20 Stufen vorwärts, 10 rückwärts | unsicher, nur eine Quelle |
-| Modi | manuell + ca. 15 Programme: Wiegen, Kneten, Hacken, Mahlen, Entsaften, Dämpfen, Schmoren, Sous-vide, Joghurt | belegt |
-| Waage | integriert, ±1 g | unsicher |
-| Zubehör | Dampfkorb, Schneebesen, Spatel, Messlöffel; Dampfaufsatz-Set separat | belegt |
-| Sicherheitsregeln (Stufe bei Hitze), maximale Laufzeit, Füllmarke | nicht gefunden | offen |
-| Offizielle Plattform | Rezept-Cloud „cookNjoy“, geführte Rezepte steuern das Gerät über WLAN | belegt |
-| Offene Schnittstelle (API/Bluetooth) | nicht gefunden | vermutlich keine |
+| Topf | max. 2,2 l Füllmarke, Edelstahl | Handbuch, belegt |
+| Temperatur (manuell) | bis 180 °C; Untergrenze laut Tests 35 °C, Schrittweite unbekannt | Handbuch (Obergrenze), Tests (Untergrenze) |
+| Zeit (manuell) | bis 99 Min | Handbuch |
+| Stufen | **1 bis 10 vorwärts, dazu Linkslauf** (sanftes Rühren mit der Messerrückseite) | Handbuch. Ein Testbericht nennt 20 vorwärts / 10 rückwärts, das ist damit überholt |
+| Sicherheitsregel | **über 60 °C keine hohe Stufe** (sonst spritzt es) | Handbuch |
+| Dampfgaren | nur mit separatem Aufsatz, max. 2 kg in einer Lage | Handbuch |
+| Programme | manuell + ca. 15 Programme: Wiegen, Kneten, Hacken, Mahlen, Entsaften, Dämpfen, Schmoren, Sous-vide, Joghurt | Tests, belegt |
+| Waage | integriert, ±1 g | Test, unsicher |
+| Zubehör | Dampfkorb, Schneebesen, Spatel, Messlöffel; Dampfaufsatz-Set separat | Tests, belegt |
 
-Eine Variante **Omni Cook C2** (3 l, 7-Zoll-Display, WLAN) taucht bei Händlern auf. Das Profil wird
-deshalb pro Modell gepflegt, und in den Einstellungen wählst du dein Modell.
+Offen bleiben: Untergrenze und Schrittweite der Temperatur, ab welcher Stufe „hoch“ beginnt (für die
+60-°C-Regel brauchen wir eine Zahl), Turbo-Funktion. Eine Variante **Omni Cook C2** (3 l,
+7-Zoll-Display) taucht bei Händlern auf. Das Profil wird deshalb pro Modell gepflegt.
 
-**Folgen für den Plan:**
-- Das Artefakt nutzt „Stufe 5“ und „Linkslauf 1“. Bei 20 Vorwärtsstufen kann das am Gerät etwas ganz
-  anderes bedeuten als beim Thermomix (10 Stufen). **Alle Rezeptwerte müssen einmal am echten Gerät
-  geprüft werden**, bevor sie als verlässlich gelten. Dafür bekommt jedes Rezept ein Feld `verified`.
-- Die App ist eine **Begleit-App zum manuellen Modus**. Sie steuert das Gerät nicht, weil keine offene
-  Schnittstelle bekannt ist. Das ist auch ihr Vorteil: Sie funktioniert offline und mit eigenen Rezepten.
-- **Dein Beitrag:** Modell und Handbuch (PDF oder Fotos der Bedienseiten). Damit fülle ich die offenen
-  Zeilen und die Sicherheitsregeln.
+Die Rezepte im Artefakt (Stufe 5, Linkslauf 1, 120 °C, Dampf) passen zu diesen Handbuchwerten.
+Sie gelten trotzdem erst als verlässlich, wenn sie einmal am Gerät gekocht wurden: Jedes Rezept
+bekommt dafür ein Feld `verified`.
 
-Quellen: techadvisor.com (Omni Cook Review), the-ambient.com, china-gadgets.de, howtocookthat.net.
+### 6.2 Direkter Zugriff über WLAN: Ergebnis der früheren Session
+
+**Fazit: Direktsteuerung ist derzeit eine Sackgasse.** Die App bleibt eine Begleit-App zum manuellen
+Modus.
+
+Was beobachtet wurde:
+- Die offizielle App heißt „TOKIT“ (Android-Paket `com.chunmi.tokit.overseas`, Version 1.5.2), Hersteller
+  Chunmi Technology (Shanghai). Sie ist in React Native gebaut und spricht Cloud-Server unter
+  **joyami.com** an. Die Steuerung läuft also über die Hersteller-Cloud, nicht lokal.
+- Für TOKIT/Omni Cook gibt es keine Einträge in MIoT-Spezifikationen, in der Home-Assistant-Integration
+  `xiaomi_miot` oder in Reverse-Engineering-Projekten auf GitHub.
+- Die Android-App wurde per ADB vom Handy kopiert und nur statisch angesehen (Strings, Hosts).
+
+Was nicht ging oder nicht versucht wurde:
+- Den Datenverkehr der App mitzuschneiden hätte bedeutet, ihre Zertifikatsprüfung auszuhebeln. Das hat
+  die Umgebung blockiert, und es wurde nicht durchgeführt. Das Format für Temperatur, Stufe und Zeit
+  in geführten Rezepten ist deshalb unbekannt.
+- Das Gerät selbst wurde nie im Netz gescannt. IP, offene Ports und lokales Protokoll sind unbekannt.
+
+Offener Faden: Eine Anfrage an **service@tokitglobal.com** nach Entwicklerzugang oder Rezept-Import wurde
+als Entwurf geschrieben. Ob sie verschickt und beantwortet wurde, steht nicht in der Session.
+
+### 6.3 Folgen für den Plan
+
+1. **Keine Gerätesteuerung in v1 und v2.** Weder Reverse Engineering des Cloud-Protokolls noch das
+   Aushebeln der Zertifikatsprüfung gehören in den Plan: Das ist rechtlich heikel, würde bei jedem
+   App-Update brechen und hängt an einer fremden Cloud.
+2. **Bewusst offengehaltener Anschluss:** `DeviceSetting` ist so geschnitten, dass ein späterer
+   `DeviceController` (falls TOKIT eine Schnittstelle oder einen Rezept-Import anbietet) die Werte
+   direkt übernehmen könnte. Bis dahin gibt es nur die Anzeige-Implementierung.
+3. **Antwort des Herstellers ist der Hebel.** Kommt ein offizieller Rezept-Import, wird der zum
+   Exportziel der App (eigene Rezepte → TOKIT-App) statt einer Direktsteuerung.
+4. **Ein harmloser Prüfschritt bleibt möglich:** Gerät im Heimnetz suchen (IP über den Router, Port-Scan
+   nur des eigenen Geräts). Das zeigt, ob überhaupt ein lokaler Dienst läuft. Nur sinnvoll, wenn die
+   Herstelleranfrage ins Leere läuft.
+
+Quellen: Handbuch-Auswertung und Netzwerkversuche in der Session „Tokio Omni Fernsteuerung und Rezepte“;
+techadvisor.com (Omni Cook Review), the-ambient.com, china-gadgets.de, howtocookthat.net.
 
 ## 7. Liquid-Glass-Designkonzept
 
@@ -217,3 +254,5 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 4. **Rezeptquelle langfristig:** handkuratiert als JSON oder Import per Claude API. Empfehlung: beides,
    Import ab M6.
 5. **Apple Developer Account / Signing** für Gerätetests und Live Activities nötig.
+6. **Herstelleranfrage an TOKIT:** Wurde sie verschickt? Falls nicht, empfehle ich sie jetzt abzuschicken.
+   Sie ist der einzige saubere Weg zu Import oder Steuerung.
