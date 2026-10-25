@@ -54,14 +54,13 @@ final class RecipeEditorModel {
         recipe.addIngredient(named: "", amount: .measured(100, .gram))
     }
 
-    /// Adds typed or pasted lines like "200 g Rote Linsen" as ingredients, in order.
+    /// Adds typed or pasted lines like "200 g Rote Linsen" as ingredients, in order, as one change.
     func addIngredients(_ lines: [IngredientLine]) {
+        var recipe = recipe
         for line in lines {
-            let id = recipe.addIngredient(named: line.name, amount: line.amount)
-            if let note = line.note, let index = ingredientIndex(id) {
-                recipe.ingredients[index].note = note
-            }
+            recipe.addIngredient(named: line.name, amount: line.amount, note: line.note)
         }
+        self.recipe = recipe
     }
 
     func addStep() -> StepID {

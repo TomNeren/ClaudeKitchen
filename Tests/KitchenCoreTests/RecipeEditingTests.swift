@@ -86,6 +86,7 @@ struct RecipeEditingTests {
         let copy = try #require(duplicated)
         #expect(recipe.steps.map(\.id.rawValue) == ["s1", "s2", copy.rawValue, "s3", "s4", "s5", "s6"])
         #expect(recipe.steps[2].setting == recipe.steps[1].setting && recipe.steps[2].text == recipe.steps[1].text)
+        #expect(recipe.steps[2].ingredientIDs.isEmpty && !recipe.steps[2].freshPot)
         #expect(DeviceProfile.omniCook.validate(recipe).isEmpty)
     }
 
@@ -95,6 +96,6 @@ struct RecipeEditingTests {
         small.maxDuration = .seconds(600)
         #expect(small.quickTemperatures == [60, 80, 90, 100])
         #expect(small.quickDurations.last == .seconds(600))
-        #expect(DeviceProfile.omniCook.quickTemperatures.first == 37)
+        #expect(DeviceProfile.omniCook.quickTemperatures == [60, 80, 90, 100, 120, 160])
     }
 }

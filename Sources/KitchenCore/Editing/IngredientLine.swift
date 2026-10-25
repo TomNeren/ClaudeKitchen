@@ -20,6 +20,10 @@ public struct IngredientLine: Sendable, Equatable {
         while let first = text.first, "-•*–".contains(first) {
             text = String(text.dropFirst()).trimmingCharacters(in: .whitespaces)
         }
+        // Numbered lists: "1. 200 g Mehl", "2) 1 Zwiebel". A decimal like "1.5 kg" has no space after the dot.
+        if let marker = text.range(of: #"^\d+[.)]\s+"#, options: .regularExpression) {
+            text = String(text[marker.upperBound...])
+        }
         var note: String?
         if let open = text.firstIndex(of: "("), let close = text[open...].firstIndex(of: ")") {
             let inner = text[text.index(after: open)..<close].trimmingCharacters(in: .whitespaces)
@@ -34,13 +38,25 @@ public struct IngredientLine: Sendable, Equatable {
         if let first = words.first, let split = splitNumberAndUnit(first) {
             words.replaceSubrange(0...0, with: split)
         }
-        guard let value = number(words[0]) else {
+        guard var value = number(words[0]) else {
             let name = words.joined(separator: " ")
-            let toTaste = ["prise", "etwas", "nach"].contains(words[0].lowercased())
+            let toTaste = toTasteWords.contains(words[0].lowercased())
             return IngredientLine(
                 name: toTaste ? strippedToTaste(words) : name, amount: .toTaste, note: note)
         }
         words.removeFirst()
+        // "1 ½ TL", "1 1/2 EL": a fraction after the whole number belongs to it.
+        if value == value.rounded(), let next = words.first, let fraction = number(next), fraction < 1 {
+            value += fraction
+            words.removeFirst()
+        }
+        // "1 Prise Salz", "1 Msp. Muskat" are to taste.
+        if let next = words.first,
+            toTasteWords.contains(next.lowercased().trimmingCharacters(in: .punctuationCharacters))
+        {
+            let name = words.dropFirst().joined(separator: " ")
+            return name.isEmpty ? nil : IngredientLine(name: name, amount: .toTaste, note: note)
+        }
         var amount = Amount.measured(value, .piece)
         if let unitWord = words.first, let (unit, factor) = unit(unitWord) {
             amount = .measured(value * factor, unit)
@@ -56,11 +72,16 @@ public struct IngredientLine: Sendable, Equatable {
         text.split(whereSeparator: \.isNewline).compactMap { parse(String($0)) }
     }
 
+    private static let toTasteWords: Set = ["prise", "prisen", "etwas", "nach", "msp", "messerspitze"]
+
     private static let fractions: [Character: Double] = ["½": 0.5, "¼": 0.25, "¾": 0.75, "⅓": 1.0 / 3, "⅔": 2.0 / 3]
 
     /// "200", "1,5", "1.5", "½", "1½", "1/2".
     static func number(_ word: String) -> Double? {
-        let text = word.replacingOccurrences(of: ",", with: ".")
+        // "1.000" is German for a thousand; only then do dots group digits.
+        let grouped = word.range(of: #"^\d{1,3}(\.\d{3})+$"#, options: .regularExpression) != nil
+        let text = (grouped ? word.replacingOccurrences(of: ".", with: "") : word)
+            .replacingOccurrences(of: ",", with: ".")
         if let value = Double(text), value > 0 { return value }
         if let last = text.last, let fraction = fractions[last] {
             let whole = text.dropLast()

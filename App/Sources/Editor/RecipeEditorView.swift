@@ -111,6 +111,7 @@ private struct IngredientSection: View {
     let onAdd: () -> Void
     @State private var quickLine = ""
     @State private var addedCount = 0
+    @State private var rejectedCount = 0
     @State private var isPasting = false
     @FocusState private var focusesQuickLine: Bool
 
@@ -144,6 +145,7 @@ private struct IngredientSection: View {
                     .onSubmit(addQuickLine)
             }
             .sensoryFeedback(.success, trigger: addedCount)
+            .sensoryFeedback(.warning, trigger: rejectedCount)
             Button("Liste einfügen", systemImage: "list.bullet.clipboard") { isPasting = true }
             Button("Zutat mit Details anlegen", systemImage: "square.and.pencil", action: onAdd)
         } header: {
@@ -156,13 +158,17 @@ private struct IngredientSection: View {
         }
     }
 
+    /// A line that cannot be read, such as "200 g" without a name, stays in the field to be completed.
     private func addQuickLine() {
-        if let line = IngredientLine.parse(quickLine) {
-            model.addIngredients([line])
-            addedCount += 1
+        defer { focusesQuickLine = true }
+        guard !quickLine.trimmingCharacters(in: .whitespaces).isEmpty else { return }
+        guard let line = IngredientLine.parse(quickLine) else {
+            rejectedCount += 1
+            return
         }
+        model.addIngredients([line])
+        addedCount += 1
         quickLine = ""
-        focusesQuickLine = true
     }
 }
 
@@ -328,8 +334,9 @@ private struct CheckSection: View {
 }
 
 extension View {
-    /// Phone keyboard comfort for the editor forms: a Fertig button above number pads, and dragging the form
-    /// lowers the keyboard.
+    /// Keyboard comfort for every editor form: dragging the form lowers the keyboard, and a Fertig button sits above
+    /// it, which matters most for number pads and multi-line text that have no return key to close them. Each form
+    /// carries its own; SwiftUI shows only the toolbar of the form in view.
     func editorKeyboard() -> some View {
         scrollDismissesKeyboard(.interactively)
             .toolbar {

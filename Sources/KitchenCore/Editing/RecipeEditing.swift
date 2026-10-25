@@ -22,9 +22,11 @@ extension DeviceProfile {
     /// One minute, or less on a device that cannot run that long.
     public var suggestedDuration: Duration { min(.seconds(60), maxDuration) }
 
-    /// One-tap temperatures for the editor: common cooking temperatures the device can do.
+    /// One-tap temperatures for the editor: common cooking temperatures the dial can be set to.
     public var quickTemperatures: [Int] {
-        [37, 60, 80, 90, 100, 120, 160].filter(temperatureRange.contains)
+        [60, 80, 90, 100, 120, 160].filter {
+            temperatureRange.contains($0) && ($0 - temperatureRange.lowerBound) % temperatureStep == 0
+        }
     }
 
     /// One-tap run times for the editor, up to the longest the device allows.
@@ -60,10 +62,12 @@ extension Recipe {
 
     /// Adds an ingredient with an id derived from `name` and returns that id.
     @discardableResult
-    public mutating func addIngredient(named name: String, amount: Amount = .toTaste) -> IngredientID {
+    public mutating func addIngredient(named name: String, amount: Amount = .toTaste, note: String? = nil)
+        -> IngredientID
+    {
         var taken = Set(ingredients.map(\.id.rawValue))
         let id = IngredientID(Slug.unique(name, fallback: "zutat", taken: &taken))
-        ingredients.append(Ingredient(id: id, name: name, amount: amount))
+        ingredients.append(Ingredient(id: id, name: name, amount: amount, note: note))
         return id
     }
 
@@ -89,7 +93,8 @@ extension Recipe {
         return step.id
     }
 
-    /// Inserts a copy of the step right after it, with a free id, and returns that id.
+    /// Inserts a copy of the step right after it, with a free id, and returns that id. The copy adds no
+    /// ingredients and keeps the pot: it is another round of the same work, not a second batch.
     @discardableResult
     public mutating func duplicateStep(_ id: StepID) -> StepID? {
         guard let index = steps.firstIndex(where: { $0.id == id }) else { return nil }
@@ -97,8 +102,7 @@ extension Recipe {
         let original = steps[index]
         steps[index + 1] = Step(
             id: copyID, phase: original.phase, text: original.text, note: original.note,
-            ingredientIDs: original.ingredientIDs, setting: original.setting, accessory: original.accessory,
-            freshPot: original.freshPot)
+            setting: original.setting, accessory: original.accessory)
         return copyID
     }
 

@@ -192,8 +192,9 @@ private struct DeviceSection: View {
             .pickerStyle(.segmented)
             if let current = step.setting?.rotation {
                 let range = isReverse(current) ? profile.reverseSpeeds : profile.forwardSpeeds
+                // Every speed fits as one tap, so no stepper.
+                LabeledContent("Stufe", value: "\(current.speed)")
                 QuickPicks(values: Array(range), selection: speedBinding(current)) { "\($0)" }
-                    .accessibilityLabel("Stufe")
             }
         }
     }
@@ -287,8 +288,8 @@ private struct DeviceSection: View {
     }
 }
 
-/// A row of large one-tap values above a stepper, so common settings need one tap instead of many. The current
-/// value is highlighted; the row scrolls sideways when it does not fit.
+/// A row of large one-tap values, so common settings need one tap instead of many; a stepper next to it handles
+/// values in between. The current value is highlighted; the row scrolls sideways when it does not fit.
 private struct QuickPicks<Value: Hashable>: View {
     let values: [Value]
     @Binding var selection: Value

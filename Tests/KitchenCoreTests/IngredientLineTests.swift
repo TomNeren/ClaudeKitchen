@@ -20,6 +20,13 @@ struct IngredientLineTests {
         ("Salz", IngredientLine(name: "Salz", amount: .toTaste)),
         ("Prise Muskat", IngredientLine(name: "Muskat", amount: .toTaste)),
         ("nach Geschmack Pfeffer", IngredientLine(name: "Pfeffer", amount: .toTaste)),
+        ("1 Prise Salz", IngredientLine(name: "Salz", amount: .toTaste)),
+        ("1 Msp. Muskat", IngredientLine(name: "Muskat", amount: .toTaste)),
+        ("1 ½ TL Kurkuma", IngredientLine(name: "Kurkuma", amount: .measured(1.5, .teaspoon))),
+        ("1 1/2 EL Öl", IngredientLine(name: "Öl", amount: .measured(1.5, .tablespoon))),
+        ("1.000 g Mehl", IngredientLine(name: "Mehl", amount: .measured(1000, .gram))),
+        ("1. 200 g Mehl", IngredientLine(name: "Mehl", amount: .measured(200, .gram))),
+        ("2) 1 Zwiebel", IngredientLine(name: "Zwiebel", amount: .measured(1, .piece))),
     ])
     func readsCommonNotations(line: String, expected: IngredientLine) {
         #expect(IngredientLine.parse(line) == expected)
