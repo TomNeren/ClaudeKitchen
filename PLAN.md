@@ -293,7 +293,7 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M3 | Kochmodus mit Gerätekonsole, Timer, Bildschirm-wach | Erledigt (PR #5): CI grün, 47 Tests; Durchkochen offen laut Geräte-Prüfliste |
 | M4 | Hintergrund-Timer, Mitteilungen, Live Activity mit Knöpfen, App Intents für Siri (Sprachmodus Schicht 1) | Erledigt: M4a Timer per AlarmKit (PR #6), M4b/M4c Live Activity mit Schritt-Knöpfen und Siri (PR #7); 53 Tests; Bedienung offen laut Geräte-Prüfliste |
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion, App-Icon | Erledigt (PR #8); Gefühl und Lesbarkeit offen laut Geräte-Prüfliste |
-| M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Importiertes Rezept besteht Validierung |
+| M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | In Arbeit (PR #9): Import aus Text oder Link, Prüfung, Speichern, Löschen; ein Editor folgt bei Bedarf |
 | M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Ein Rezept komplett per Sprache durchkochbar |
 
 ## 9. Entscheidungen
@@ -317,6 +317,8 @@ Getroffen (2026-10-25):
 15. (Loop, umkehrbar) **Motion**: alle Animationen sind tippgesteuert und daher ohne Nachschwingen (`bounce: 0`), 0,3 bis 0,4 s. Ausnahme: die Timer-Ziffern mit 0,25 s, weil sie innerhalb jeder Sekunde zur Ruhe kommen müssen. Wischen, Siri und Live-Activity-Knöpfe wechseln Schritte ohne eigene Animation; der Wisch-Pager behält die Systemfeder.
 16. (Loop, umkehrbar) **iPad**: Kochmodus mit Schritt links und Bedienleiste rechts (40 % der Breite, höchstens 400 pt) in regulärer Breite; ein gemeinsamer Ansichtsbaum für alle Größen.
 17. **Rezept-Import über die Claude API mit API-Schlüssel** (deine Entscheidung). Ein Claude-Abo ist für eigene Apps nicht zugelassen, das Agent SDK läuft nicht auf iOS. Die App ruft die Messages API per HTTPS auf (kein offizielles Swift-SDK), Modell Claude Opus 5.5 mit niedrigem Aufwand, Antwort als festes JSON-Schema, danach `DeviceProfile.validate`. Schlüssel nur in der Keychain.
+18. (Loop, umkehrbar) **Eigene Rezepte als JSON-Dateien** in Application Support, im selben Format wie die mitgelieferten, statt SwiftData. Einfacher, ohne Migrationen, jederzeit exportierbar.
+19. (Loop, umkehrbar) **Kein Rezept-Editor in M6.** Importierte Rezepte lassen sich ansehen, kochen und löschen; Ändern heißt vorerst neu importieren. Ein Editor kommt, wenn du ihn vermisst.
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
@@ -382,3 +384,6 @@ Geräte-Prüfliste. Der Loop endet, wenn M7 gemergt ist oder alles Verbleibende 
 - [ ] M5: iPad quer und hoch, auch im Split View: Kochmodus mit Leiste rechts; Größenwechsel bricht den Timer nicht ab
 - [ ] M5: Dynamic Type in Bedienungshilfen-Größen: Rezeptkopf wächst mit, Konsolen-Kacheln stehen untereinander
 - [ ] M5: VoiceOver durch Bibliothek, Rezeptansicht und Kochmodus
+- [ ] M6: API-Schlüssel in den Einstellungen eintragen und wieder entfernen
+- [ ] M6: Import aus kopiertem Text und aus einem Link (https), Vorschau mit Prüfung, Speichern; eigenes Rezept erscheint oben in der Bibliothek, Löschen per langem Druck
+- [ ] M6: Werte eines importierten Rezepts einmal am Gerät gegenprüfen
