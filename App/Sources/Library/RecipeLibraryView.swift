@@ -5,6 +5,8 @@ import SwiftUI
 struct RecipeLibraryView: View {
     @State private var model = RecipeLibraryModel()
     @State private var path: [Route] = []
+    @State private var isImporting = false
+    @State private var isShowingSettings = false
     @Namespace private var transition
 
     init() {}
@@ -20,6 +22,13 @@ struct RecipeLibraryView: View {
                                 .matchedTransitionSource(id: recipe.id, in: transition)
                         }
                         .buttonStyle(.plain)
+                        .contextMenu {
+                            if model.isOwn(recipe.id) {
+                                Button("Löschen", systemImage: "trash", role: .destructive) {
+                                    Task { await model.delete(recipe.id) }
+                                }
+                            }
+                        }
                     }
                 }
                 .padding(.horizontal, 16)
@@ -33,6 +42,21 @@ struct RecipeLibraryView: View {
             .navigationDestination(for: Route.self) { route in
                 destination(for: route)
             }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Einstellungen", systemImage: "gearshape") { isShowingSettings = true }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Rezept importieren", systemImage: "plus") { isImporting = true }
+                }
+            }
+            .sheet(isPresented: $isImporting) {
+                ImportRecipeView { Task { await model.loadOwn() } }
+            }
+            .sheet(isPresented: $isShowingSettings) {
+                SettingsView()
+            }
+            .task { await model.loadOwn() }
         }
     }
 
