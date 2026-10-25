@@ -162,23 +162,12 @@ private struct WarningList: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             ForEach(issues, id: \.self) { issue in
-                Label(text(for: issue), systemImage: "exclamationmark.triangle.fill")
+                Label(IssueText.text(for: issue), systemImage: "exclamationmark.triangle.fill")
                     .font(.subheadline)
                     .foregroundStyle(Palette.accent)
             }
         }
         .padding(.horizontal, 16)
-    }
-
-    private func text(for issue: ValidationIssue) -> String {
-        switch issue.kind {
-        case .fillLevelExceeded(let liters):
-            return "Etwa \(liters.formatted(.number.precision(.fractionLength(1)))) l: über der Füllmarke."
-        case .accessoryNotOwned(let accessory):
-            return "Braucht Zubehör, das nicht im Bestand ist: \(accessory.displayName)."
-        default:
-            return "Hinweis zum Rezept."
-        }
     }
 }
 

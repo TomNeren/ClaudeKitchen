@@ -25,6 +25,39 @@ enum CookingAnswers {
         }
     }
 
+    /// "In diesen Schritt kommen: 200 Gramm Kichererbsen, 1 Zwiebel."
+    static func ingredients(_ items: [(ingredient: Ingredient, amount: Amount)]) -> String {
+        guard !items.isEmpty else { return "In diesem Schritt kommt nichts dazu." }
+        let parts = items.map { "\(spoken($0.amount)) \($0.ingredient.name)" }
+        return "In diesen Schritt kommen: \(parts.joined(separator: ", "))."
+    }
+
+    /// "Statt Lachsfilet geht 3 Stück Kabeljaufilet, 2 Minuten kürzer dämpfen. Oder 3 Stück Lachsforelle."
+    static func substitutions(
+        for ingredient: Ingredient, _ items: [(substitute: Substitute, amount: Amount)]
+    ) -> String {
+        let parts = items.map { item in
+            var part = "\(spoken(item.amount)) \(item.substitute.name)"
+            if let note = item.substitute.note { part += ", \(note)" }
+            return part
+        }
+        return "Statt \(ingredient.name) geht \(parts.joined(separator: ". Oder "))."
+    }
+
+    /// An amount for reading aloud: "200 Gramm", "1 Stück", "2 Esslöffel", "nach Geschmack".
+    static func spoken(_ amount: Amount) -> String {
+        guard case .measured(let value, let unit) = amount else { return AmountFormatter.toTasteText }
+        let word =
+            switch unit {
+            case .gram: "Gramm"
+            case .piece: "Stück"
+            case .clove: AmountFormatter.rounded(value, unit: unit) == 1 ? "Zehe" : "Zehen"
+            case .teaspoon: "Teelöffel"
+            case .tablespoon: "Esslöffel"
+            }
+        return "\(AmountFormatter.quantity(value, unit: unit)) \(word)"
+    }
+
     static func spokenParts(_ setting: DeviceSetting) -> [String] {
         var parts: [String] = []
         if let program = SettingFormatter.program(setting.program) {

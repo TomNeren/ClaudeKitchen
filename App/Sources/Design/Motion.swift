@@ -16,4 +16,6 @@ enum Motion {
     static let stepCrossFade: Animation = .easeInOut(duration: 0.4)
     /// Countdown digits rolling once a second: must settle well inside the second.
     static let timerTick: Animation = .spring(duration: 0.25, bounce: 0)
+    /// The voice status pill: appears, changes text and disappears as a fade, so it never pulls the eye from the step.
+    static let voiceStatus: Animation = .easeInOut(duration: 0.3)
 }

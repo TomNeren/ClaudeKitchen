@@ -4,7 +4,7 @@ public typealias FoodID = Identifier<Food>
 public typealias FoodGroupID = Identifier<FoodGroup>
 
 /// What an ingredient does in a dish. The healthy rewrite never swaps or rescales seasonings or aromatics
-/// (PLAN.md, decision 20); salt only gets a hint.
+/// (PLAN.md, decision 26); salt only gets a hint.
 public enum FoodRole: String, Sendable, Hashable, Codable, CaseIterable {
     /// Spices, herbs, sauces and acids that define the dish's flavour.
     case seasoning

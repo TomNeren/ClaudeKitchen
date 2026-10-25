@@ -45,6 +45,8 @@ targets:
       path: Sources/Info.plist
       properties:
         NSAlarmKitUsageDescription: Damit dein Kochtimer auch klingelt, wenn das iPhone gesperrt oder stumm ist.
+        NSMicrophoneUsageDescription: Im Kochmodus hörst du auf Zuruf wie „weiter“, damit du das iPhone nicht anfassen musst.
+        NSSpeechRecognitionUsageDescription: Deine Sprachbefehle im Kochmodus werden auf dem iPhone in Text umgewandelt.
     scheme: {}
 
   ClaudeKitchenWidgets:
