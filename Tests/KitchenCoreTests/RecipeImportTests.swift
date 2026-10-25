@@ -18,11 +18,11 @@ struct RecipeImportTests {
             .init(
                 phase: "Zerkleinern", text: "Zwiebel 5 Sek zerkleinern.", note: nil, ingredientIndexes: [0, 4],
                 setting: .init(program: "manual", celsius: nil, steam: false, speed: 5, reverse: false, seconds: 5),
-                accessory: nil),
+                accessory: nil, freshPot: false),
             .init(
                 phase: "Köcheln", text: "Tomaten und Brühe zugeben, köcheln.", note: nil, ingredientIndexes: [1, 2, 3],
                 setting: .init(program: "manual", celsius: 100, steam: false, speed: 1, reverse: true, seconds: 900),
-                accessory: nil),
+                accessory: nil, freshPot: false),
         ])
 
     @Test func convertsADraftIntoAValidRecipe() throws {
@@ -79,11 +79,35 @@ struct RecipeImportTests {
         #expect(ClaudeRecipeImport.headers["anthropic-beta"] == "server-side-fallback-2026-07-01")
     }
 
-    @Test func schemaRequiresEveryPropertyAndForbidsExtras() throws {
-        let schema = ClaudeRecipeImport.schema
-        #expect(schema["additionalProperties"] as? Bool == false)
-        #expect(
-            schema["required"] as? [String] == ["baseServings", "ingredients", "name", "steps", "tag", "totalMinutes"])
+    @Test func schemaListsPropertiesInWritingOrderAndRequiresAll() throws {
+        let members = try #require(ClaudeRecipeImport.schema.members)
+        let properties = try #require(members.first { $0.0 == "properties" }?.1.members)
+        #expect(properties.map(\.0) == ["name", "tag", "baseServings", "totalMinutes", "ingredients", "steps"])
+        #expect(members.first { $0.0 == "additionalProperties" }?.1 == .bool(false))
+        #expect(members.first { $0.0 == "required" }?.1 == .array(properties.map { .string($0.0) }))
+        let body = try ClaudeRecipeImport.requestBody(recipeText: "x", profile: .omniCook)
+        let json = String(decoding: body, as: UTF8.self)
+        let phase = try #require(json.range(of: "\"phase\""))
+        let freshPot = try #require(json.range(of: "\"freshPot\""))
+        #expect(phase.lowerBound < freshPot.lowerBound)
+    }
+
+    @Test func promptSaysIndexesCountFromZero() {
+        let prompt = ClaudeRecipeImport.systemPrompt(for: .omniCook)
+        #expect(prompt.contains("gezählt ab 0"))
+        #expect(prompt.contains("g, Stk, Zehen, TL, EL, ml"))
+    }
+
+    @Test func countWithoutUnitIsPieces() throws {
+        var eggs = draft
+        eggs.ingredients[0] = .init(name: "Eier", quantity: 3, unit: nil, note: nil, scales: true)
+        #expect(try eggs.recipe(id: "x").ingredient("eier")?.amount == .measured(3, .piece))
+    }
+
+    @Test func freshPotCarriesOver() throws {
+        var curry = draft
+        curry.steps[1].freshPot = true
+        #expect(try curry.recipe(id: "x").steps[1].freshPot)
     }
 
     @Test func readsTheRecipeFromASuccessfulResponse() throws {
@@ -93,6 +117,17 @@ struct RecipeImportTests {
             "content": [["type": "thinking", "thinking": ""], ["type": "text", "text": recipeJSON]],
         ])
         #expect(try ClaudeRecipeImport.draft(fromResponse: response) == draft)
+        #expect(try ClaudeRecipeImport.recipe(fromResponse: response, id: "neu").id == "neu")
+    }
+
+    @Test func gatewayErrorsBecomeHTTPStatus() {
+        #expect(throws: ClaudeRecipeImport.ResponseError.http(status: 502)) {
+            try ClaudeRecipeImport.draft(fromResponse: Data("<html>Bad Gateway</html>".utf8), status: 502)
+        }
+        #expect(throws: ClaudeRecipeImport.ResponseError.missingRecipe) {
+            try ClaudeRecipeImport.draft(
+                fromResponse: Data(#"{"stop_reason":"end_turn","content":[{"type":"text","text":"kein json"}]}"#.utf8))
+        }
     }
 
     @Test(arguments: [

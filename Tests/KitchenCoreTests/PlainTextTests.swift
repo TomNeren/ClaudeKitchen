@@ -16,6 +16,17 @@ struct PlainTextTests {
                 == "Linsen&shy;suppe\n200 g rote Linsen & 1 Zwiebel\nSchritt 1: bei 100°C köcheln\nGrüße")
     }
 
+    @Test func decodesNumericEntitiesAndAmpersandLast() {
+        #expect(PlainText.decodeEntities("K&#228;se &#xFC;ber &amp;lt;") == "Käse über &lt;")
+    }
+
+    @Test func keepsStructuredRecipeDataInFront() {
+        let html = """
+            <p>Werbung</p><script type="application/ld+json">{"@type":"Recipe","name":"Suppe"}</script>
+            """
+        #expect(PlainText.fromHTML(html) == #"{"@type":"Recipe","name":"Suppe"}"# + "\nWerbung")
+    }
+
     @Test func cutsVeryLongPages() {
         let html = String(repeating: "<p>Tomate</p>", count: 10_000)
         #expect(PlainText.fromHTML(html).count == PlainText.maxCharacters)

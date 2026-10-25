@@ -24,14 +24,21 @@ enum APIKeyStore {
         return String(data: data, encoding: .utf8)
     }
 
-    static var hasKey: Bool { load() != nil }
+    /// Whether a key is stored, without reading the secret itself.
+    static var hasKey: Bool {
+        SecItemCopyMatching(query as CFDictionary, nil) == errSecSuccess
+    }
 
-    /// Saves `key`, replacing an earlier one. Readable only while the device is unlocked, never synced.
+    /// Saves `key`, updating an existing entry in place so a failed write never loses the old key.
+    /// Readable only while the device is unlocked, never synced.
     @discardableResult
     static func save(_ key: String) -> Bool {
-        delete()
+        let data = Data(key.utf8)
+        let update = SecItemUpdate(query as CFDictionary, [kSecValueData as String: data] as CFDictionary)
+        if update == errSecSuccess { return true }
+        guard update == errSecItemNotFound else { return false }
         var item = query
-        item[kSecValueData as String] = Data(key.utf8)
+        item[kSecValueData as String] = data
         item[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         return SecItemAdd(item as CFDictionary, nil) == errSecSuccess
     }

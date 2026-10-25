@@ -22,15 +22,24 @@ struct ImportRecipeView: View {
                         Button("Abbrechen", role: .cancel) { dismiss() }
                     }
                     ToolbarItem(placement: .confirmationAction) { primaryAction }
+                    if case .preview = model.phase {
+                        ToolbarItem(placement: .bottomBar) {
+                            Button("Zurück zum Text", systemImage: "pencil") { model.edit() }
+                        }
+                    }
                 }
         }
+        .onAppear { model.refreshKey() }
+        // Closing the sheet stops a running conversion, so no paid request runs on unseen.
+        .onDisappear { model.cancel() }
     }
 
     @ViewBuilder
     private var content: some View {
         switch model.phase {
         case .editing:
-            EditingForm(model: model)
+            EditingForm(
+                text: $model.text, link: $model.link, hasKey: model.hasKey, linkIsInsecure: model.linkIsInsecure)
         case .working(let label):
             ProgressView(label)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -61,18 +70,21 @@ struct ImportRecipeView: View {
             }
             .disabled(!model.canSave)
         default:
-            Button("Umwandeln") { Task { await model.convert() } }
-                .disabled(!model.canConvert || !model.hasKey)
+            Button("Umwandeln") { model.convert() }
+                .disabled(!model.canConvert)
         }
     }
 }
 
 private struct EditingForm: View {
-    @Bindable var model: ImportRecipeModel
+    @Binding var text: String
+    @Binding var link: String
+    let hasKey: Bool
+    let linkIsInsecure: Bool
 
     var body: some View {
         Form {
-            if !model.hasKey {
+            if !hasKey {
                 Section {
                     Label(
                         "Für den Import brauchst du einen API-Schlüssel von Anthropic. Trag ihn in den Einstellungen ein.",
@@ -80,14 +92,19 @@ private struct EditingForm: View {
                 }
             }
             Section("Link") {
-                TextField("https://…", text: $model.link)
+                TextField("https://…", text: $link)
                     .keyboardType(.URL)
                     .textContentType(.URL)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
+                if linkIsInsecure {
+                    Text("Nur https-Links lassen sich laden.")
+                        .font(.footnote)
+                        .foregroundStyle(Palette.accent)
+                }
             }
             Section {
-                TextEditor(text: $model.text)
+                TextEditor(text: $text)
                     .frame(minHeight: 240)
             } header: {
                 Text("Oder Rezepttext")
@@ -162,6 +179,18 @@ private struct ImportPreview: View {
                     .accessibilityElement(children: .combine)
                 }
             }
+        }
+    }
+}
+
+#Preview("Eingabe") {
+    ImportRecipeView(model: ImportRecipeModel(hasKey: true)) {}
+}
+
+#Preview("Vorschau") {
+    if let recipe = Recipe.fixtures.first {
+        NavigationStack {
+            ImportPreview(recipe: recipe, issues: DeviceProfile.omniCook.validate(recipe, servings: 12))
         }
     }
 }

@@ -1,44 +1,47 @@
 import Foundation
 
 /// A recipe as the import model returns it, before ids are assigned and the device check runs.
-/// Mirrors `RecipeImportSchema` exactly; optional values arrive as JSON `null`.
-public struct RecipeDraft: Sendable, Equatable, Codable {
-    public struct Ingredient: Sendable, Equatable, Codable {
-        public var name: String
-        public var quantity: Double?
-        /// One of `g`, `ml`, `Stk`, `Zehen`, `TL`, `EL`, or null for "to taste".
-        public var unit: String?
-        public var note: String?
-        public var scales: Bool
+/// Mirrors `ClaudeRecipeImport.schema` exactly; optional values arrive as JSON `null`. Internal: the public API is
+/// `ClaudeRecipeImport.recipe(fromResponse:id:)`, which hands out a `Recipe`.
+struct RecipeDraft: Sendable, Equatable, Codable {
+    struct Ingredient: Sendable, Equatable, Codable {
+        var name: String
+        var quantity: Double?
+        /// A `MeasureUnit` raw value or `ml`; null with a quantity means pieces, null without one "to taste".
+        var unit: String?
+        var note: String?
+        var scales: Bool
     }
 
-    public struct Setting: Sendable, Equatable, Codable {
+    struct Setting: Sendable, Equatable, Codable {
         /// `manual`, `steam`, `knead`, `sousVide`, `yogurt` or `weigh`.
-        public var program: String
-        public var celsius: Int?
-        public var steam: Bool
-        public var speed: Int?
-        public var reverse: Bool
-        public var seconds: Int?
+        var program: String
+        var celsius: Int?
+        var steam: Bool
+        var speed: Int?
+        var reverse: Bool
+        var seconds: Int?
     }
 
-    public struct Step: Sendable, Equatable, Codable {
-        public var phase: String
-        public var text: String
-        public var note: String?
+    struct Step: Sendable, Equatable, Codable {
+        var phase: String
+        var text: String
+        var note: String?
         /// Indexes into `ingredients` of what goes in at this step.
-        public var ingredientIndexes: [Int]
-        public var setting: Setting?
+        var ingredientIndexes: [Int]
+        var setting: Setting?
         /// `steamer`, `basket`, `whisk` or null.
-        public var accessory: String?
+        var accessory: String?
+        /// True when this step starts over in an empty, clean pot.
+        var freshPot: Bool
     }
 
-    public var name: String
-    public var tag: String
-    public var baseServings: Int
-    public var totalMinutes: Int
-    public var ingredients: [Ingredient]
-    public var steps: [Step]
+    var name: String
+    var tag: String
+    var baseServings: Int
+    var totalMinutes: Int
+    var ingredients: [Ingredient]
+    var steps: [Step]
 }
 
 /// Why a draft could not become a recipe.
@@ -52,7 +55,7 @@ public enum RecipeDraftError: Error, Equatable {
 extension RecipeDraft {
     /// Turns the draft into a recipe with generated ids. Millilitres count as grams (water-like density), which is
     /// how the fill estimate treats them anyway. The result still has to pass `DeviceProfile.validate`.
-    public func recipe(id: RecipeID) throws -> Recipe {
+    func recipe(id: RecipeID) throws -> Recipe {
         var ingredientIDs: [IngredientID] = []
         var usedIDs: Set<String> = []
         let ingredients = try self.ingredients.map { draft -> KitchenCore.Ingredient in
@@ -79,7 +82,7 @@ extension RecipeDraft {
                 id: StepID("s\(number)"), phase: draft.phase, text: draft.text, note: draft.note,
                 ingredientIDs: stepIngredients,
                 setting: try draft.setting.map { try Self.setting(of: $0, step: number) },
-                accessory: accessory)
+                accessory: accessory, freshPot: draft.freshPot)
         }
         return Recipe(
             id: id, name: name, tag: tag, baseServings: baseServings, totalMinutes: totalMinutes,
@@ -87,7 +90,9 @@ extension RecipeDraft {
     }
 
     private static func amount(of ingredient: Ingredient) throws -> Amount {
-        guard let quantity = ingredient.quantity, let unit = ingredient.unit else { return .toTaste }
+        guard let quantity = ingredient.quantity else { return .toTaste }
+        // A count without a unit ("3 Eier") is pieces, not "to taste".
+        guard let unit = ingredient.unit else { return .measured(quantity, .piece) }
         if unit == "ml" { return .measured(quantity, .gram) }
         guard let measure = MeasureUnit(rawValue: unit) else {
             throw RecipeDraftError.unknownUnit(ingredient: ingredient.name, unit: unit)

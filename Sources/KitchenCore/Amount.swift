@@ -1,7 +1,7 @@
 import Foundation
 
 /// A unit an ingredient is measured in.
-public enum MeasureUnit: String, Sendable, Hashable, Codable {
+public enum MeasureUnit: String, Sendable, Hashable, Codable, CaseIterable {
     case gram = "g"
     case piece = "Stk"
     case clove = "Zehen"
