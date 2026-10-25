@@ -16,7 +16,7 @@ final class CookingScreenModel {
 
     init(
         recipe: Recipe, servings: Int, profile: DeviceProfile = .omniCook,
-        alarms: any AlarmScheduler = SystemAlarmScheduler()
+        alarms: any AlarmScheduler = SystemAlarmScheduler.shared
     ) {
         session = CookingSession(recipe: recipe, servings: servings, servingsRange: profile.servingsRange(for: recipe))
         now = clock.now
@@ -36,8 +36,23 @@ final class CookingScreenModel {
     func tick() {
         guard session.isTimerRunning else { return }
         now = clock.now
+        let finished = session.finishedTimerCount
         session.send(.tick(now))
-        syncAlarm()
+        if session.finishedTimerCount != finished {
+            syncAlarm()
+        }
+    }
+
+    /// Leaving the cooking mode removes the timer, unless it already rang: then it rings until the cook stops it.
+    func end() {
+        if case .finished = session.alarm?.phase { return }
+        appliedAlarm = nil
+        let previous = alarmUpdate
+        let alarms = self.alarms
+        alarmUpdate = Task {
+            await previous?.value
+            await alarms.apply(nil)
+        }
     }
 
     /// Ticks four times a second while a timer runs and idles otherwise. Cancelled with the view's `.task`.

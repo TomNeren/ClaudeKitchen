@@ -62,7 +62,8 @@ private struct CountdownText: View {
     var body: some View {
         switch mode {
         case .countdown(let countdown):
-            Text(timerInterval: Date.now...countdown.fireDate, countsDown: true)
+            // A plain timer style counts down to the date and cannot trap on a fire date in the past.
+            Text(countdown.fireDate, style: .timer)
                 .monospacedDigit()
                 .multilineTextAlignment(.trailing)
         case .paused:

@@ -367,4 +367,5 @@ Geräte-Prüfliste. Der Loop endet, wenn M7 gemergt ist oder alles Verbleibende 
 - [ ] M3: Timer läuft nach App-Wechsel richtig weiter (Mitteilung im Hintergrund erst ab M4)
 - [ ] M4a: Erlaubnis-Abfrage für Alarme beim ersten Timer-Start
 - [ ] M4a: Timer klingelt bei gesperrtem iPhone und im Stumm-Modus; Countdown auf Sperrbildschirm und in der Dynamic Island
-- [ ] M4a: Pause in der App pausiert den Countdown auf dem Sperrbildschirm; Zurücksetzen entfernt ihn
+- [ ] M4a: Pause in der App nimmt den Countdown vom Sperrbildschirm, Fortsetzen zeigt ihn wieder; Zurücksetzen und Verlassen des Kochmodus entfernen ihn
+- [ ] M4a: Ein abgelaufener Alarm klingelt weiter, auch wenn du den Kochmodus verlässt, bis du ihn stoppst

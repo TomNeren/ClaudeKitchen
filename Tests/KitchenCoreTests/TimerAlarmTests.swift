@@ -31,19 +31,20 @@ struct TimerAlarmTests {
         #expect(alarm?.stepNumber == 2)
         #expect(alarm?.stepPhase == "Köcheln")
         #expect(alarm?.recipeName == "Linsen")
-        #expect(alarm?.totalDuration == .seconds(600))
     }
 
-    @Test func pauseKeepsTheAlarmPausedAndFinishOrResetRemovesIt() {
+    @Test func pausedAndFinishedTimersSayWhatHappenedAndResetRemovesTheAlarm() {
         var session = CookingSession(recipe: recipe)
         session.send(.next)
         session.send(.startTimer(at: start))
         session.send(.pauseTimer(at: start + .seconds(100)))
-        #expect(session.alarm?.phase == .paused(remaining: .seconds(500)))
+        #expect(session.alarm?.phase == .paused)
         session.send(.resetTimer)
         #expect(session.alarm == nil)
         session.send(.startTimer(at: start))
         session.send(.tick(start + .seconds(600)))
+        #expect(session.alarm?.phase == .finished)
+        session.send(.next)
         #expect(session.alarm == nil)
     }
 }

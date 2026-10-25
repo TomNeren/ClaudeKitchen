@@ -4,8 +4,12 @@ import Foundation
 /// background or the phone on silent. The app layer turns this into a system alarm.
 public struct TimerAlarm: Sendable, Equatable {
     public enum Phase: Sendable, Equatable {
+        /// Counting down to `endsAt`: the system alarm must be scheduled for that instant.
         case running(endsAt: ContinuousClock.Instant)
-        case paused(remaining: Duration)
+        /// Paused: the system alarm must not ring.
+        case paused
+        /// Ran out: the system alarm rings and keeps ringing until the cook stops it, so leave it alone.
+        case finished
     }
 
     public var phase: Phase
@@ -15,32 +19,31 @@ public struct TimerAlarm: Sendable, Equatable {
     public var stepNumber: Int
     /// Phase label of that step, for example "Köcheln".
     public var stepPhase: String
-    /// The timer's full length, for the countdown display.
-    public var totalDuration: Duration
 }
 
-/// Where the system alarm lives. Implemented in the app with AlarmKit; tests use a recorder.
+/// Where the system alarm lives. Implemented in the app with AlarmKit; previews use a no-op.
 public protocol AlarmScheduler: Sendable {
-    /// Makes the system hold exactly `alarm`, replacing or removing any earlier one.
+    /// Makes the system hold what `alarm` describes. `nil` means no timer: remove any alarm, ringing or not.
     func apply(_ alarm: TimerAlarm?) async
 }
 
 extension CookingSession {
-    /// The alarm that matches the current timer: one while it runs or is paused, none otherwise.
+    /// The alarm that matches the current timer, or nil when there is no timer to alarm for.
     public var alarm: TimerAlarm? {
         let phase: TimerAlarm.Phase
         switch timer {
         case .running(let endsAt):
             phase = .running(endsAt: endsAt)
-        case .paused(let remaining):
-            phase = .paused(remaining: remaining)
-        case .none, .ready, .finished:
+        case .paused:
+            phase = .paused
+        case .finished:
+            phase = .finished
+        case .none, .ready:
             return nil
         }
         guard recipe.steps.indices.contains(timerStepIndex) else { return nil }
-        let step = recipe.steps[timerStepIndex]
         return TimerAlarm(
-            phase: phase, recipeName: recipe.name, stepNumber: timerStepIndex + 1, stepPhase: step.phase,
-            totalDuration: step.timerDuration ?? .zero)
+            phase: phase, recipeName: recipe.name, stepNumber: timerStepIndex + 1,
+            stepPhase: recipe.steps[timerStepIndex].phase)
     }
 }
