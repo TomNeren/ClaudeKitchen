@@ -21,7 +21,7 @@ swift format lint --recursive Sources Tests
 
 ## CI
 
-`.github/workflows/ci.yml` runs build, test and strict lint on a self-hosted runner (the owner's Mac, labels `self-hosted, macOS`, Xcode 27). Jobs wait while the Mac is offline.
+`.github/workflows/ci.yml` runs build, test and strict lint on a GitHub-hosted `ubuntu-24.04` runner with Swift 6.4.1 (installed via swiftly, cached), read-only permissions. The repo is public: never use a self-hosted runner for pull request jobs, since fork PRs could run code on it.
 
 ## Cloud sessions
 
