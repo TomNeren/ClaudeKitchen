@@ -1,5 +1,6 @@
 import ActivityKit
 import AppIntents
+import KitchenCore
 import SwiftUI
 import WidgetKit
 
@@ -83,30 +84,48 @@ private struct StepButtons: View {
     }
 }
 
-extension CookingActivityAttributes {
-    fileprivate static let preview = CookingActivityAttributes(recipeName: "Zitronen-Linsen-Eintopf")
+// Previews use the bundled recipes through the same state builder as the app.
+private enum PreviewStates {
+    static let recipe = Recipe.fixtures.first { $0.id == "zitronen-linsen-eintopf" } ?? Recipe.fixtures[0]
+    static let attributes = CookingActivityAttributes(recipeName: recipe.name)
+
+    static func state(atStep index: Int) -> CookingActivityAttributes.ContentState {
+        var session = CookingSession(recipe: recipe)
+        session.send(.goToStep(index))
+        return CookingActivityAttributes.ContentState(session: session)!
+    }
+
+    static var first: CookingActivityAttributes.ContentState { state(atStep: 0) }
+    /// A step without a device setting (adding ingredients).
+    static var withoutSetting: CookingActivityAttributes.ContentState { state(atStep: 2) }
+    static var simmering: CookingActivityAttributes.ContentState { state(atStep: 3) }
+    static var last: CookingActivityAttributes.ContentState { state(atStep: recipe.steps.count - 1) }
 }
 
-extension CookingActivityAttributes.ContentState {
-    fileprivate static let firstStep = Self(
-        stepNumber: 1, totalSteps: 6, phase: "Vorbereiten",
-        text: "Zwiebel und Knoblauch schälen und in den Topf geben.", settingText: "Stufe 5 · 5 Sek",
-        isFirstStep: true, isLastStep: false)
-    fileprivate static let middleStep = Self(
-        stepNumber: 4, totalSteps: 6, phase: "Köcheln",
-        text: "Deckel schließen und köcheln lassen, bis die Linsen weich sind.",
-        settingText: "100 °C · Linkslauf 1 · 20 Min", isFirstStep: false, isLastStep: false)
-}
-
-#Preview("Sperrbildschirm", as: .content, using: CookingActivityAttributes.preview) {
+#Preview("Sperrbildschirm", as: .content, using: PreviewStates.attributes) {
     CookingGuideActivity()
 } contentStates: {
-    CookingActivityAttributes.ContentState.firstStep
-    CookingActivityAttributes.ContentState.middleStep
+    PreviewStates.first
+    PreviewStates.withoutSetting
+    PreviewStates.simmering
+    PreviewStates.last
 }
 
-#Preview("Dynamic Island", as: .dynamicIsland(.expanded), using: CookingActivityAttributes.preview) {
+#Preview("Dynamic Island", as: .dynamicIsland(.expanded), using: PreviewStates.attributes) {
     CookingGuideActivity()
 } contentStates: {
-    CookingActivityAttributes.ContentState.middleStep
+    PreviewStates.simmering
+    PreviewStates.last
+}
+
+#Preview("Kompakt", as: .dynamicIsland(.compact), using: PreviewStates.attributes) {
+    CookingGuideActivity()
+} contentStates: {
+    PreviewStates.simmering
+}
+
+#Preview("Minimal", as: .dynamicIsland(.minimal), using: PreviewStates.attributes) {
+    CookingGuideActivity()
+} contentStates: {
+    PreviewStates.simmering
 }

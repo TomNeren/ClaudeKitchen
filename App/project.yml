@@ -53,6 +53,8 @@ targets:
     sources:
       - Widgets
       - Shared
+    dependencies:
+      - package: KitchenCore
     info:
       path: Widgets/Info.plist
       properties:

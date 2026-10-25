@@ -308,14 +308,14 @@ Getroffen (2026-10-25):
 6. **Keine 60-°C-Regel**: nicht belegt, keine Prüfung und keine Warnung.
 7. **Gerät iPhone 18, Sprachmodus mit dauerhaftem Zuhören** im Kochmodus.
 8. (Loop, umkehrbar) **Portionen 1 bis 8**, zusätzlich begrenzt durch die Füllmarke; Detail und Kochmodus nutzen denselben Bereich.
-9. (Loop, umkehrbar) **App-Icon**: dampfender Topf in Creme auf Terrakotta-Verlauf, aus dem Code erzeugt (M5). Austauschbar gegen ein eigenes.
+9. (Loop, umkehrbar) **App-Icon**: dampfender Topf in Creme auf Terrakotta-Verlauf, erzeugt von `App/Tools/make_app_icon.py` (hell, dunkel, getönt). Austauschbar gegen ein eigenes.
 10. (Loop, umkehrbar) **Ein laufender Timer bleibt beim Schrittwechsel erhalten** und zeigt „Timer aus Schritt N“; erst Zurücksetzen lädt den Timer des aktuellen Schritts.
 11. (Loop, umkehrbar) **Mit „Bewegung reduzieren“** wechseln Schritte per Überblendung und nur über die Knöpfe, ohne Wischen.
 12. (Loop, umkehrbar) **Timer im Hintergrund über AlarmKit** statt normaler Mitteilung: klingelt auch bei Stumm-Modus und Fokus, mit Countdown auf Sperrbildschirm und Dynamic Island (Widget-Extension). Ein abgelaufener Alarm klingelt weiter, bis du ihn stoppst.
 13. (Loop, umkehrbar) **Zwei Live Activities**: eine für den Schritt mit Knöpfen Zurück und Weiter, die AlarmKit-Anzeige für den Countdown. So bleibt die Schritt-Anzeige auch ohne Timer stehen.
 14. (Loop, umkehrbar) **Siri und die Knöpfe wirken nur, solange der Kochmodus offen ist** (auch im Hintergrund). Ist die App beendet, antwortet Siri „Gerade ist kein Kochmodus offen.“
-15. (Loop, umkehrbar) **Motion**: alle Animationen sind tippgesteuert und daher ohne Nachschwingen (`bounce: 0`), 0,3 bis 0,4 s; der Wisch-Pager behält die Systemfeder.
-16. (Loop, umkehrbar) **iPad**: Kochmodus mit Schritt links und Bedienleiste rechts (400 pt) in regulärer Breite.
+15. (Loop, umkehrbar) **Motion**: alle Animationen sind tippgesteuert und daher ohne Nachschwingen (`bounce: 0`), 0,3 bis 0,4 s. Ausnahme: die Timer-Ziffern mit 0,25 s, weil sie innerhalb jeder Sekunde zur Ruhe kommen müssen. Wischen, Siri und Live-Activity-Knöpfe wechseln Schritte ohne eigene Animation; der Wisch-Pager behält die Systemfeder.
+16. (Loop, umkehrbar) **iPad**: Kochmodus mit Schritt links und Bedienleiste rechts (40 % der Breite, höchstens 400 pt) in regulärer Breite; ein gemeinsamer Ansichtsbaum für alle Größen.
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.

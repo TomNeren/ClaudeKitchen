@@ -25,28 +25,26 @@ struct CookingView: View {
             ContentUnavailableView(
                 "Keine Schritte", systemImage: "list.bullet", description: Text("Dieses Rezept hat keine Schritte."))
         } else {
-            // Applied outside the layout branch: switching size class must not end the cook.
-            content.modifier(CookingChrome(model: model))
-        }
-    }
-
-    @ViewBuilder
-    private var content: some View {
-        if horizontalSizeClass == .regular {
-            // iPad: step on the left, console and timer always in view on the right.
-            HStack(alignment: .bottom, spacing: 0) {
-                stepArea
-                controls
-                    .frame(width: 400)
-                    .padding(16)
-            }
-        } else {
+            // One view tree for every size class: only the position of the controls changes, so resizing an iPad
+            // window never runs the lifecycle (and never ends the cook).
             stepArea
                 .safeAreaBar(edge: .bottom) {
-                    controls
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 8)
+                    if horizontalSizeClass != .regular {
+                        controls
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 8)
+                    }
                 }
+                .safeAreaInset(edge: .trailing, spacing: 0) {
+                    if horizontalSizeClass == .regular {
+                        // iPad: console and timer always in view next to the step, about 40 % of the width.
+                        controls
+                            .containerRelativeFrame(.horizontal) { width, _ in min(400, width * 0.4) }
+                            .frame(maxHeight: .infinity, alignment: .bottom)
+                            .padding(16)
+                    }
+                }
+                .modifier(CookingChrome(model: model))
         }
     }
 
@@ -68,7 +66,6 @@ struct CookingView: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
-                .animation(Motion.stepAdvance, value: session.stepIndex)
             }
         }
     }
@@ -94,7 +91,8 @@ struct CookingView: View {
             },
             isFirstStep: session.isFirstStep, isLastStep: session.isLastStep,
             accent: Palette.accent(for: session.recipe.id),
-            onPrevious: model.previous, onNext: session.isLastStep ? onFinish : model.next,
+            onPrevious: { withAnimation(Motion.stepAdvance) { model.previous() } },
+            onNext: session.isLastStep ? onFinish : { withAnimation(Motion.stepAdvance) { model.next() } },
             onStart: model.startTimer, onPause: model.pauseTimer, onReset: model.resetTimer)
     }
 
@@ -274,11 +272,12 @@ private struct DeviceConsole: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        // At accessibility text sizes the tiles stack, so values never shrink below legibility.
-        let layout =
-            dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(spacing: 12)) : AnyLayout(HStackLayout(spacing: 12))
-        layout {
+        // At accessibility text sizes the tiles go two per row, so values stay legible without the console
+        // pushing the step text off screen.
+        let columns = Array(
+            repeating: GridItem(.flexible(), spacing: 12),
+            count: dynamicTypeSize.isAccessibilitySize ? 2 : max(parts.count, 1))
+        LazyVGrid(columns: columns, spacing: 12) {
             ForEach(parts, id: \.kind) { part in
                 VStack(spacing: 2) {
                     Text(part.label.uppercased())
