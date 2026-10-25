@@ -47,15 +47,52 @@ public enum SettingFormatter {
         }
     }
 
-    /// The parts of a setting in display order: program, temperature, rotation, time. Empty when nothing is set.
-    /// Steam heat is left out when the steam program already says it.
+    /// One labelled value of a setting, as shown on a console tile.
+    public struct Part: Sendable, Hashable {
+        public enum Kind: Sendable, Hashable {
+            case program, temperature, rotation, duration
+        }
+
+        public var kind: Kind
+        /// Tile caption, for example "Linkslauf".
+        public var label: String
+        /// Value as shown on the tile, for example "1".
+        public var value: String
+        /// Label and value as one phrase, for example "Linkslauf 1".
+        public var text: String
+    }
+
+    /// The labelled parts of a setting in display order: program, temperature, rotation, time.
+    /// Steam heat is left out when the steam program already says it. Empty when nothing is set.
+    public static func labeledParts(of setting: DeviceSetting) -> [Part] {
+        var parts: [Part] = []
+        if let name = program(setting.program) {
+            parts.append(Part(kind: .program, label: "Programm", value: name, text: name))
+        }
+        if let heat = setting.heat, !(setting.program == .steam && heat == .steam) {
+            let value = temperature(heat)
+            parts.append(Part(kind: .temperature, label: "Temperatur", value: value, text: value))
+        }
+        if let rotation = setting.rotation {
+            let label: String
+            switch rotation {
+            case .forward:
+                label = "Stufe"
+            case .reverse:
+                label = "Linkslauf"
+            }
+            parts.append(Part(kind: .rotation, label: label, value: "\(rotation.speed)", text: self.rotation(rotation)))
+        }
+        if let duration = setting.duration {
+            let value = self.duration(duration)
+            parts.append(Part(kind: .duration, label: "Zeit", value: value, text: value))
+        }
+        return parts
+    }
+
+    /// The parts of a setting as phrases, for example `["100 °C", "Linkslauf 1", "20 Min"]`.
     public static func parts(of setting: DeviceSetting) -> [String] {
-        let heat = setting.program == .steam && setting.heat == .steam ? nil : setting.heat
-        return [
-            program(setting.program), heat.map(temperature), setting.rotation.map(rotation),
-            setting.duration.map(duration),
-        ]
-        .compactMap(\.self)
+        labeledParts(of: setting).map(\.text)
     }
 
     /// The timer as a clock: "3:00", "0:05", "1:02:30".

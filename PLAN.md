@@ -290,7 +290,7 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M0 | Repo-Gerüst. Erledigt durch PR #1: `KitchenCore`, Projekt-Skills, Linux-CI, Umgebung „ClaudeKitchen“. Neu: `App/project.yml` (XcodeGen), leere App, macOS-Job in der CI | CI baut KitchenCore und die leere App grün |
 | M1 | `KitchenCore`: Modelle, JSON-Schema, 3 Rezepte migriert, Skalierung, Formatierung, `DeviceProfile.validate`, Kochsitzung mit Timer, Ersatzzutaten | Erledigt: 33 Tests grün unter Linux |
 | M2 | Bibliothek + Rezeptdetail mit Glas-Chrome, Palette, Hero/MeshGradient, Suche | Erledigt (PR #4): CI grün, 41 Tests; Optik offen laut Geräte-Prüfliste |
-| M3 | Kochmodus mit Gerätekonsole, Timer, Bildschirm-wach | Ein Rezept komplett durchkochbar |
+| M3 | Kochmodus mit Gerätekonsole, Timer, Bildschirm-wach | In Arbeit (PR #5); durchkochbar laut Geräte-Prüfliste |
 | M4 | Hintergrund-Timer, Mitteilungen, Live Activity mit Knöpfen, App Intents für Siri (Sprachmodus Schicht 1) | Timer überlebt Sperren und App-Wechsel, „Hey Siri, nächster Schritt“ funktioniert |
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion | Test-Checkliste abgehakt |
 | M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Importiertes Rezept besteht Validierung |
@@ -309,6 +309,8 @@ Getroffen (2026-10-25):
 7. **Gerät iPhone 18, Sprachmodus mit dauerhaftem Zuhören** im Kochmodus.
 8. (Loop, umkehrbar) **Portionen 1 bis 8**, zusätzlich begrenzt durch die Füllmarke; Detail und Kochmodus nutzen denselben Bereich.
 9. (Loop, umkehrbar) **App-Icon kommt mit M5**; bis dahin verlangt der Build keins.
+10. (Loop, umkehrbar) **Ein laufender Timer bleibt beim Schrittwechsel erhalten** und zeigt „Timer aus Schritt N“; erst Zurücksetzen lädt den Timer des aktuellen Schritts.
+11. (Loop, umkehrbar) **Mit „Bewegung reduzieren“** wechseln Schritte per Überblendung und nur über die Knöpfe, ohne Wischen.
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
@@ -359,3 +361,6 @@ Geräte-Prüfliste. Der Loop endet, wenn M7 gemergt ist oder alles Verbleibende 
 - [ ] M2: Glas der Suchleiste, des Portionsreglers und des Start-Buttons wirkt über dem Farbverlauf (nicht flach)
 - [ ] M2: Zoom-Übergang von der Rezeptkarte zur Rezeptansicht, Portionsregler mit Haptik
 - [ ] M2: Dunkelmodus und Dynamic Type bis XXL in Bibliothek und Rezeptansicht
+- [ ] M3: Ein Rezept komplett durchkochen: Wischen und Knöpfe, Gerätekonsole lesbar aus etwa 60 cm
+- [ ] M3: Timer: Start, Pause, Zurücksetzen, Haptik beim Ablauf; Bildschirm bleibt an
+- [ ] M3: Timer läuft nach App-Wechsel richtig weiter (Mitteilung im Hintergrund erst ab M4)
