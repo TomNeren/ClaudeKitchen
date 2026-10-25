@@ -57,7 +57,7 @@ struct RecipeLibraryView: View {
             }
         case .cooking(let id, let servings):
             if let recipe = model.recipe(id) {
-                CookingPlaceholderView(recipe: recipe, servings: servings)
+                CookingView(recipe: recipe, servings: servings) { path.removeAll() }
             }
         }
     }

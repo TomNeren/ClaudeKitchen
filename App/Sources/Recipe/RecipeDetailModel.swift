@@ -13,9 +13,7 @@ final class RecipeDetailModel {
     init(recipe: Recipe, profile: DeviceProfile = .omniCook) {
         self.recipe = recipe
         self.profile = profile
-        let range = CookingSession.defaultServingsRange
-        let upper = max(recipe.baseServings, profile.maxServings(for: recipe, limit: range.upperBound))
-        servingsRange = range.lowerBound...min(upper, range.upperBound)
+        servingsRange = profile.servingsRange(for: recipe)
         servings = recipe.baseServings
     }
 

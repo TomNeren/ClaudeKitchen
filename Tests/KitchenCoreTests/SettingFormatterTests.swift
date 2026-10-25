@@ -22,6 +22,16 @@ struct SettingFormatterTests {
         #expect(SettingFormatter.parts(of: DeviceSetting()).isEmpty)
     }
 
+    @Test func labelsPartsForConsoleTiles() {
+        let setting = DeviceSetting(heat: .celsius(120), rotation: .reverse(speed: 1), duration: .seconds(180))
+        let parts = SettingFormatter.labeledParts(of: setting)
+        #expect(parts.map(\.kind) == [.temperature, .rotation, .duration])
+        #expect(parts.map(\.label) == ["Temperatur", "Linkslauf", "Zeit"])
+        #expect(parts.map(\.value) == ["120 °C", "1", "3 Min"])
+        #expect(
+            SettingFormatter.labeledParts(of: DeviceSetting(rotation: .forward(speed: 5))).map(\.label) == ["Stufe"])
+    }
+
     @Test func namesNonManualPrograms() {
         let sousVide = DeviceSetting(program: .sousVide, heat: .celsius(60), duration: .seconds(3600))
         #expect(SettingFormatter.parts(of: sousVide) == ["Sous-vide", "60 °C", "60 Min"])

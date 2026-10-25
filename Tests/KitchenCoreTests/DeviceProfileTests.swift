@@ -90,5 +90,7 @@ struct DeviceProfileTests {
         #expect(profile.estimatedFillLiters(of: recipe, servings: 4) == 2.0)
         #expect(profile.maxServings(for: recipe) == 4)
         #expect(profile.validate(recipe, servings: 6).map(\.kind) == [.fillLevelExceeded(liters: 3.0)])
+        #expect(profile.servingsRange(for: recipe) == 1...4)
+        #expect(profile.servingsRange(for: self.recipe(steps: steps, ingredients: [], baseServings: 2)) == 1...8)
     }
 }

@@ -189,6 +189,14 @@ extension DeviceProfile {
         return (gramsPerPot.max() ?? 0) / 1000
     }
 
+    /// Servings to offer for `recipe`: `CookingSession.defaultServingsRange`, capped so the pot stays below the fill
+    /// mark, but never below the recipe's own base servings.
+    public func servingsRange(for recipe: Recipe) -> ClosedRange<Int> {
+        let range = CookingSession.defaultServingsRange
+        let fitting = max(recipe.baseServings, maxServings(for: recipe, limit: range.upperBound))
+        return range.lowerBound...max(range.lowerBound, min(fitting, range.upperBound))
+    }
+
     /// The largest number of servings, up to `limit`, for which the recipe stays below the fill mark.
     public func maxServings(for recipe: Recipe, limit: Int = 12) -> Int {
         var best = 1
