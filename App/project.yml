@@ -4,6 +4,7 @@ options:
   deploymentTarget:
     iOS: "27.0"
   createIntermediateGroups: true
+  developmentLanguage: de
 
 packages:
   KitchenCore:
@@ -28,6 +29,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: de.tomneren.ClaudeKitchen
         TARGETED_DEVICE_FAMILY: "1,2"
         GENERATE_INFOPLIST_FILE: YES
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         INFOPLIST_KEY_CFBundleDisplayName: Omni Cook
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES

@@ -289,7 +289,7 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 |---|---|---|
 | M0 | Repo-Gerüst. Erledigt durch PR #1: `KitchenCore`, Projekt-Skills, Linux-CI, Umgebung „ClaudeKitchen“. Neu: `App/project.yml` (XcodeGen), leere App, macOS-Job in der CI | CI baut KitchenCore und die leere App grün |
 | M1 | `KitchenCore`: Modelle, JSON-Schema, 3 Rezepte migriert, Skalierung, Formatierung, `DeviceProfile.validate`, Kochsitzung mit Timer, Ersatzzutaten | Erledigt: 33 Tests grün unter Linux |
-| M2 | Bibliothek + Rezeptdetail mit Glas-Chrome, Palette, Hero/MeshGradient | Screenshots vom Gerät |
+| M2 | Bibliothek + Rezeptdetail mit Glas-Chrome, Palette, Hero/MeshGradient, Suche | CI grün; Optik laut Geräte-Prüfliste (Abschnitt 10) |
 | M3 | Kochmodus mit Gerätekonsole, Timer, Bildschirm-wach | Ein Rezept komplett durchkochbar |
 | M4 | Hintergrund-Timer, Mitteilungen, Live Activity mit Knöpfen, App Intents für Siri (Sprachmodus Schicht 1) | Timer überlebt Sperren und App-Wechsel, „Hey Siri, nächster Schritt“ funktioniert |
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion | Test-Checkliste abgehakt |
@@ -315,3 +315,45 @@ Offen (mit Empfehlung):
    Import ab M6.
 3. **Apple Developer Account / Signing** für Gerätetests und Live Activities. Für den Eigengebrauch reicht
    ein kostenloses Konto (Apps laufen 7 Tage), mit bezahltem Konto entfällt das Neusignieren.
+
+## 10. Gauntlet-Loop: Umsetzung der restlichen Meilensteine
+
+Ab M2 arbeitet Claude die Meilensteine selbstständig nacheinander ab. Jeder Meilenstein muss eine
+feste Reihe von Prüfungen bestehen (den „Gauntlet“), bevor er nach `main` geht und der nächste beginnt.
+
+### Reihenfolge
+M2 Bibliothek und Rezeptansicht → M3 Kochmodus → M4 Hintergrund-Timer, Live Activity, Siri →
+M5 Barrierefreiheit, iPad, Motion → M6 Rezept-Import und eigene Rezepte → M7 Sprachmodus.
+Große Meilensteine werden in Scheiben geteilt (je ein PR), z. B. M4a Timer und Mitteilungen, M4b Live Activity.
+
+### Ablauf pro Scheibe
+1. **Zuschnitt:** Ziel und Abnahme aus Abschnitt 8 holen, betroffene Skills laden (`app-architecture`,
+   `liquid-glass`, `liquid-glass-motion`, `apple-motion-feel`, `swiftui-expert-skill`).
+2. **Logik zuerst:** Alles ohne Bildschirm kommt nach `KitchenCore`, mit Tests.
+3. **Oberfläche:** dünne Views, ein Screen-Modell pro Screen, Motion-Tokens, deutsche Texte.
+4. **Gauntlet** (jede Stufe muss grün sein, sonst zurück zu 2 oder 3):
+   - G1 lokal unter Linux: `swift build --build-tests`, `swift test`, `swift format lint --strict`
+   - G2 Selbstreview des Diffs mit `/code-review` (Stufe high), Befunde beheben
+   - G3 Checklisten: Review-Checkliste aus `app-architecture`, `liquid-glass/references/review-checklist.md`,
+     Korrektheits-Checkliste aus `swiftui-expert-skill`
+   - G4 PR (Draft), CI grün: `kitchencore-linux` und `app-ios` (Xcode 27, Simulator-Build)
+   - G5 Doku: Status in Abschnitt 8, neue Entscheidungen in Abschnitt 9, Geräte-Prüfliste (unten)
+   - G6 Merge nach `main`, Branch neu auf `main`
+5. **Nächste Scheibe.** Ein Fehler, der nach drei Runden an derselben Stufe bleibt, wird gemeldet.
+
+### Entscheidungen unterwegs
+- **Umkehrbar und im Rahmen des Plans** (Benennung, Layout-Details, Reihenfolge innerhalb eines Meilensteins):
+  Claude nimmt die Empfehlung, trägt sie in Abschnitt 9 ein und schickt eine kurze Info per Push-Nachricht.
+- **Blockierend** (braucht dich: API-Schlüssel, Apple-Konto, Gerätetest, Änderung am Umfang, alles nach außen):
+  Push-Nachricht mit Optionen und Empfehlung. Der betroffene Teil wartet, Claude arbeitet an unabhängigen
+  Teilen weiter.
+
+### Grenzen des Loops
+In der Cloud gibt es kein Gerät. Glasdarstellung, Motion-Gefühl, Live Activity, Siri, Mikrofon und
+Sprachmodell lassen sich nur kompilieren, nicht erleben. Was nur am Gerät prüfbar ist, landet in der
+Geräte-Prüfliste. Der Loop endet, wenn M7 gemergt ist oder alles Verbleibende auf dich wartet.
+
+### Geräte-Prüfliste (iPhone 18)
+- [ ] M2: Glas der Suchleiste, des Portionsreglers und des Start-Buttons wirkt über dem Farbverlauf (nicht flach)
+- [ ] M2: Zoom-Übergang von der Rezeptkarte zur Rezeptansicht, Portionsregler mit Haptik
+- [ ] M2: Dunkelmodus und Dynamic Type bis XXL in Bibliothek und Rezeptansicht
