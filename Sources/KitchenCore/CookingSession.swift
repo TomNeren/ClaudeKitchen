@@ -41,6 +41,9 @@ public enum CookingAction: Sendable, Equatable {
 
 /// The guided cook as a state machine. Every change goes through `send(_:)`.
 public struct CookingSession: Sendable, Equatable {
+    /// Servings the app offers unless a screen narrows them further, for example to stay below the fill mark.
+    public static let defaultServingsRange = 1...8
+
     public let recipe: Recipe
     public let servingsRange: ClosedRange<Int>
     public private(set) var stepIndex: Int
@@ -48,7 +51,7 @@ public struct CookingSession: Sendable, Equatable {
     public private(set) var timer: TimerState
 
     /// Starts at the first step with the recipe's base servings, clamped to `servingsRange`.
-    public init(recipe: Recipe, servingsRange: ClosedRange<Int> = 1...8) {
+    public init(recipe: Recipe, servingsRange: ClosedRange<Int> = CookingSession.defaultServingsRange) {
         self.recipe = recipe
         self.servingsRange = servingsRange
         stepIndex = 0
