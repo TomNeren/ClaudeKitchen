@@ -19,16 +19,6 @@ struct FoodCatalogTests {
         }
     }
 
-    @Test func everyAssessedGroupCitesASource() throws {
-        let catalog = try FoodCatalog.bundled()
-        for group in catalog.groups where group.direction != .notAssessed {
-            #expect(!group.sourceIDs.isEmpty, "\(group.id)")
-            for id in group.sourceIDs {
-                #expect(catalog.source(id) != nil, "\(group.id) cites unknown \(id)")
-            }
-        }
-    }
-
     @Test func reportsCatalogInconsistencies() {
         let catalog = FoodCatalog(
             sources: [EvidenceSource(id: "s", citation: "S", year: 2024)],
@@ -38,13 +28,14 @@ struct FoodCatalogTests {
             ],
             foods: [
                 Food(id: "f", name: "F", group: "nowhere", role: .base),
-                Food(id: "f", name: "F2", group: "g", role: .base),
+                Food(id: "f", name: "F2", group: "g", role: .base, gramsPerUnit: [.piece: 0, .gram: 1, .clove: 3]),
             ])
         #expect(
             catalog.issues() == [
                 .duplicateGroup("g"), .duplicateFood("f"),
                 .unknownSource(group: "g", source: "missing"), .assessedWithoutSource("g"),
                 .unknownGroup(food: "f", group: "nowhere"),
+                .invalidWeight(food: "f", unit: .piece), .invalidWeight(food: "f", unit: .gram),
             ])
     }
 
@@ -70,12 +61,12 @@ struct FoodCatalogTests {
 
     @Test(arguments: [
         (Amount.measured(250, .gram), 250.0 as Double?),
-        (.measured(2, .piece), 220),
+        (.measured(2, .piece), 200),
         (.measured(1, .teaspoon), nil),
         (.toTaste, nil),
     ])
     func convertsAmountsToGrams(amount: Amount, grams: Double?) {
-        let onion = Food(id: "onion", name: "Zwiebel", group: "veg", role: .aromatic, gramsPerUnit: [.piece: 110])
+        let onion = Food(id: "onion", name: "Zwiebel", group: "veg", role: .aromatic, gramsPerUnit: [.piece: 100])
         #expect(onion.grams(of: amount) == grams)
     }
 

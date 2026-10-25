@@ -27,7 +27,8 @@
         { "name": "Hirtenkäse", "ratio": 1 },
         { "name": "Griechischer Joghurt", "ratio": 1, "note": "als Klecks statt gebröselt" }
       ] },
-    { "id": "salz-pfeffer", "name": "Salz, Pfeffer", "food": "salt" }
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    { "id": "pfeffer", "name": "Pfeffer", "food": "black-pepper" }
   ],
   "steps": [
     { "id": "s1", "phase": "Vorbereiten", "text": "Zwiebel und Knoblauch schälen und in den Topf geben.",
@@ -43,7 +44,7 @@
       "note": "Messbecher aufsetzen. Bei Bedarf einen Schuss Wasser nachgeben.",
       "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 1200 } },
     { "id": "s5", "phase": "Abschmecken", "text": "Lorbeer entfernen. Zitronensaft und -schale unterrühren, abschmecken.",
-      "note": "Die Säure macht den Eintopf frisch.", "ingredientIDs": ["zitrone", "salz-pfeffer"],
+      "note": "Die Säure macht den Eintopf frisch.", "ingredientIDs": ["zitrone", "salz", "pfeffer"],
       "setting": { "speed": 1, "reverse": true, "seconds": 60 } },
     { "id": "s6", "phase": "Anrichten", "text": "In Schalen füllen und mit zerbröseltem Feta bestreuen. Fertig.",
       "note": "Dazu passt ein Löffel Joghurt.", "ingredientIDs": ["feta"] }

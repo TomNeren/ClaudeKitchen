@@ -71,6 +71,8 @@ public enum CatalogIssue: Sendable, Hashable {
     case duplicateFood(FoodID)
     case unknownSource(group: FoodGroupID, source: SourceID)
     case unknownGroup(food: FoodID, group: FoodGroupID)
+    /// A weight per unit that is not a positive number, or a weight given for grams.
+    case invalidWeight(food: FoodID, unit: MeasureUnit)
     /// A group says more or less is better, but cites nothing.
     case assessedWithoutSource(FoodGroupID)
     case unmappedIngredient(IngredientID)
@@ -96,8 +98,14 @@ extension FoodCatalog {
             }
         }
         let groupIDs = Set(groups.map(\.id))
-        for food in foods where !groupIDs.contains(food.group) {
-            issues.append(.unknownGroup(food: food.id, group: food.group))
+        for food in foods {
+            if !groupIDs.contains(food.group) {
+                issues.append(.unknownGroup(food: food.id, group: food.group))
+            }
+            for (unit, grams) in food.gramsPerUnit.sorted(by: { $0.key.rawValue < $1.key.rawValue })
+            where unit == .gram || !grams.isFinite || grams <= 0 {
+                issues.append(.invalidWeight(food: food.id, unit: unit))
+            }
         }
         return issues
     }

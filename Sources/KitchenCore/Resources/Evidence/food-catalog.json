@@ -29,7 +29,7 @@
   ],
   "foods": [
     { "id": "water", "name": "Wasser", "group": "water", "role": "liquid" },
-    { "id": "salmon", "name": "Lachs", "group": "fish", "role": "base", "gramsPerUnit": { "Stk": 150 } },
+    { "id": "salmon", "name": "Lachs", "aliases": ["Lachsfilet"], "group": "fish", "role": "base", "gramsPerUnit": { "Stk": 150 } },
     { "id": "pak-choi", "name": "Pak Choi", "group": "vegetables", "role": "base" },
     { "id": "ginger", "name": "Ingwer", "group": "herbs-spices", "role": "aromatic" },
     { "id": "spring-onion", "name": "Frühlingszwiebel", "group": "vegetables", "role": "aromatic", "gramsPerUnit": { "Stk": 15 } },
@@ -44,17 +44,18 @@
     { "id": "cumin", "name": "Kreuzkümmel", "group": "herbs-spices", "role": "seasoning", "gramsPerUnit": { "TL": 2, "EL": 6 } },
     { "id": "turmeric", "name": "Kurkuma", "group": "herbs-spices", "role": "seasoning", "gramsPerUnit": { "TL": 3, "EL": 9 } },
     { "id": "garam-masala", "name": "Garam Masala", "group": "herbs-spices", "role": "seasoning", "gramsPerUnit": { "TL": 2, "EL": 6 } },
-    { "id": "canned-tomatoes", "name": "Tomaten aus der Dose", "group": "vegetables", "role": "base" },
-    { "id": "chickpeas", "name": "Kichererbsen, gegart", "group": "legumes", "role": "base" },
+    { "id": "canned-tomatoes", "name": "Tomaten aus der Dose", "aliases": ["Gehackte Tomaten", "Dosentomaten"], "group": "vegetables", "role": "base" },
+    { "id": "chickpeas", "name": "Kichererbsen, gegart", "aliases": ["Kichererbsen"], "group": "legumes", "role": "base" },
     { "id": "coconut-milk", "name": "Kokosmilch", "group": "saturated-fats", "role": "liquid" },
-    { "id": "spinach", "name": "Blattspinat", "group": "vegetables", "role": "base" },
+    { "id": "spinach", "name": "Blattspinat", "aliases": ["Spinat"], "group": "vegetables", "role": "base" },
     { "id": "cauliflower", "name": "Blumenkohl", "group": "vegetables", "role": "base" },
     { "id": "red-lentils", "name": "Rote Linsen", "group": "legumes", "role": "base" },
     { "id": "vegetable-broth", "name": "Gemüsebrühe", "group": "condiments", "role": "liquid" },
     { "id": "oregano-dried", "name": "Oregano, getrocknet", "group": "herbs-spices", "role": "seasoning", "gramsPerUnit": { "TL": 1, "EL": 3 } },
-    { "id": "bay-leaf", "name": "Lorbeerblatt", "group": "herbs-spices", "role": "seasoning", "gramsPerUnit": { "Stk": 0.2 } },
+    { "id": "bay-leaf", "name": "Lorbeerblatt", "aliases": ["Lorbeer"], "group": "herbs-spices", "role": "seasoning", "gramsPerUnit": { "Stk": 0.2 } },
     { "id": "lemon", "name": "Zitrone", "group": "fruit", "role": "seasoning", "gramsPerUnit": { "Stk": 100 } },
     { "id": "feta", "name": "Feta", "group": "dairy", "role": "base" },
+    { "id": "black-pepper", "name": "Schwarzer Pfeffer", "aliases": ["Pfeffer"], "group": "herbs-spices", "role": "seasoning", "gramsPerUnit": { "TL": 2, "EL": 6 } },
     { "id": "salt", "name": "Salz", "group": "salt", "role": "seasoning", "gramsPerUnit": { "TL": 6, "EL": 18 } }
   ]
 }

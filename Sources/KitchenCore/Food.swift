@@ -3,7 +3,8 @@ import Foundation
 public typealias FoodID = Identifier<Food>
 public typealias FoodGroupID = Identifier<FoodGroup>
 
-/// What an ingredient does in a dish. The healthy rewrite never touches seasonings.
+/// What an ingredient does in a dish. The healthy rewrite never swaps or rescales seasonings or aromatics
+/// (PLAN.md, decision 20); salt only gets a hint.
 public enum FoodRole: String, Sendable, Hashable, Codable, CaseIterable {
     /// Spices, herbs, sauces and acids that define the dish's flavour.
     case seasoning
@@ -19,29 +20,34 @@ public enum FoodRole: String, Sendable, Hashable, Codable, CaseIterable {
 public struct Food: Sendable, Hashable, Codable, Identifiable {
     public let id: FoodID
     public var name: String
+    /// Other names the food goes by, for matching imported ingredient names, for example "Lachsfilet".
+    public var aliases: [String]
     public var group: FoodGroupID
     public var role: FoodRole
-    /// Weight of one unit, for units that are not grams, for example 110 g per "Stk" onion.
+    /// Weight of one unit, for units that are not grams, for example 100 g per "Stk" onion.
     public var gramsPerUnit: [MeasureUnit: Double]
 
     public init(
-        id: FoodID, name: String, group: FoodGroupID, role: FoodRole, gramsPerUnit: [MeasureUnit: Double] = [:]
+        id: FoodID, name: String, aliases: [String] = [], group: FoodGroupID, role: FoodRole,
+        gramsPerUnit: [MeasureUnit: Double] = [:]
     ) {
         self.id = id
         self.name = name
+        self.aliases = aliases
         self.group = group
         self.role = role
         self.gramsPerUnit = gramsPerUnit
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, group, role, gramsPerUnit
+        case id, name, aliases, group, role, gramsPerUnit
     }
 
     public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decode(FoodID.self, forKey: .id)
         name = try container.decode(String.self, forKey: .name)
+        aliases = try container.decodeIfPresent([String].self, forKey: .aliases) ?? []
         group = try container.decode(FoodGroupID.self, forKey: .group)
         role = try container.decode(FoodRole.self, forKey: .role)
         gramsPerUnit = try container.decodeIfPresent([MeasureUnit: Double].self, forKey: .gramsPerUnit) ?? [:]
@@ -51,6 +57,9 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(name, forKey: .name)
+        if !aliases.isEmpty {
+            try container.encode(aliases, forKey: .aliases)
+        }
         try container.encode(group, forKey: .group)
         try container.encode(role, forKey: .role)
         if !gramsPerUnit.isEmpty {

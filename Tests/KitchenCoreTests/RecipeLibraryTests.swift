@@ -43,7 +43,7 @@ struct RecipeLibraryTests {
     @Test func decodesTheLentilStewAsWritten() throws {
         let recipe = try #require(try RecipeLibrary.bundled().first { $0.id == "zitronen-linsen-eintopf" })
         #expect(recipe.baseServings == 3)
-        #expect(recipe.ingredient("salz-pfeffer")?.amount == .toTaste)
+        #expect(recipe.ingredient("pfeffer")?.amount == .toTaste)
         #expect(recipe.ingredient("lorbeer")?.scales == false)
         #expect(
             recipe.steps[1].setting
