@@ -55,7 +55,8 @@ public struct IntakeTarget: Sendable, Hashable, Codable, Identifiable {
     public var minimum: Double?
     public var maximum: Double?
     public var period: Period
-    /// Grams in one serving, when the source gives it.
+    /// Grams in one serving, for targets in servings when the source gives it. Without it the target can only be
+    /// shown, not compared with recipe amounts in grams.
     public var servingGrams: Double?
     public var sourceID: SourceID
     /// The passage of the source the numbers were checked against, verbatim.

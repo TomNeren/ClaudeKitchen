@@ -15,14 +15,15 @@ Each file in the source directory is named after the source id it holds. Exits n
 """
 import json, re, html, sys
 cat, srcdir = sys.argv[1], sys.argv[2]
-def norm(t):
-    t = re.sub(r'(?s)<(script|style)[^>]*>.*?</\1>', '', t)
-    t = html.unescape(re.sub(r'<[^>]+>', ' ', t))
-    return re.sub(r'\s+', ' ', t.replace('­', ''))
+def norm(t, is_html):
+    if is_html:
+        t = re.sub(r'(?s)<(script|style)[^>]*>.*?</\1>', '', t)
+        t = html.unescape(re.sub(r'<[^>]+>', ' ', t))
+    return re.sub(r'\s+', ' ', t.replace('\u00ad', ''))
 texts = {}
 import os
 for f in os.listdir(srcdir):
-    texts[f.rsplit('.', 1)[0]] = norm(open(os.path.join(srcdir, f), encoding='utf-8').read())
+    texts[f.rsplit('.', 1)[0]] = norm(open(os.path.join(srcdir, f), encoding='utf-8').read(), f.endswith('.html'))
 c = json.load(open(cat))
 items = [(g['id'], e['sourceID'], e['quote']) for g in c['groups'] for e in g.get('effects', [])]
 items += [(t['id'], t['sourceID'], t['quote']) for t in c['targets']]
@@ -43,5 +44,11 @@ for g in c['groups']:
         nums = re.findall(r'\d+\.\d+', e['quote'])
         if nums[:3] != [f"{e['relativeRisk']:.2f}", f"{e['lower']:.2f}", f"{e['upper']:.2f}"]:
             bad += 1; print('NUMBERS', g['id'], nums)
+# every bound of a target must appear as a number in its quote
+for t in c['targets']:
+    nums = {float(n.replace(',', '.')) for n in re.findall(r'\d+(?:,\d+)?', t['quote'])}
+    for key in ('minimum', 'maximum', 'servingGrams'):
+        if key in t and float(t[key]) not in nums:
+            bad += 1; print('NUMBERS', t['id'], key, t[key])
 print("failures:", bad)
 sys.exit(1 if bad else 0)

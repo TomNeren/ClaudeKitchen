@@ -99,6 +99,13 @@ stehen nebeneinander, die App zeigt, was sich geändert hat und warum.
   Umbrella Review 2025 (Adv Nutr, DOI 10.1016/j.advnut.2025.100393), DGE-Empfehlungen 2024, IARC zu
   rotem und verarbeitetem Fleisch, EAT-Lancet 2025 als Ergänzung. Jede Zahl wird vor dem Einchecken an
   der Originalarbeit geprüft; Werte aus Suchzusammenfassungen gehen nicht ungeprüft ins Repo.
+- **Stand M8b:** Geprüft sind die relativen Risiken je Tagesportion für Vollkorn, Gemüse, Obst, Nüsse, Fisch,
+  rotes und verarbeitetes Fleisch (Abstract Schwingshackl 2017, PMID 28446499) sowie die DGE-Zielmengen für
+  Obst und Gemüse (mindestens 5 Portionen am Tag), Fleisch und Wurst (höchstens 300 g in der Woche) und Fisch
+  (1 bis 2 Portionen zu rund 120 g in der Woche). Jede Zahl trägt den Wortlaut ihrer Quelle, das Skript
+  `Scripts/check_evidence_quotes.py` prüft das. **Offen:** die Portionsgrößen der Studie in Gramm (stehen nur
+  im Volltext, der frei nicht abrufbar ist) und die Effekte für Hülsenfrüchte, Milch, Eier und zuckergesüßte
+  Getränke (im Abstract nicht beziffert). Nüsse und Samen sind getrennte Gruppen, weil die Studie nur Nüsse misst.
 - Die Einstufungen sind **selbst formuliert mit Zitat**, keine kopierten Datensätze. IHME-Daten (nur nicht
   kommerziell) und Open Food Facts (Share-Alike) kommen nicht ins Repo.
 - **Lebensmittelkatalog:** Jedes Lebensmittel hat eine ID, Namen und Synonyme, eine Gruppe, eine Rolle
@@ -364,7 +371,7 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion, App-Icon | Erledigt (PR #8); Gefühl und Lesbarkeit offen laut Geräte-Prüfliste |
 | M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Erledigt (PR #10, 68 Tests): Import aus Text oder https-Link, Prüfung, Speichern, Löschen; Editor bei Bedarf; Test am Gerät braucht API-Schlüssel |
 | M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Erledigt (PR #11, 76 Tests): `VoiceCommand` in KitchenCore, Zuhören, Antworten und KI-Fragen in der App; Durchkochen per Sprache offen laut Geräte-Prüfliste |
-| M8 | M8a erledigt (PR #12), M8b offen. Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
+| M8 | M8a erledigt (PR #12), M8b im Review. Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
 | M9 | Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil; in der App Umschalter Original/Gesund mit Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
 | M10 | Rezeptbestand: `origin`, `references`, `variantOf`, 12 traditionelle Rezepte; Bibliothek filtert nach Küche | Alle 12 bestehen `validate` und sind vollständig zugeordnet |
 | M11 | Einkauf und Vorrat: Bedarf minus Vorrat, Mindestbestand, Abbuchen nach dem Kochen, Export nach Erinnerungen und Teilen (Abschnitt 3d) | Logik-Tests in KitchenCore; Export am Gerät laut Prüfliste |

@@ -40,12 +40,28 @@ public struct FoodCatalog: Sendable, Hashable, Codable {
         return try decode(Data(contentsOf: url))
     }
 
+    /// Decodes a catalog, checking the schema version before the rest so a newer file fails with
+    /// `unsupportedSchemaVersion` instead of a missing key.
     public static func decode(_ data: Data) throws -> FoodCatalog {
-        let catalog = try JSONDecoder().decode(FoodCatalog.self, from: data)
-        guard catalog.schemaVersion <= currentSchemaVersion else {
-            throw LoadError.unsupportedSchemaVersion(catalog.schemaVersion)
+        struct Header: Decodable { var schemaVersion: Int }
+        let version = try JSONDecoder().decode(Header.self, from: data).schemaVersion
+        guard version <= currentSchemaVersion else {
+            throw LoadError.unsupportedSchemaVersion(version)
         }
-        return catalog
+        return try JSONDecoder().decode(FoodCatalog.self, from: data)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case schemaVersion, sources, groups, foods, targets
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
+        sources = try container.decode([EvidenceSource].self, forKey: .sources)
+        groups = try container.decode([FoodGroup].self, forKey: .groups)
+        foods = try container.decode([Food].self, forKey: .foods)
+        targets = try container.decodeIfPresent([IntakeTarget].self, forKey: .targets) ?? []
     }
 
     public func food(_ id: FoodID) -> Food? {
@@ -75,10 +91,12 @@ public enum CatalogIssue: Sendable, Hashable {
     case unknownGroup(food: FoodID, group: FoodGroupID)
     /// A weight per unit that is not a positive number, or a weight given for grams.
     case invalidWeight(food: FoodID, unit: MeasureUnit)
-    case unknownEffectSource(group: FoodGroupID, source: SourceID)
+    /// The effect's source is not among the sources its group cites.
+    case uncitedEffectSource(group: FoodGroupID, source: SourceID)
     /// The relative risk is not positive, lies outside its interval, or the quote is missing.
     case invalidEffect(FoodGroupID)
-    /// A clear effect points the other way than the group's direction, for example a favorable group with RR above 1.
+    /// A clear effect points another way than the group's direction, for example a favorable group with RR above 1,
+    /// or a neutral group with a clear effect either way.
     case effectContradictsDirection(FoodGroupID)
     case duplicateTarget(IntakeTargetID)
     case unknownTargetGroup(target: IntakeTargetID, group: FoodGroupID)
@@ -108,11 +126,9 @@ extension FoodCatalog {
             if group.direction != .notAssessed && group.sourceIDs.isEmpty {
                 issues.append(.assessedWithoutSource(group.id))
             }
-        }
-        for group in groups {
             for effect in group.effects {
-                if !sourceIDs.contains(effect.sourceID) {
-                    issues.append(.unknownEffectSource(group: group.id, source: effect.sourceID))
+                if !group.sourceIDs.contains(effect.sourceID) {
+                    issues.append(.uncitedEffectSource(group: group.id, source: effect.sourceID))
                 }
                 if !effect.isValid {
                     issues.append(.invalidEffect(group.id))
@@ -166,10 +182,11 @@ extension EffectEstimate {
     }
 
     fileprivate func contradicts(_ direction: FoodGroup.Direction) -> Bool {
+        guard isSignificant else { return false }
         switch direction {
-        case .favorable: return lower > 1
-        case .limit: return upper < 1
-        case .neutral, .notAssessed: return false
+        case .favorable: return relativeRisk > 1
+        case .limit: return relativeRisk < 1
+        case .neutral, .notAssessed: return true
         }
     }
 }
@@ -179,7 +196,9 @@ extension IntakeTarget {
         let bounds = [minimum, maximum].compactMap { $0 }
         guard !bounds.isEmpty, bounds.allSatisfy({ $0 > 0 }), !quote.isEmpty, !groups.isEmpty else { return false }
         if let minimum, let maximum, minimum > maximum { return false }
-        return servingGrams.map { $0 > 0 } != false
+        // A serving size only means something for targets counted in servings.
+        guard let servingGrams else { return true }
+        return measure == .servings && servingGrams > 0
     }
 }
 

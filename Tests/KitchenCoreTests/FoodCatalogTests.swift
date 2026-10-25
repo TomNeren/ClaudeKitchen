@@ -77,6 +77,11 @@ struct FoodCatalogTests {
         #expect(try JSONDecoder().decode(Food.self, from: Data(json.utf8)) == food)
     }
 
+    @Test func catalogWithoutTargetsDecodes() throws {
+        let json = #"{"schemaVersion": 1, "sources": [], "groups": [], "foods": []}"#
+        #expect(try FoodCatalog.decode(Data(json.utf8)).targets.isEmpty)
+    }
+
     @Test func ingredientWithoutFoodStillDecodes() throws {
         let json = #"{"id": "x", "name": "X", "quantity": 5, "unit": "g"}"#
         let ingredient = try JSONDecoder().decode(Ingredient.self, from: Data(json.utf8))
@@ -84,7 +89,7 @@ struct FoodCatalogTests {
     }
 
     @Test func rejectsNewerSchemaVersion() {
-        let json = #"{"schemaVersion": 99, "sources": [], "groups": [], "foods": [], "targets": []}"#
+        let json = #"{"schemaVersion": 99, "sources": [], "groups": [], "foods": []}"#
         #expect(throws: FoodCatalog.LoadError.unsupportedSchemaVersion(99)) {
             try FoodCatalog.decode(Data(json.utf8))
         }
@@ -109,7 +114,7 @@ struct EvidenceTests {
         let groups = catalog.groups.filter { !$0.effects.isEmpty }
         #expect(
             Set(groups.map(\.id)) == [
-                "whole-grains", "vegetables", "fruit", "nuts-seeds", "fish", "red-meat", "processed-meat",
+                "whole-grains", "vegetables", "fruit", "nuts", "fish", "red-meat", "processed-meat",
             ])
         for group in groups {
             for effect in group.effects {
@@ -153,14 +158,16 @@ struct EvidenceTests {
                 id: "e", name: "E", direction: .neutral, sourceIDs: ["s"],
                 effects: [
                     EffectEstimate(
-                        outcome: .allCauseMortality, relativeRisk: 0.9, lower: 0.8, upper: 1, sourceID: "ghost",
+                        outcome: .allCauseMortality, relativeRisk: 0.9, lower: 0.8, upper: 1, sourceID: "other",
                         quote: "q")
                 ]),
+            FoodGroup(id: "f", name: "F", direction: .neutral, sourceIDs: ["s"], effects: [Self.effect(1.2, 1.1, 1.3)]),
         ])
         #expect(
             catalog.issues() == [
                 .effectContradictsDirection("a"), .effectContradictsDirection("b"), .invalidEffect("c"),
-                .invalidEffect("d"), .unknownEffectSource(group: "e", source: "ghost"),
+                .invalidEffect("d"), .uncitedEffectSource(group: "e", source: "other"),
+                .effectContradictsDirection("f"),
             ])
     }
 
@@ -180,12 +187,15 @@ struct EvidenceTests {
                 target("ok", min: 1, max: 2), target("none"), target("reversed", min: 3, max: 2),
                 target("zero", max: 0), target("ghost", max: 1, groups: ["nowhere"], source: "missing"),
                 target("ok", max: 1),
+                IntakeTarget(
+                    id: "grams-with-serving", groups: ["g"], measure: .grams, maximum: 300, period: .week,
+                    servingGrams: 120, sourceID: "s", quote: "q"),
             ])
         #expect(
             catalog.issues() == [
                 .duplicateTarget("ok"), .invalidTarget("none"), .invalidTarget("reversed"), .invalidTarget("zero"),
                 .unknownTargetGroup(target: "ghost", group: "nowhere"),
-                .unknownTargetSource(target: "ghost", source: "missing"),
+                .unknownTargetSource(target: "ghost", source: "missing"), .invalidTarget("grams-with-serving"),
             ])
     }
 }
