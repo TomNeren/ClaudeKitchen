@@ -50,6 +50,8 @@ struct CookingView: View {
                 .safeAreaBar(edge: .top) {
                     VoiceStatus(voice: voice)
                         .padding(.horizontal, 16)
+                        .animation(Motion.voiceStatus, value: voice.state)
+                        .animation(Motion.voiceStatus, value: voice.exchange)
                 }
                 .modifier(CookingChrome(model: model, voice: voice))
         }
