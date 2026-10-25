@@ -3,7 +3,8 @@ import KitchenCore
 
 /// Starts, updates and ends the step Live Activity for one guided cook.
 ///
-/// `Activity` is not `Sendable`, so only its id is kept and the activity is looked up fresh for each async call.
+/// `Activity` is not `Sendable`, so only its id is kept and the activity is looked up off the main actor for each
+/// async call.
 @MainActor
 final class CookingLiveActivity {
     private typealias GuideActivity = Activity<CookingActivityAttributes>
@@ -17,9 +18,7 @@ final class CookingLiveActivity {
         lastState = state
         let content = ActivityContent(state: state, staleDate: nil)
         if let activityID {
-            Task {
-                await GuideActivity.activities.first { $0.id == activityID }?.update(content)
-            }
+            Task { await Self.update(activityID, with: content) }
         } else if ActivityAuthorizationInfo().areActivitiesEnabled {
             activityID = try? GuideActivity.request(
                 attributes: CookingActivityAttributes(recipeName: session.recipe.name), content: content
@@ -31,9 +30,20 @@ final class CookingLiveActivity {
         guard let activityID else { return }
         self.activityID = nil
         lastState = nil
-        Task {
-            await GuideActivity.activities.first { $0.id == activityID }?.end(nil, dismissalPolicy: .immediate)
-        }
+        Task { await Self.end(activityID) }
+    }
+
+    // Looked up and used off the main actor, so the non-Sendable activity never crosses an isolation boundary.
+    @concurrent
+    private nonisolated static func update(
+        _ id: String, with content: ActivityContent<CookingActivityAttributes.ContentState>
+    ) async {
+        await GuideActivity.activities.first { $0.id == id }?.update(content)
+    }
+
+    @concurrent
+    private nonisolated static func end(_ id: String) async {
+        await GuideActivity.activities.first { $0.id == id }?.end(nil, dismissalPolicy: .immediate)
     }
 
     static func state(for session: CookingSession) -> CookingActivityAttributes.ContentState? {
