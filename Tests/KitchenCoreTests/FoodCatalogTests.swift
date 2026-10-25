@@ -84,9 +84,108 @@ struct FoodCatalogTests {
     }
 
     @Test func rejectsNewerSchemaVersion() {
-        let json = #"{"schemaVersion": 99, "sources": [], "groups": [], "foods": []}"#
+        let json = #"{"schemaVersion": 99, "sources": [], "groups": [], "foods": [], "targets": []}"#
         #expect(throws: FoodCatalog.LoadError.unsupportedSchemaVersion(99)) {
             try FoodCatalog.decode(Data(json.utf8))
         }
+    }
+}
+
+@Suite("Evidence")
+struct EvidenceTests {
+    private static let source = EvidenceSource(id: "s", citation: "S", year: 2017)
+
+    private static func catalog(groups: [FoodGroup], targets: [IntakeTarget] = []) -> FoodCatalog {
+        FoodCatalog(sources: [source], groups: groups, foods: [], targets: targets)
+    }
+
+    private static func effect(_ rr: Double, _ lower: Double, _ upper: Double, quote: String = "q") -> EffectEstimate {
+        EffectEstimate(
+            outcome: .allCauseMortality, relativeRisk: rr, lower: lower, upper: upper, sourceID: "s", quote: quote)
+    }
+
+    @Test func bundledEffectsAreSignificantAndPointTheWayOfTheirGroup() throws {
+        let catalog = try FoodCatalog.bundled()
+        let groups = catalog.groups.filter { !$0.effects.isEmpty }
+        #expect(
+            Set(groups.map(\.id)) == [
+                "whole-grains", "vegetables", "fruit", "nuts-seeds", "fish", "red-meat", "processed-meat",
+            ])
+        for group in groups {
+            for effect in group.effects {
+                #expect(effect.isSignificant, "\(group.id)")
+                #expect(group.direction == (effect.relativeRisk < 1 ? .favorable : .limit), "\(group.id)")
+            }
+        }
+    }
+
+    @Test func bundledTargetsMatchTheDGEFigures() throws {
+        let targets = try FoodCatalog.bundled().targets
+        let meat = try #require(targets.first { $0.id == "meat" })
+        #expect(meat.maximum == 300 && meat.measure == .grams && meat.period == .week)
+        #expect(Set(meat.groups) == ["red-meat", "processed-meat", "poultry"])
+        let fish = try #require(targets.first { $0.id == "fish" })
+        #expect(fish.minimum == 1 && fish.maximum == 2 && fish.servingGrams == 120)
+        let produce = try #require(targets.first { $0.id == "fruit-vegetables" })
+        #expect(produce.minimum == 5 && produce.period == .day)
+    }
+
+    @Test(arguments: [
+        (0.9, 0.8, 0.95, true),
+        (1.1, 1.02, 1.2, true),
+        (0.97, 0.9, 1.04, false),
+    ])
+    func significanceNeedsAnIntervalThatExcludesOne(rr: Double, lower: Double, upper: Double, significant: Bool) {
+        #expect(Self.effect(rr, lower, upper).isSignificant == significant)
+    }
+
+    @Test func reportsInvalidAndContradictingEffects() {
+        let catalog = Self.catalog(groups: [
+            FoodGroup(
+                id: "a", name: "A", direction: .favorable, sourceIDs: ["s"], effects: [Self.effect(1.2, 1.1, 1.3)]),
+            FoodGroup(id: "b", name: "B", direction: .limit, sourceIDs: ["s"], effects: [Self.effect(0.8, 0.7, 0.9)]),
+            FoodGroup(
+                id: "c", name: "C", direction: .neutral, sourceIDs: ["s"], effects: [Self.effect(0.8, 0.85, 0.9)]),
+            FoodGroup(
+                id: "d", name: "D", direction: .neutral, sourceIDs: ["s"],
+                effects: [Self.effect(0.8, 0.7, 0.9, quote: "")]),
+            FoodGroup(
+                id: "e", name: "E", direction: .neutral, sourceIDs: ["s"],
+                effects: [
+                    EffectEstimate(
+                        outcome: .allCauseMortality, relativeRisk: 0.9, lower: 0.8, upper: 1, sourceID: "ghost",
+                        quote: "q")
+                ]),
+        ])
+        #expect(
+            catalog.issues() == [
+                .effectContradictsDirection("a"), .effectContradictsDirection("b"), .invalidEffect("c"),
+                .invalidEffect("d"), .unknownEffectSource(group: "e", source: "ghost"),
+            ])
+    }
+
+    @Test func reportsInvalidTargets() {
+        let group = FoodGroup(id: "g", name: "G", direction: .neutral, sourceIDs: ["s"])
+        func target(
+            _ id: IntakeTargetID, min: Double? = nil, max: Double? = nil, groups: [FoodGroupID] = ["g"],
+            source: SourceID = "s"
+        ) -> IntakeTarget {
+            IntakeTarget(
+                id: id, groups: groups, measure: .grams, minimum: min, maximum: max, period: .week, sourceID: source,
+                quote: "q")
+        }
+        let catalog = Self.catalog(
+            groups: [group],
+            targets: [
+                target("ok", min: 1, max: 2), target("none"), target("reversed", min: 3, max: 2),
+                target("zero", max: 0), target("ghost", max: 1, groups: ["nowhere"], source: "missing"),
+                target("ok", max: 1),
+            ])
+        #expect(
+            catalog.issues() == [
+                .duplicateTarget("ok"), .invalidTarget("none"), .invalidTarget("reversed"), .invalidTarget("zero"),
+                .unknownTargetGroup(target: "ghost", group: "nowhere"),
+                .unknownTargetSource(target: "ghost", source: "missing"),
+            ])
     }
 }

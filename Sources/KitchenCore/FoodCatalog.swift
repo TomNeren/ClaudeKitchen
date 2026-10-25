@@ -16,15 +16,17 @@ public struct FoodCatalog: Sendable, Hashable, Codable {
     public var sources: [EvidenceSource]
     public var groups: [FoodGroup]
     public var foods: [Food]
+    public var targets: [IntakeTarget]
 
     public init(
-        sources: [EvidenceSource], groups: [FoodGroup], foods: [Food],
+        sources: [EvidenceSource], groups: [FoodGroup], foods: [Food], targets: [IntakeTarget] = [],
         schemaVersion: Int = FoodCatalog.currentSchemaVersion
     ) {
         self.schemaVersion = schemaVersion
         self.sources = sources
         self.groups = groups
         self.foods = foods
+        self.targets = targets
     }
 
     /// The catalog that ships with the app.
@@ -73,6 +75,16 @@ public enum CatalogIssue: Sendable, Hashable {
     case unknownGroup(food: FoodID, group: FoodGroupID)
     /// A weight per unit that is not a positive number, or a weight given for grams.
     case invalidWeight(food: FoodID, unit: MeasureUnit)
+    case unknownEffectSource(group: FoodGroupID, source: SourceID)
+    /// The relative risk is not positive, lies outside its interval, or the quote is missing.
+    case invalidEffect(FoodGroupID)
+    /// A clear effect points the other way than the group's direction, for example a favorable group with RR above 1.
+    case effectContradictsDirection(FoodGroupID)
+    case duplicateTarget(IntakeTargetID)
+    case unknownTargetGroup(target: IntakeTargetID, group: FoodGroupID)
+    case unknownTargetSource(target: IntakeTargetID, source: SourceID)
+    /// No bound, a bound that is not positive, a minimum above the maximum, or a missing quote.
+    case invalidTarget(IntakeTargetID)
     /// A group says more or less is better, but cites nothing.
     case assessedWithoutSource(FoodGroupID)
     case unmappedIngredient(IngredientID)
@@ -97,7 +109,31 @@ extension FoodCatalog {
                 issues.append(.assessedWithoutSource(group.id))
             }
         }
+        for group in groups {
+            for effect in group.effects {
+                if !sourceIDs.contains(effect.sourceID) {
+                    issues.append(.unknownEffectSource(group: group.id, source: effect.sourceID))
+                }
+                if !effect.isValid {
+                    issues.append(.invalidEffect(group.id))
+                } else if effect.contradicts(group.direction) {
+                    issues.append(.effectContradictsDirection(group.id))
+                }
+            }
+        }
         let groupIDs = Set(groups.map(\.id))
+        issues += duplicates(targets.map(\.id)).map(CatalogIssue.duplicateTarget)
+        for target in targets {
+            for group in target.groups where !groupIDs.contains(group) {
+                issues.append(.unknownTargetGroup(target: target.id, group: group))
+            }
+            if !sourceIDs.contains(target.sourceID) {
+                issues.append(.unknownTargetSource(target: target.id, source: target.sourceID))
+            }
+            if !target.isValid {
+                issues.append(.invalidTarget(target.id))
+            }
+        }
         for food in foods {
             if !groupIDs.contains(food.group) {
                 issues.append(.unknownGroup(food: food.id, group: food.group))
@@ -120,6 +156,30 @@ extension FoodCatalog {
             }
             return nil
         }
+    }
+}
+
+extension EffectEstimate {
+    fileprivate var isValid: Bool {
+        lower > 0 && lower <= relativeRisk && relativeRisk <= upper && servingGrams.map { $0 > 0 } != false
+            && !quote.isEmpty
+    }
+
+    fileprivate func contradicts(_ direction: FoodGroup.Direction) -> Bool {
+        switch direction {
+        case .favorable: return lower > 1
+        case .limit: return upper < 1
+        case .neutral, .notAssessed: return false
+        }
+    }
+}
+
+extension IntakeTarget {
+    fileprivate var isValid: Bool {
+        let bounds = [minimum, maximum].compactMap { $0 }
+        guard !bounds.isEmpty, bounds.allSatisfy({ $0 > 0 }), !quote.isEmpty, !groups.isEmpty else { return false }
+        if let minimum, let maximum, minimum > maximum { return false }
+        return servingGrams.map { $0 > 0 } != false
     }
 }
 
