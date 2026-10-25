@@ -54,12 +54,8 @@ struct DeviceProfileTests {
         #expect(issues.allSatisfy { $0.severity == .warning })
     }
 
-    @Test func warnsAboutHighSpeedWhenHot() {
-        let hot = DeviceSetting(heat: .celsius(90), rotation: .forward(speed: 6))
-        #expect(kinds(hot) == [.speedTooHighWhenHot(celsius: 90, speed: 6)])
-        #expect(kinds(DeviceSetting(heat: .celsius(60), rotation: .forward(speed: 10))).isEmpty)
-        #expect(kinds(DeviceSetting(heat: .celsius(90), rotation: .reverse(speed: 6))).isEmpty)
-        #expect(ValidationIssue(kind: .speedTooHighWhenHot(celsius: 90, speed: 6)).severity == .warning)
+    @Test func allowsHighSpeedWhenHot() {
+        #expect(kinds(DeviceSetting(heat: .celsius(120), rotation: .forward(speed: 10))).isEmpty)
     }
 
     @Test func flagsBrokenStructure() {

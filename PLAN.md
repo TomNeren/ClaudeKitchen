@@ -74,11 +74,11 @@ darüber hinaus Vorschläge machen, kennzeichnet sie aber als ungeprüft. Änder
 unter Linux testbar. Spracherkennung, Sprachausgabe, Foundation Models und Siri liegen in der App.
 
 **Einschränkungen, die vorher zu prüfen sind:**
-- Foundation Models braucht ein Gerät mit Apple Intelligence (iPhone 15 Pro oder neuer, iPad mit M-Chip)
-  und eingeschaltete Apple Intelligence. Ohne das bleiben Schicht 1 und 2.
+- Foundation Models braucht ein Gerät mit Apple Intelligence. Dein iPhone 18 erfüllt das; Apple Intelligence
+  muss eingeschaltet sein. Ohne das bleiben Schicht 1 und 2.
 - Deutsch für `SpeechAnalyzer` und Foundation Models gilt als unterstützt, das prüfe ich vor dem Bau.
-- Ein eigenes Weckwort („Hey Omni“) erlaubt iOS nicht. Im Kochmodus hört die App deshalb dauerhaft zu,
-  solange er offen ist, mit sichtbarer Mikrofonanzeige. Alternativ: ein großer Sprechknopf.
+- Ein eigenes Weckwort („Hey Omni“) erlaubt iOS nicht. **Entschieden: dauerhaftes Zuhören.** Im Kochmodus
+  hört die App zu, solange er offen ist, mit sichtbarer Mikrofonanzeige und einem Knopf zum Stummschalten.
 - Dauerhaftes Zuhören kostet Akku. Für einen Kochvorgang von 30 bis 60 Minuten ist das vertretbar.
 
 ### Bewusst nicht im Plan
@@ -189,14 +189,13 @@ Wo beide sich widersprechen, gilt das Handbuch. Alle Werte gehören in ein austa
 | Temperatur (manuell) | bis 180 °C; Untergrenze laut Tests 35 °C, Schrittweite unbekannt | Handbuch (Obergrenze), Tests (Untergrenze) |
 | Zeit (manuell) | bis 99 Min | Handbuch |
 | Stufen | **1 bis 10 vorwärts, dazu Linkslauf** (sanftes Rühren mit der Messerrückseite) | Handbuch. Ein Testbericht nennt 20 vorwärts / 10 rückwärts, das ist damit überholt |
-| Sicherheitsregel | „über 60 °C keine hohe Stufe“ (sonst spritzt es) | **unbestätigt**: stand in der früheren Handbuch-Auswertung, ist dir aber nicht bekannt. Kann eine Thermomix-Faustregel sein. Wird nur als Warnung geführt |
+| Sicherheitsregel „über 60 °C keine hohe Stufe“ | **entfällt** (Entscheidung 2026-10-25): stand in der früheren Handbuch-Auswertung, ist aber nicht bestätigt. Die App prüft und warnt dazu nicht | verworfen |
 | Dampfgaren | nur mit separatem Aufsatz, max. 2 kg in einer Lage. **Aufsatz ist vorhanden** und wird eingeplant | Handbuch, Bestand bestätigt |
 | Programme | manuell + ca. 15 Programme: Wiegen, Kneten, Hacken, Mahlen, Entsaften, Dämpfen, Schmoren, Sous-vide, Joghurt | Tests, belegt |
 | Waage | integriert, ±1 g | Test, unsicher |
 | Zubehör | Dampfkorb, Schneebesen, Spatel, Messlöffel; Dampfaufsatz-Set separat | Tests, belegt |
 
-Offen bleiben: Untergrenze und Schrittweite der Temperatur, ob es die 60-°C-Regel wirklich gibt (sonst entfällt
-die Warnung), Turbo-Funktion. Eine Variante **Omni Cook C2** (3 l,
+Offen bleiben: Untergrenze und Schrittweite der Temperatur, Turbo-Funktion. Eine Variante **Omni Cook C2** (3 l,
 7-Zoll-Display) taucht bei Händlern auf. Das Profil wird deshalb pro Modell gepflegt.
 
 Die Rezepte im Artefakt (Stufe 5, Linkslauf 1, 120 °C, Dampf) passen zu diesen Handbuchwerten.
@@ -306,6 +305,8 @@ Getroffen (2026-10-25):
 4. **Herstelleranfrage an TOKIT ist verschickt**, Antwort steht aus.
 5. **Repo bleibt öffentlich**, CI läuft auf gehosteten GitHub-Runnern (kostenlos für öffentliche Repos).
    Folge: keine Geheimnisse ins Repo, nie ein selbst gehosteter Runner für Pull Requests.
+6. **Keine 60-°C-Regel**: nicht belegt, keine Prüfung und keine Warnung.
+7. **Gerät iPhone 18, Sprachmodus mit dauerhaftem Zuhören** im Kochmodus.
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
@@ -314,4 +315,3 @@ Offen (mit Empfehlung):
    Import ab M6.
 3. **Apple Developer Account / Signing** für Gerätetests und Live Activities. Für den Eigengebrauch reicht
    ein kostenloses Konto (Apps laufen 7 Tage), mit bezahltem Konto entfällt das Neusignieren.
-4. **60-°C-Regel:** einmal am Gerät ausprobieren oder im Handbuch nachsehen. Bis dahin nur Warnung.

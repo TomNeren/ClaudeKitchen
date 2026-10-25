@@ -12,23 +12,11 @@ public struct DeviceProfile: Sendable, Hashable {
     public var maxFillLiters: Double
     /// Accessories the cook owns.
     public var ownedAccessories: Set<Accessory>
-    /// Unconfirmed safety rule: above `celsius`, speeds above `maxSpeed` may splash. Nil when not used.
-    public var hotSpeedLimit: HotSpeedLimit?
-
-    public struct HotSpeedLimit: Sendable, Hashable {
-        public var celsius: Int
-        public var maxSpeed: Int
-
-        public init(celsius: Int, maxSpeed: Int) {
-            self.celsius = celsius
-            self.maxSpeed = maxSpeed
-        }
-    }
 
     public init(
         name: String, temperatureRange: ClosedRange<Int>, forwardSpeeds: ClosedRange<Int>,
         reverseSpeeds: ClosedRange<Int>, maxDuration: Duration, maxFillLiters: Double,
-        ownedAccessories: Set<Accessory>, hotSpeedLimit: HotSpeedLimit?
+        ownedAccessories: Set<Accessory>
     ) {
         self.name = name
         self.temperatureRange = temperatureRange
@@ -37,11 +25,10 @@ public struct DeviceProfile: Sendable, Hashable {
         self.maxDuration = maxDuration
         self.maxFillLiters = maxFillLiters
         self.ownedAccessories = ownedAccessories
-        self.hotSpeedLimit = hotSpeedLimit
     }
 
     /// TOKIT Omni Cook (original, 2.2 l), values from the manual as evaluated on 2026-10-23.
-    /// The lower temperature bound comes from reviews, the hot speed limit is unconfirmed (see PLAN.md, section 6).
+    /// The lower temperature bound comes from reviews (see PLAN.md, section 6).
     public static let omniCook = DeviceProfile(
         name: "TOKIT Omni Cook",
         temperatureRange: 35...180,
@@ -49,8 +36,7 @@ public struct DeviceProfile: Sendable, Hashable {
         reverseSpeeds: 1...10,
         maxDuration: .seconds(99 * 60),
         maxFillLiters: 2.2,
-        ownedAccessories: [.steamer, .basket, .whisk],
-        hotSpeedLimit: HotSpeedLimit(celsius: 60, maxSpeed: 5)
+        ownedAccessories: [.steamer, .basket, .whisk]
     )
 }
 
@@ -73,7 +59,6 @@ public struct ValidationIssue: Sendable, Hashable {
         case steamWithoutSteamer
         case steamWithRotation
         case accessoryNotOwned(Accessory)
-        case speedTooHighWhenHot(celsius: Int, speed: Int)
         case fillLevelExceeded(liters: Double)
     }
 
@@ -88,7 +73,7 @@ public struct ValidationIssue: Sendable, Hashable {
 
     public var severity: Severity {
         switch kind {
-        case .speedTooHighWhenHot, .fillLevelExceeded, .accessoryNotOwned:
+        case .fillLevelExceeded, .accessoryNotOwned:
             return .warning
         default:
             return .error
@@ -166,11 +151,6 @@ extension DeviceProfile {
         }
         if let duration = setting.duration, duration <= .zero || duration > maxDuration {
             kinds.append(.durationOutOfRange(duration))
-        }
-        if let limit = hotSpeedLimit, case .celsius(let celsius) = setting.heat, celsius > limit.celsius,
-            case .forward(let speed) = setting.rotation, speed > limit.maxSpeed
-        {
-            kinds.append(.speedTooHighWhenHot(celsius: celsius, speed: speed))
         }
         return kinds
     }

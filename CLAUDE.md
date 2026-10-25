@@ -40,7 +40,7 @@ Gesamtplan, Gerätedaten und Entscheidungen: `PLAN.md`.
 - Zielgerät ist der TOKIT Omni Cook (Original, 2,2 l, Dampfaufsatz vorhanden). Die App steuert das Gerät nicht, sie begleitet den manuellen Modus (`PLAN.md`, Abschnitt 6.2).
 - Gerätewerte (Temperatur, Stufen, Laufzeit, Füllmenge, Zubehör, Regeln) nur über `DeviceProfile` in KitchenCore, nie fest im UI-Code.
 - Jedes gebündelte Rezept muss `DeviceProfile.validate` bestehen; ein Test lädt alle JSON-Dateien.
-- Unbelegte Geräteregeln (z. B. „über 60 °C keine hohe Stufe“) sind Warnungen, keine Fehler.
+- Keine Regel „über 60 °C keine hohe Stufe“: ist nicht belegt und wurde verworfen.
 - Kein eingechecktes `.xcodeproj`: Das App-Projekt entsteht mit XcodeGen aus `App/project.yml`.
 - Doku und Texte für Menschen auf Deutsch, ohne Gedankenstriche (em dash). Code und Kommentare auf Englisch (siehe `app-architecture`).
 - Glas nur auf der Bedienebene (Leisten, Gerätekonsole, Buttons), nie auf Schritttext oder Zutatenliste. Unter Glas immer Bild oder MeshGradient, keine Einfarbfläche.
