@@ -41,11 +41,45 @@ Vorbild ist das Artefakt **„Omni Cook Kochführung“** (claude.ai/artifact/QB
   bevor es gespeichert wird. Das ist der eigentliche Mehrwert von „aufbereiten“.
 - **Eigene Rezepte** anlegen und bearbeiten (SwiftData).
 - **Einkaufsliste** aus mehreren Rezepten, Export an Erinnerungen.
-- **Freihändige Bedienung**: „Weiter“ per Sprache (App Intents / Siri) oder per Annäherung, weil
-  man beim Kochen schmutzige Hände hat.
+- **Sprachmodus** mit Gespräch statt nur Vorlesen, siehe Abschnitt 3a.
 - **Wochenplan**.
 - **Dampf-Menüs**: Hauptgericht im Dampfaufsatz, Beilage im Topf gleichzeitig (z. B. Lachs oben, Reis
   unten). Die App plant die Reihenfolge so, dass beides zur selben Zeit fertig ist.
+
+### 3a. Sprachmodus: mit dem Handy übers Kochen reden
+
+Ziel: Beim Kochen mit nassen Händen fragen „Was ist der nächste Schritt?“, „Wie lange noch?“ oder
+„Mir fehlt der Feta, was kann ich nehmen?“ und eine gesprochene Antwort bekommen. Vorlesen allein reicht nicht.
+
+**Was die Live Activity dabei leisten kann und was nicht:** Sie zeigt Schritt und Timer auf dem
+Sperrbildschirm und in der Dynamic Island und bekommt Knöpfe („Weiter“, „Timer starten“) über App Intents.
+Ein Gespräch kann sie nicht führen. Das Gespräch läuft im Kochmodus der App, die ohnehin den Bildschirm
+wach hält. Bei gesperrtem Gerät übernimmt Siri über dieselben App Intents.
+
+**Aufbau in drei Schichten:**
+
+| Schicht | Technik | Was sie kann |
+|---|---|---|
+| 1. Feste Befehle | App Intents + Siri, Knöpfe in der Live Activity | „Weiter“, „Zurück“, „Timer starten“, „Wie lange noch?“, auch bei gesperrtem Gerät |
+| 2. Gespräch im Kochmodus | `SpeechAnalyzer` (Spracherkennung auf dem Gerät) → Absichtserkennung → Antwort per `AVSpeechSynthesizer` | Freies Sprechen ohne Tippen; einfache Fragen werden ohne KI beantwortet |
+| 3. Offene Fragen | Foundation Models (Sprachmodell von Apple auf dem Gerät) mit Werkzeugen für aktuellen Schritt, Zutaten und Ersatzliste; optional Claude API für schwierige Fälle | „Geht das auch ohne Kokosmilch?“, „Kann ich statt Spinat Mangold nehmen?“ |
+
+**Ersatzzutaten:** Jede Zutat im Rezept-JSON kann eine gepflegte Ersatzliste tragen (Name, Mengenverhältnis,
+Hinweis). Seit M1 ist das im Datenmodell, inklusive Mengenberechnung für die gewählte Portionszahl
+(`Ingredient.substitutions`). Die gepflegte Liste ist die verlässliche Antwort. Das Sprachmodell darf
+darüber hinaus Vorschläge machen, kennzeichnet sie aber als ungeprüft. Ändert ein Ersatz die Garzeit
+(z. B. Kabeljau statt Lachs), steht das im Hinweis.
+
+**Wo die Logik sitzt:** Absichtserkennung für feste Befehle und Ersatzsuche liegen in `KitchenCore` und sind
+unter Linux testbar. Spracherkennung, Sprachausgabe, Foundation Models und Siri liegen in der App.
+
+**Einschränkungen, die vorher zu prüfen sind:**
+- Foundation Models braucht ein Gerät mit Apple Intelligence. Dein iPhone 18 erfüllt das; Apple Intelligence
+  muss eingeschaltet sein. Ohne das bleiben Schicht 1 und 2.
+- Deutsch für `SpeechAnalyzer` und Foundation Models gilt als unterstützt, das prüfe ich vor dem Bau.
+- Ein eigenes Weckwort („Hey Omni“) erlaubt iOS nicht. **Entschieden: dauerhaftes Zuhören.** Im Kochmodus
+  hört die App zu, solange er offen ist, mit sichtbarer Mikrofonanzeige und einem Knopf zum Stummschalten.
+- Dauerhaftes Zuhören kostet Akku. Für einen Kochvorgang von 30 bis 60 Minuten ist das vertretbar.
 
 ### Bewusst nicht im Plan
 - Direkte Gerätesteuerung über WLAN: in einer früheren Session untersucht, derzeit nicht machbar (Abschnitt 6.2).
@@ -155,14 +189,13 @@ Wo beide sich widersprechen, gilt das Handbuch. Alle Werte gehören in ein austa
 | Temperatur (manuell) | bis 180 °C; Untergrenze laut Tests 35 °C, Schrittweite unbekannt | Handbuch (Obergrenze), Tests (Untergrenze) |
 | Zeit (manuell) | bis 99 Min | Handbuch |
 | Stufen | **1 bis 10 vorwärts, dazu Linkslauf** (sanftes Rühren mit der Messerrückseite) | Handbuch. Ein Testbericht nennt 20 vorwärts / 10 rückwärts, das ist damit überholt |
-| Sicherheitsregel | „über 60 °C keine hohe Stufe“ (sonst spritzt es) | **unbestätigt**: stand in der früheren Handbuch-Auswertung, ist dir aber nicht bekannt. Kann eine Thermomix-Faustregel sein. Wird nur als Warnung geführt |
+| Sicherheitsregel „über 60 °C keine hohe Stufe“ | **entfällt** (Entscheidung 2026-10-25): stand in der früheren Handbuch-Auswertung, ist aber nicht bestätigt. Die App prüft und warnt dazu nicht | verworfen |
 | Dampfgaren | nur mit separatem Aufsatz, max. 2 kg in einer Lage. **Aufsatz ist vorhanden** und wird eingeplant | Handbuch, Bestand bestätigt |
 | Programme | manuell + ca. 15 Programme: Wiegen, Kneten, Hacken, Mahlen, Entsaften, Dämpfen, Schmoren, Sous-vide, Joghurt | Tests, belegt |
 | Waage | integriert, ±1 g | Test, unsicher |
 | Zubehör | Dampfkorb, Schneebesen, Spatel, Messlöffel; Dampfaufsatz-Set separat | Tests, belegt |
 
-Offen bleiben: Untergrenze und Schrittweite der Temperatur, ob es die 60-°C-Regel wirklich gibt (sonst entfällt
-die Warnung), Turbo-Funktion. Eine Variante **Omni Cook C2** (3 l,
+Offen bleiben: Untergrenze und Schrittweite der Temperatur, Turbo-Funktion. Eine Variante **Omni Cook C2** (3 l,
 7-Zoll-Display) taucht bei Händlern auf. Das Profil wird deshalb pro Modell gepflegt.
 
 Die Rezepte im Artefakt (Stufe 5, Linkslauf 1, 120 °C, Dampf) passen zu diesen Handbuchwerten.
@@ -255,12 +288,13 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | # | Inhalt | Ergebnis / Abnahme |
 |---|---|---|
 | M0 | Repo-Gerüst. Erledigt durch PR #1: `KitchenCore`, Projekt-Skills, Linux-CI, Umgebung „ClaudeKitchen“. Neu: `App/project.yml` (XcodeGen), leere App, macOS-Job in der CI | CI baut KitchenCore und die leere App grün |
-| M1 | `KitchenCore`: Modelle, JSON-Schema, 3 Rezepte migriert, Skalierung, `DeviceProfile.validate`, Timer-Logik | Alle Tests grün, auch unter Linux |
+| M1 | `KitchenCore`: Modelle, JSON-Schema, 3 Rezepte migriert, Skalierung, Formatierung, `DeviceProfile.validate`, Kochsitzung mit Timer, Ersatzzutaten | Erledigt: 33 Tests grün unter Linux |
 | M2 | Bibliothek + Rezeptdetail mit Glas-Chrome, Palette, Hero/MeshGradient | Screenshots vom Gerät |
 | M3 | Kochmodus mit Gerätekonsole, Timer, Bildschirm-wach | Ein Rezept komplett durchkochbar |
-| M4 | Hintergrund-Timer, Mitteilungen, Live Activity | Timer überlebt Sperren und App-Wechsel |
+| M4 | Hintergrund-Timer, Mitteilungen, Live Activity mit Knöpfen, App Intents für Siri (Sprachmodus Schicht 1) | Timer überlebt Sperren und App-Wechsel, „Hey Siri, nächster Schritt“ funktioniert |
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion | Test-Checkliste abgehakt |
 | M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Importiertes Rezept besteht Validierung |
+| M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Ein Rezept komplett per Sprache durchkochbar |
 
 ## 9. Entscheidungen
 
@@ -271,6 +305,8 @@ Getroffen (2026-10-25):
 4. **Herstelleranfrage an TOKIT ist verschickt**, Antwort steht aus.
 5. **Repo bleibt öffentlich**, CI läuft auf gehosteten GitHub-Runnern (kostenlos für öffentliche Repos).
    Folge: keine Geheimnisse ins Repo, nie ein selbst gehosteter Runner für Pull Requests.
+6. **Keine 60-°C-Regel**: nicht belegt, keine Prüfung und keine Warnung.
+7. **Gerät iPhone 18, Sprachmodus mit dauerhaftem Zuhören** im Kochmodus.
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
@@ -279,4 +315,3 @@ Offen (mit Empfehlung):
    Import ab M6.
 3. **Apple Developer Account / Signing** für Gerätetests und Live Activities. Für den Eigengebrauch reicht
    ein kostenloses Konto (Apps laufen 7 Tage), mit bezahltem Konto entfällt das Neusignieren.
-4. **60-°C-Regel:** einmal am Gerät ausprobieren oder im Handbuch nachsehen. Bis dahin nur Warnung.
