@@ -17,8 +17,7 @@ struct VoiceLogTests {
 
     @Test func exportsOneLinePerEntryWithIgnoredMarked() {
         var log = VoiceLog()
-        log.append(.init(date: date, heard: "Weiter", command: VoiceCommand.next.logName))
-        log.setLastReply("Schritt 2\nvon 6")
+        log.append(.init(date: date, heard: "Weiter", command: VoiceCommand.next.logName, reply: "Schritt 2\nvon 6"))
         log.append(.init(date: date, heard: "Wo ist\tdas Salz", command: nil))
         #expect(
             log.exportText()

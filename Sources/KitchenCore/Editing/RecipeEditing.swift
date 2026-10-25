@@ -5,6 +5,32 @@ public enum EditingProblem: Sendable, Hashable {
     case missingName
     case unnamedIngredient(IngredientID)
     case emptyStep(StepID)
+    /// A substitute without a name or with a factor of zero or less.
+    case invalidSubstitute(IngredientID)
+}
+
+/// Starting values when the editor switches a part of the setting on, and the steam rule, so the UI holds no
+/// device values of its own.
+extension DeviceProfile {
+    /// 100 °C, or the nearest temperature the device has.
+    public var suggestedCelsius: Int {
+        min(max(100, temperatureRange.lowerBound), temperatureRange.upperBound)
+    }
+
+    public var suggestedSpeed: Int { forwardSpeeds.lowerBound }
+
+    /// One minute, or less on a device that cannot run that long.
+    public var suggestedDuration: Duration { min(.seconds(60), maxDuration) }
+
+    /// Makes `step` a steam step the way `validate` expects it: steam program and heat, no blade, steamer on.
+    public func applySteam(to step: inout Step) {
+        var setting = step.setting ?? DeviceSetting()
+        setting.program = .steam
+        setting.heat = .steam
+        setting.rotation = nil
+        step.setting = setting
+        step.accessory = .steamer
+    }
 }
 
 extension Recipe {
@@ -74,6 +100,12 @@ extension Recipe {
         }
         for ingredient in ingredients where ingredient.name.trimmingCharacters(in: .whitespaces).isEmpty {
             problems.append(.unnamedIngredient(ingredient.id))
+        }
+        for ingredient in ingredients
+        where ingredient.substitutes.contains(where: {
+            $0.name.trimmingCharacters(in: .whitespaces).isEmpty || !($0.ratio > 0)
+        }) {
+            problems.append(.invalidSubstitute(ingredient.id))
         }
         for step in steps where step.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             problems.append(.emptyStep(step.id))

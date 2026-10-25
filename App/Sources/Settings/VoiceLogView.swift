@@ -4,7 +4,6 @@ import SwiftUI
 /// Every sentence the voice mode heard, newest first, with what it understood and answered.
 struct VoiceLogView: View {
     @State private var entries: [VoiceLog.Entry] = []
-    @State private var exportText = ""
     @State private var confirmsClear = false
     private let store: VoiceLogStore
 
@@ -19,7 +18,7 @@ struct VoiceLogView: View {
                     "Noch nichts gehört", systemImage: "waveform",
                     description: Text("Im Kochmodus landet hier jeder erkannte Satz, auch die ignorierten."))
             }
-            ForEach(Array(entries.reversed().enumerated()), id: \.offset) { _, entry in
+            ForEach(entries.reversed()) { entry in
                 VoiceLogRow(entry: entry)
             }
         }
@@ -27,7 +26,8 @@ struct VoiceLogView: View {
         .toolbarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                ShareLink(item: exportText, subject: Text("Sprachprotokoll ClaudeKitchen")) {
+                ShareLink(item: VoiceLog(entries: entries).exportText(), subject: Text("Sprachprotokoll ClaudeKitchen"))
+                {
                     Label("Teilen", systemImage: "square.and.arrow.up")
                 }
                 .disabled(entries.isEmpty)
@@ -53,7 +53,6 @@ struct VoiceLogView: View {
 
     private func reload() async {
         entries = await store.entries()
-        exportText = await store.exportText()
     }
 }
 

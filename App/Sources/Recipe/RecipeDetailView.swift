@@ -27,7 +27,7 @@ struct RecipeDetailView: View {
                 hero
                 IngredientList(ingredients: model.ingredients, servings: model.servings)
                 if !warnings.isEmpty {
-                    WarningList(issues: warnings)
+                    WarningList(issues: warnings, recipe: model.recipe)
                 }
                 StepOverview(steps: model.recipe.steps)
             }
@@ -173,11 +173,12 @@ private struct IngredientList: View {
 
 private struct WarningList: View {
     let issues: [ValidationIssue]
+    let recipe: Recipe
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             ForEach(issues, id: \.self) { issue in
-                Label(IssueText.text(for: issue), systemImage: "exclamationmark.triangle.fill")
+                Label(IssueText.text(for: issue, in: recipe), systemImage: "exclamationmark.triangle.fill")
                     .font(.subheadline)
                     .foregroundStyle(Palette.accent)
             }

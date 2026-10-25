@@ -2,14 +2,16 @@ import Foundation
 
 /// What the voice mode heard and what it made of it, to tune the command rules from real kitchen sentences.
 public struct VoiceLog: Sendable, Equatable, Codable {
-    public struct Entry: Sendable, Equatable, Codable {
+    public struct Entry: Sendable, Equatable, Codable, Identifiable {
+        public var id: UUID
         public var date: Date
         public var heard: String
         /// The command `VoiceCommand.parse` found, nil when the sentence was ignored.
         public var command: String?
         public var reply: String?
 
-        public init(date: Date, heard: String, command: String?, reply: String? = nil) {
+        public init(id: UUID = UUID(), date: Date, heard: String, command: String?, reply: String? = nil) {
+            self.id = id
             self.date = date
             self.heard = heard
             self.command = command
@@ -32,16 +34,6 @@ public struct VoiceLog: Sendable, Equatable, Codable {
         if entries.count > capacity {
             entries.removeFirst(entries.count - capacity)
         }
-    }
-
-    /// Fills in the reply of the newest entry, once it is known.
-    public mutating func setLastReply(_ reply: String) {
-        guard !entries.isEmpty else { return }
-        entries[entries.count - 1].reply = reply
-    }
-
-    public mutating func removeAll() {
-        entries.removeAll()
     }
 
     /// One tab-separated line per entry, oldest first: time, heard, command or "ignoriert", reply. Easy to paste

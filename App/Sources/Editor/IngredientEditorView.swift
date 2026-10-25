@@ -105,7 +105,7 @@ private struct SubstituteSection: View {
             ForEach(ingredient.substitutes.indices, id: \.self) { index in
                 // During a delete the amounts can briefly lag behind the rows.
                 SubstituteRow(
-                    substitute: $ingredient.substitutes[index],
+                    substitute: substitute(at: index),
                     amount: amounts.indices.contains(index) ? amounts[index] : .toTaste)
             }
             .onDelete { ingredient.substitutes.remove(atOffsets: $0) }
@@ -117,6 +117,16 @@ private struct SubstituteSection: View {
         } footer: {
             Text("Faktor 1 heißt gleiche Menge, 0,5 die Hälfte. Der Sprachmodus nennt diese Liste bei „Mir fehlt …“.")
         }
+    }
+
+    /// A row's binding that tolerates its row being deleted while SwiftUI still renders it.
+    private func substitute(at index: Int) -> Binding<Substitute> {
+        Binding(
+            get: {
+                ingredient.substitutes.indices.contains(index) ? ingredient.substitutes[index] : Substitute(name: "")
+            },
+            set: { if ingredient.substitutes.indices.contains(index) { ingredient.substitutes[index] = $0 } }
+        )
     }
 }
 

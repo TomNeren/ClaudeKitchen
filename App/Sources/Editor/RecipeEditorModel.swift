@@ -4,7 +4,9 @@ import Observation
 /// One recipe being edited. Changes stay in `recipe` until the cook saves; every rule comes from KitchenCore.
 @MainActor @Observable
 final class RecipeEditorModel {
-    var recipe: Recipe
+    var recipe: Recipe {
+        didSet { revalidate() }
+    }
     let profile: DeviceProfile
     /// True for a recipe that is not stored yet: a new one or a copy of a bundled one.
     let isNew: Bool
@@ -15,20 +17,29 @@ final class RecipeEditorModel {
         self.original = recipe
         self.isNew = isNew
         self.profile = profile
+        revalidate()
     }
 
     var hasChanges: Bool { isNew || recipe != original }
 
-    var problems: [EditingProblem] { recipe.editingProblems }
-
-    var issues: [ValidationIssue] { profile.validate(recipe) }
+    /// Checked once per change, not on every read: the form reads them per row and on every keystroke.
+    private(set) var problems: [EditingProblem] = []
+    private(set) var issues: [ValidationIssue] = []
+    private var issuesByStep: [StepID: [ValidationIssue]] = [:]
 
     var canSave: Bool {
         problems.isEmpty && !issues.contains { $0.severity == .error }
     }
 
     func issues(for step: StepID) -> [ValidationIssue] {
-        issues.filter { $0.stepID == step }
+        issuesByStep[step] ?? []
+    }
+
+    private func revalidate() {
+        problems = recipe.editingProblems
+        issues = profile.validate(recipe)
+        let stepIssues = issues.compactMap { issue in issue.stepID.map { ($0, issue) } }
+        issuesByStep = Dictionary(grouping: stepIssues, by: \.0).mapValues { $0.map(\.1) }
     }
 
     func stepIndex(_ id: StepID) -> Int? {

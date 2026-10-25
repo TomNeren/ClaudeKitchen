@@ -9,10 +9,12 @@ struct RecipeEditorView: View {
     @State private var path: [EditorRoute] = []
     @State private var confirmsDiscard = false
     @State private var isSaving = false
+    @State private var saveFailed = false
     @Environment(\.dismiss) private var dismiss
-    private let onSave: (Recipe) async -> Void
+    /// Returns false when the recipe could not be stored; the editor then stays open with the changes.
+    private let onSave: (Recipe) async -> Bool
 
-    init(recipe: Recipe, isNew: Bool, onSave: @escaping (Recipe) async -> Void) {
+    init(recipe: Recipe, isNew: Bool, onSave: @escaping (Recipe) async -> Bool) {
         self.model = RecipeEditorModel(recipe: recipe, isNew: isNew)
         self.onSave = onSave
     }
@@ -45,8 +47,12 @@ struct RecipeEditorView: View {
                     Button("Sichern") {
                         isSaving = true
                         Task {
-                            await onSave(model.cleanedRecipe)
-                            dismiss()
+                            if await onSave(model.cleanedRecipe) {
+                                dismiss()
+                            } else {
+                                isSaving = false
+                                saveFailed = true
+                            }
                         }
                     }
                     .disabled(!model.canSave || isSaving)
@@ -60,6 +66,13 @@ struct RecipeEditorView: View {
                 }
             }
             .interactiveDismissDisabled(model.hasChanges)
+            .alert("Speichern fehlgeschlagen", isPresented: $saveFailed) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(
+                    "Das Rezept konnte nicht gesichert werden. Deine Änderungen sind noch da; versuch es gleich noch einmal."
+                )
+            }
             .confirmationDialog("Änderungen verwerfen?", isPresented: $confirmsDiscard, titleVisibility: .visible) {
                 Button("Verwerfen", role: .destructive) { dismiss() }
                 Button("Weiter bearbeiten", role: .cancel) {}
@@ -204,6 +217,6 @@ private struct CheckSection: View {
 
 #Preview {
     if let recipe = Recipe.fixtures.first {
-        RecipeEditorView(recipe: recipe, isNew: false) { _ in }
+        RecipeEditorView(recipe: recipe, isNew: false) { _ in true }
     }
 }

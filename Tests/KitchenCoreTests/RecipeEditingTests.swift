@@ -60,4 +60,23 @@ struct RecipeEditingTests {
         recipe.moveSteps(fromOffsets: source, toOffset: offset)
         #expect(recipe.steps.map(\.id.rawValue) == expected)
     }
+
+    @Test func substitutesNeedANameAndAPositiveFactor() throws {
+        var recipe = try curry
+        let index = try #require(recipe.ingredients.firstIndex { $0.id == "spinat" })
+        recipe.ingredients[index].substitutes.append(Substitute(name: ""))
+        #expect(recipe.editingProblems == [.invalidSubstitute("spinat")])
+        recipe.ingredients[index].substitutes[1] = Substitute(name: "Grünkohl", ratio: 0)
+        #expect(recipe.editingProblems == [.invalidSubstitute("spinat")])
+        recipe.ingredients[index].substitutes[1].ratio = 1
+        #expect(recipe.editingProblems.isEmpty)
+    }
+
+    @Test func steamStepPassesValidation() throws {
+        var recipe = try curry
+        let profile = DeviceProfile.omniCook
+        profile.applySteam(to: &recipe.steps[2])
+        #expect(profile.validate(recipe).filter { $0.stepID == recipe.steps[2].id }.isEmpty)
+        #expect(profile.suggestedCelsius == 100 && profile.suggestedSpeed == 1)
+    }
 }

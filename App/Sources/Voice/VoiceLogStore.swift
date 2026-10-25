@@ -18,19 +18,9 @@ actor VoiceLogStore {
         loaded().entries
     }
 
-    func exportText() -> String {
-        loaded().exportText()
-    }
-
     func append(_ entry: VoiceLog.Entry) {
         var log = loaded()
         log.append(entry)
-        save(log)
-    }
-
-    func setLastReply(_ reply: String) {
-        var log = loaded()
-        log.setLastReply(reply)
         save(log)
     }
 

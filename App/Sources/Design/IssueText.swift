@@ -2,13 +2,9 @@ import KitchenCore
 
 /// German text for every validation issue, so the cook knows what to fix.
 enum IssueText {
-    /// With `recipe`, steps are named by their position; without, by their id ("s3" is step 3 in bundled recipes).
-    static func text(for issue: ValidationIssue, in recipe: Recipe? = nil) -> String {
-        let prefix =
-            issue.stepID.map { id in
-                let number = recipe?.stepNumber(of: id).map(String.init) ?? String(id.rawValue.dropFirst())
-                return "Schritt \(number): "
-            } ?? ""
+    /// Steps are named by their position in `recipe`, which stays right after the editor reordered them.
+    static func text(for issue: ValidationIssue, in recipe: Recipe) -> String {
+        let prefix = issue.stepID.map { "Schritt \(recipe.stepNumber(of: $0).map(String.init) ?? "?"): " } ?? ""
         switch issue.kind {
         case .noSteps: return "Das Rezept hat keine Schritte."
         case .invalidBaseServings(let value): return "Ungültige Portionszahl \(value)."
@@ -31,6 +27,9 @@ enum IssueText {
         switch problem {
         case .missingName: return "Das Rezept braucht einen Namen."
         case .unnamedIngredient: return "Eine Zutat hat noch keinen Namen."
+        case .invalidSubstitute(let id):
+            let name = recipe.ingredient(id)?.name ?? "einer Zutat"
+            return "Ein Ersatz bei \(name) braucht einen Namen und einen Faktor über 0."
         case .emptyStep(let id):
             return "Schritt \(recipe.stepNumber(of: id).map(String.init) ?? "?") hat noch keinen Text."
         }

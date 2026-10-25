@@ -144,7 +144,7 @@ private struct DeviceSection: View {
         }
         .pickerStyle(.segmented)
         if case .celsius(let celsius) = step.setting?.heat {
-            Stepper(value: celsiusBinding(celsius), in: profile.temperatureRange, step: 5) {
+            Stepper(value: celsiusBinding(celsius), in: profile.temperatureRange, step: profile.temperatureStep) {
                 LabeledContent("Temperatur", value: "\(celsius) °C")
             }
         }
@@ -165,14 +165,10 @@ private struct DeviceSection: View {
                     step.setting?.heat = nil
                     if step.setting?.program == .steam { step.setting?.program = .manual }
                 case .temperature:
-                    step.setting?.heat = .celsius(100)
+                    step.setting?.heat = .celsius(profile.suggestedCelsius)
                     if step.setting?.program == .steam { step.setting?.program = .manual }
                 case .steam:
-                    // Steam needs the steamer and no blade: set both, so the check stays quiet.
-                    step.setting?.heat = .steam
-                    step.setting?.program = .steam
-                    step.setting?.rotation = nil
-                    step.accessory = .steamer
+                    profile.applySteam(to: &step)
                 }
             }
         )
@@ -215,7 +211,7 @@ private struct DeviceSection: View {
                 }
             },
             set: { mode in
-                let speed = step.setting?.rotation?.speed ?? 1
+                let speed = step.setting?.rotation?.speed ?? profile.suggestedSpeed
                 switch mode {
                 case .off: step.setting?.rotation = nil
                 case .forward: step.setting?.rotation = .forward(speed: min(speed, profile.forwardSpeeds.upperBound))
@@ -252,7 +248,7 @@ private struct DeviceSection: View {
     private var hasDuration: Binding<Bool> {
         Binding(
             get: { step.setting?.duration != nil },
-            set: { step.setting?.duration = $0 ? .seconds(60) : nil }
+            set: { step.setting?.duration = $0 ? profile.suggestedDuration : nil }
         )
     }
 

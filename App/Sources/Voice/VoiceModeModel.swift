@@ -1,3 +1,4 @@
+import Foundation
 import KitchenCore
 import Observation
 
@@ -102,17 +103,17 @@ final class VoiceModeModel {
 
     private func handle(_ sentence: String) async {
         guard state == .listening else { return }
-        let command = VoiceCommand.parse(sentence)
-        let logging = VoiceLogStore.isEnabled
-        if logging {
+        let heardAt = Date.now
+        guard let command = VoiceCommand.parse(sentence) else {
             // Ignored sentences too: they show what the rules missed.
-            await log.append(.init(date: .now, heard: sentence, command: command?.logName))
+            record(.init(date: heardAt, heard: sentence, command: nil))
+            return
         }
-        guard let command else { return }
         state = .answering
         defer { if state == .answering { state = .listening } }
-        guard case (let reply, let isUnchecked)? = await reply(to: command), !Task.isCancelled else { return }
-        if logging { await log.setLastReply(reply) }
+        let answer = await reply(to: command)
+        record(.init(date: heardAt, heard: sentence, command: command.logName, reply: answer?.0))
+        guard case (let reply, let isUnchecked)? = answer, !Task.isCancelled else { return }
         exchange = Exchange(heard: sentence, reply: reply, isUnchecked: isUnchecked)
         listener.isMuted = true
         await speaker.say(reply)
@@ -151,6 +152,13 @@ final class VoiceModeModel {
         case .next, .previous, .repeatStep, .remainingTime, .startTimer, .pauseTimer:
             return nil
         }
+    }
+
+    /// One write per sentence, off the command path: the cook never waits for the log.
+    private func record(_ entry: VoiceLog.Entry) {
+        guard VoiceLogStore.isEnabled else { return }
+        let log = self.log
+        Task { await log.append(entry) }
     }
 
     private static func message(for error: any Error) -> String {

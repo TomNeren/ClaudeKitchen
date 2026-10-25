@@ -8,7 +8,6 @@ struct RecipeLibraryView: View {
     @State private var isImporting = false
     @State private var isShowingSettings = false
     @State private var editing: EditorRequest?
-    @State private var saveFailed = false
     @Namespace private var transition
 
     init() {}
@@ -74,24 +73,17 @@ struct RecipeLibraryView: View {
                     await save(recipe, copiedFrom: request.copiedFrom)
                 }
             }
-            .alert("Speichern fehlgeschlagen", isPresented: $saveFailed) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                Text("Das Rezept konnte nicht gesichert werden. Ist genug Speicher frei?")
-            }
             .task { await model.loadOwn() }
         }
     }
 
-    private func save(_ recipe: Recipe, copiedFrom original: RecipeID?) async {
-        guard await model.save(recipe) else {
-            saveFailed = true
-            return
-        }
+    private func save(_ recipe: Recipe, copiedFrom original: RecipeID?) async -> Bool {
+        guard await model.save(recipe) else { return false }
         // Edited a bundled recipe from its screen: show the own copy instead.
         if let original, let last = path.last, last == .recipe(original) {
             path[path.count - 1] = .recipe(recipe.id)
         }
+        return true
     }
 
     @ViewBuilder
