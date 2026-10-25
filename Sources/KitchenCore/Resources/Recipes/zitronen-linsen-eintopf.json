@@ -7,27 +7,27 @@
   "totalMinutes": 35,
   "verified": false,
   "ingredients": [
-    { "id": "zwiebel", "name": "Zwiebel", "quantity": 1, "unit": "Stk" },
-    { "id": "knoblauch", "name": "Knoblauch", "quantity": 2, "unit": "Zehen" },
-    { "id": "olivenoel", "name": "Olivenöl", "quantity": 30, "unit": "g" },
-    { "id": "linsen", "name": "Rote Linsen", "quantity": 200, "unit": "g",
+    { "id": "zwiebel", "name": "Zwiebel", "food": "onion", "quantity": 1, "unit": "Stk" },
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 2, "unit": "Zehen" },
+    { "id": "olivenoel", "name": "Olivenöl", "food": "olive-oil", "quantity": 30, "unit": "g" },
+    { "id": "linsen", "name": "Rote Linsen", "food": "red-lentils", "quantity": 200, "unit": "g",
       "substitutes": [
         { "name": "Gelbe Linsen", "ratio": 1 },
         { "name": "Berglinsen", "ratio": 1, "note": "10 Min länger köcheln, bleiben bissfester" }
       ] },
-    { "id": "tomaten", "name": "Gehackte Tomaten", "quantity": 400, "unit": "g", "note": "Dose" },
-    { "id": "bruehe", "name": "Gemüsebrühe", "quantity": 500, "unit": "g", "note": "heiß" },
-    { "id": "oregano", "name": "Oregano, getrocknet", "quantity": 2, "unit": "TL",
+    { "id": "tomaten", "name": "Gehackte Tomaten", "food": "canned-tomatoes", "quantity": 400, "unit": "g", "note": "Dose" },
+    { "id": "bruehe", "name": "Gemüsebrühe", "food": "vegetable-broth", "quantity": 500, "unit": "g", "note": "heiß" },
+    { "id": "oregano", "name": "Oregano, getrocknet", "food": "oregano-dried", "quantity": 2, "unit": "TL",
       "substitutes": [ { "name": "Thymian, getrocknet", "ratio": 1 } ] },
-    { "id": "lorbeer", "name": "Lorbeerblatt", "quantity": 1, "unit": "Stk", "scales": false },
-    { "id": "zitrone", "name": "Zitrone", "quantity": 1, "unit": "Stk", "note": "Saft und Schale",
+    { "id": "lorbeer", "name": "Lorbeerblatt", "food": "bay-leaf", "quantity": 1, "unit": "Stk", "scales": false },
+    { "id": "zitrone", "name": "Zitrone", "food": "lemon", "quantity": 1, "unit": "Stk", "note": "Saft und Schale",
       "substitutes": [ { "name": "Limette", "ratio": 1, "note": "etwas herber" } ] },
-    { "id": "feta", "name": "Feta", "quantity": 120, "unit": "g",
+    { "id": "feta", "name": "Feta", "food": "feta", "quantity": 120, "unit": "g",
       "substitutes": [
         { "name": "Hirtenkäse", "ratio": 1 },
         { "name": "Griechischer Joghurt", "ratio": 1, "note": "als Klecks statt gebröselt" }
       ] },
-    { "id": "salz-pfeffer", "name": "Salz, Pfeffer" }
+    { "id": "salz-pfeffer", "name": "Salz, Pfeffer", "food": "salt" }
   ],
   "steps": [
     { "id": "s1", "phase": "Vorbereiten", "text": "Zwiebel und Knoblauch schälen und in den Topf geben.",

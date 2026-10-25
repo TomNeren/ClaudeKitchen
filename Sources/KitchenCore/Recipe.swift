@@ -65,10 +65,13 @@ public struct Substitute: Sendable, Hashable, Codable {
 ///
 /// JSON shape: `{"id": "linsen", "name": "Rote Linsen", "quantity": 200, "unit": "g"}`.
 /// Without `quantity` the amount is "to taste". `scales` defaults to true, `substitutes` to none.
+/// `food` points at the `FoodCatalog` entry, for example `"food": "red-lentils"`.
 public struct Ingredient: Sendable, Hashable, Identifiable {
     public let id: IngredientID
     public var name: String
     public var amount: Amount
+    /// The catalog food this ingredient is, nil until it is mapped.
+    public var food: FoodID?
     /// Extra detail shown next to the amount, for example "à 150 g".
     public var note: String?
     /// False for things like a bay leaf, where the amount stays the same for more servings.
@@ -76,12 +79,13 @@ public struct Ingredient: Sendable, Hashable, Identifiable {
     public var substitutes: [Substitute]
 
     public init(
-        id: IngredientID, name: String, amount: Amount, note: String? = nil, scales: Bool = true,
-        substitutes: [Substitute] = []
+        id: IngredientID, name: String, amount: Amount, food: FoodID? = nil, note: String? = nil,
+        scales: Bool = true, substitutes: [Substitute] = []
     ) {
         self.id = id
         self.name = name
         self.amount = amount
+        self.food = food
         self.note = note
         self.scales = scales
         self.substitutes = substitutes
@@ -108,7 +112,7 @@ public struct Ingredient: Sendable, Hashable, Identifiable {
 
 extension Ingredient: Codable {
     private enum CodingKeys: String, CodingKey {
-        case id, name, quantity, unit, note, scales, substitutes
+        case id, name, quantity, unit, food, note, scales, substitutes
     }
 
     public init(from decoder: any Decoder) throws {
@@ -120,6 +124,7 @@ extension Ingredient: Codable {
         } else {
             amount = .toTaste
         }
+        food = try container.decodeIfPresent(FoodID.self, forKey: .food)
         note = try container.decodeIfPresent(String.self, forKey: .note)
         scales = try container.decodeIfPresent(Bool.self, forKey: .scales) ?? true
         substitutes = try container.decodeIfPresent([Substitute].self, forKey: .substitutes) ?? []
@@ -133,6 +138,7 @@ extension Ingredient: Codable {
             try container.encode(quantity, forKey: .quantity)
             try container.encode(unit, forKey: .unit)
         }
+        try container.encodeIfPresent(food, forKey: .food)
         try container.encodeIfPresent(note, forKey: .note)
         if !scales {
             try container.encode(false, forKey: .scales)
