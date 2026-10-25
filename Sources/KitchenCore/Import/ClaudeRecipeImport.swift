@@ -57,7 +57,7 @@ public enum ClaudeRecipeImport {
                 ])
             ),
         ])
-        return try JSONEncoder().encode(body)
+        return try body.encoded()
     }
 
     /// Reads a Messages API response and turns the recipe JSON into a `Recipe` with id `id`.

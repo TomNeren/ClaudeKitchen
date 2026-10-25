@@ -92,6 +92,17 @@ struct RecipeImportTests {
         #expect(phase.lowerBound < freshPot.lowerBound)
     }
 
+    @Test func encodingKeepsKeyOrderAndEscapes() throws {
+        let keys = (0..<40).map { "k\($0)" }
+        let value: JSONValue = .object(
+            keys.map { ($0, .null) } + [
+                ("text", .string("a\"b\n")), ("list", .array([.integer(1), .bool(true), .number(0.5)])),
+            ])
+        let json = String(decoding: try value.encoded(), as: UTF8.self)
+        let expectedKeys = keys.map { "\"\($0)\":null" }.joined(separator: ",")
+        #expect(json == "{\(expectedKeys),\"text\":\"a\\\"b\\n\",\"list\":[1,true,0.5]}")
+    }
+
     @Test func promptSaysIndexesCountFromZero() {
         let prompt = ClaudeRecipeImport.systemPrompt(for: .omniCook)
         #expect(prompt.contains("gezählt ab 0"))

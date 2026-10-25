@@ -1,8 +1,8 @@
 import Foundation
 
-/// A JSON value that keeps the order of object keys when encoded. Used for request bodies whose key order matters,
+/// A JSON value that keeps the order of object keys when encoded with `encoded()`. Used for request bodies whose key order matters,
 /// such as a structured-output schema, where the model fills properties in the order they are listed.
-public indirect enum JSONValue: Sendable, Equatable, Encodable {
+public indirect enum JSONValue: Sendable, Equatable {
     case object([(String, JSONValue)])
     case array([JSONValue])
     case string(String)
@@ -25,40 +25,38 @@ public indirect enum JSONValue: Sendable, Equatable, Encodable {
         }
     }
 
-    private struct Key: CodingKey {
-        var stringValue: String
-        var intValue: Int? { nil }
-        init(stringValue: String) { self.stringValue = stringValue }
-        init?(intValue: Int) { nil }
+    /// The value as JSON text, with object keys in the order they were given.
+    /// `JSONEncoder` stores objects in a dictionary and loses that order, so containers are written here
+    /// and only scalars go through the encoder, which takes care of escaping and number format.
+    public func encoded() throws -> Data {
+        var data = Data()
+        try write(to: &data)
+        return data
     }
 
-    public func encode(to encoder: any Encoder) throws {
+    private func write(to data: inout Data) throws {
         switch self {
         case .object(let members):
-            var container = encoder.container(keyedBy: Key.self)
-            for (key, value) in members {
-                try container.encode(value, forKey: Key(stringValue: key))
+            data.append(UInt8(ascii: "{"))
+            for (index, (key, value)) in members.enumerated() {
+                if index > 0 { data.append(UInt8(ascii: ",")) }
+                try data.append(JSONEncoder().encode(key))
+                data.append(UInt8(ascii: ":"))
+                try value.write(to: &data)
             }
+            data.append(UInt8(ascii: "}"))
         case .array(let values):
-            var container = encoder.unkeyedContainer()
-            for value in values {
-                try container.encode(value)
+            data.append(UInt8(ascii: "["))
+            for (index, value) in values.enumerated() {
+                if index > 0 { data.append(UInt8(ascii: ",")) }
+                try value.write(to: &data)
             }
-        case .string(let value):
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
-        case .number(let value):
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
-        case .integer(let value):
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
-        case .bool(let value):
-            var container = encoder.singleValueContainer()
-            try container.encode(value)
-        case .null:
-            var container = encoder.singleValueContainer()
-            try container.encodeNil()
+            data.append(UInt8(ascii: "]"))
+        case .string(let value): try data.append(JSONEncoder().encode(value))
+        case .number(let value): try data.append(JSONEncoder().encode(value))
+        case .integer(let value): try data.append(JSONEncoder().encode(value))
+        case .bool(let value): data.append(contentsOf: Array((value ? "true" : "false").utf8))
+        case .null: data.append(contentsOf: Array("null".utf8))
         }
     }
 
