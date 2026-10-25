@@ -289,7 +289,7 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 |---|---|---|
 | M0 | Repo-Gerüst. Erledigt durch PR #1: `KitchenCore`, Projekt-Skills, Linux-CI, Umgebung „ClaudeKitchen“. Neu: `App/project.yml` (XcodeGen), leere App, macOS-Job in der CI | CI baut KitchenCore und die leere App grün |
 | M1 | `KitchenCore`: Modelle, JSON-Schema, 3 Rezepte migriert, Skalierung, Formatierung, `DeviceProfile.validate`, Kochsitzung mit Timer, Ersatzzutaten | Erledigt: 33 Tests grün unter Linux |
-| M2 | Bibliothek + Rezeptdetail mit Glas-Chrome, Palette, Hero/MeshGradient, Suche | CI grün; Optik laut Geräte-Prüfliste (Abschnitt 10) |
+| M2 | Bibliothek + Rezeptdetail mit Glas-Chrome, Palette, Hero/MeshGradient, Suche | Erledigt (PR #4): CI grün, 41 Tests; Optik offen laut Geräte-Prüfliste |
 | M3 | Kochmodus mit Gerätekonsole, Timer, Bildschirm-wach | Ein Rezept komplett durchkochbar |
 | M4 | Hintergrund-Timer, Mitteilungen, Live Activity mit Knöpfen, App Intents für Siri (Sprachmodus Schicht 1) | Timer überlebt Sperren und App-Wechsel, „Hey Siri, nächster Schritt“ funktioniert |
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion | Test-Checkliste abgehakt |
@@ -307,6 +307,8 @@ Getroffen (2026-10-25):
    Folge: keine Geheimnisse ins Repo, nie ein selbst gehosteter Runner für Pull Requests.
 6. **Keine 60-°C-Regel**: nicht belegt, keine Prüfung und keine Warnung.
 7. **Gerät iPhone 18, Sprachmodus mit dauerhaftem Zuhören** im Kochmodus.
+8. (Loop, umkehrbar) **Portionen 1 bis 8**, zusätzlich begrenzt durch die Füllmarke; Detail und Kochmodus nutzen denselben Bereich.
+9. (Loop, umkehrbar) **App-Icon kommt mit M5**; bis dahin verlangt der Build keins.
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
