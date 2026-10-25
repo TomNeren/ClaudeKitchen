@@ -44,6 +44,8 @@ Vorbild ist das Artefakt **„Omni Cook Kochführung“** (claude.ai/artifact/QB
 - **Freihändige Bedienung**: „Weiter“ per Sprache (App Intents / Siri) oder per Annäherung, weil
   man beim Kochen schmutzige Hände hat.
 - **Wochenplan**.
+- **Dampf-Menüs**: Hauptgericht im Dampfaufsatz, Beilage im Topf gleichzeitig (z. B. Lachs oben, Reis
+  unten). Die App plant die Reihenfolge so, dass beides zur selben Zeit fertig ist.
 
 ### Bewusst nicht im Plan
 - Direkte Gerätesteuerung über WLAN: in einer früheren Session untersucht, derzeit nicht machbar (Abschnitt 6.2).
@@ -113,6 +115,7 @@ struct DeviceProfile {              // Grenzwerte und Regeln je Modellvariante
     var temperatureStep: Int
     var speedLevels: ClosedRange<Int>
     var maxFillLiters: Double
+    var ownedAccessories: Set<Accessory>   // Bestand: Dampfaufsatz, Garkorb, Schneebesen
     var rules: [Rule]               // z. B. "über 60 °C keine hohe Stufe"
 }
 ```
@@ -143,7 +146,7 @@ Wo beide sich widersprechen, gilt das Handbuch. Alle Werte gehören in ein austa
 | Zeit (manuell) | bis 99 Min | Handbuch |
 | Stufen | **1 bis 10 vorwärts, dazu Linkslauf** (sanftes Rühren mit der Messerrückseite) | Handbuch. Ein Testbericht nennt 20 vorwärts / 10 rückwärts, das ist damit überholt |
 | Sicherheitsregel | **über 60 °C keine hohe Stufe** (sonst spritzt es) | Handbuch |
-| Dampfgaren | nur mit separatem Aufsatz, max. 2 kg in einer Lage | Handbuch |
+| Dampfgaren | nur mit separatem Aufsatz, max. 2 kg in einer Lage. **Aufsatz ist vorhanden** und wird eingeplant | Handbuch, Bestand bestätigt |
 | Programme | manuell + ca. 15 Programme: Wiegen, Kneten, Hacken, Mahlen, Entsaften, Dämpfen, Schmoren, Sous-vide, Joghurt | Tests, belegt |
 | Waage | integriert, ±1 g | Test, unsicher |
 | Zubehör | Dampfkorb, Schneebesen, Spatel, Messlöffel; Dampfaufsatz-Set separat | Tests, belegt |
@@ -155,6 +158,11 @@ Offen bleiben: Untergrenze und Schrittweite der Temperatur, ab welcher Stufe „
 Die Rezepte im Artefakt (Stufe 5, Linkslauf 1, 120 °C, Dampf) passen zu diesen Handbuchwerten.
 Sie gelten trotzdem erst als verlässlich, wenn sie einmal am Gerät gekocht wurden: Jedes Rezept
 bekommt dafür ein Feld `verified`.
+
+**Dampfaufsatz:** Er ist vorhanden. Dampfrezepte gehören deshalb schon in den Startbestand (der
+Ingwer-Lachs aus dem Artefakt nutzt ihn). Schritte mit Aufsatz zeigen ein eigenes Zubehör-Symbol, und
+`DeviceProfile.validate` prüft die 2-kg-Grenze pro Lage sowie die Wassermenge im Topf. Rezepte, die
+Zubehör brauchen, das nicht im Bestand ist, werden markiert statt ausgeblendet.
 
 ### 6.2 Direkter Zugriff über WLAN: Ergebnis der früheren Session
 
