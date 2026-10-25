@@ -112,17 +112,6 @@ extension RecipeDraft {
 
     /// "Rote Linsen" -> "rote-linsen"; appends -2, -3 … when taken.
     static func uniqueSlug(_ text: String, taken: inout Set<String>) -> String {
-        let folded = text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
-            .replacingOccurrences(of: "ß", with: "ss")
-        let words = folded.lowercased().split { !($0.isLetter || $0.isNumber) }
-        let base = words.isEmpty ? "zutat" : words.joined(separator: "-")
-        var slug = base
-        var counter = 2
-        while taken.contains(slug) {
-            slug = "\(base)-\(counter)"
-            counter += 1
-        }
-        taken.insert(slug)
-        return slug
+        Slug.unique(text, fallback: "zutat", taken: &taken)
     }
 }

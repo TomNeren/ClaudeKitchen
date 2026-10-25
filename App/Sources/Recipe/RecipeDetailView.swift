@@ -6,9 +6,16 @@ import SwiftUI
 struct RecipeDetailView: View {
     @State private var model: RecipeDetailModel
     private let onStartCooking: (_ servings: Int) -> Void
+    private let isOwn: Bool
+    private let onEdit: (() -> Void)?
 
     /// `recipe` seeds the screen model once; the screen does not follow later changes to it.
-    init(recipe: Recipe, onStartCooking: @escaping (_ servings: Int) -> Void) {
+    init(
+        recipe: Recipe, isOwn: Bool = false, onEdit: (() -> Void)? = nil,
+        onStartCooking: @escaping (_ servings: Int) -> Void
+    ) {
+        self.isOwn = isOwn
+        self.onEdit = onEdit
         self.model = RecipeDetailModel(recipe: recipe)
         self.onStartCooking = onStartCooking
     }
@@ -29,6 +36,14 @@ struct RecipeDetailView: View {
         .background { WarmBackground(tint: Palette.accent(for: model.recipe.id)) }
         .navigationTitle(model.recipe.name)
         .toolbarTitleDisplayMode(.inline)
+        .toolbar {
+            if let onEdit {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(
+                        isOwn ? "Bearbeiten" : "Als eigenes Rezept bearbeiten", systemImage: "pencil", action: onEdit)
+                }
+            }
+        }
         .safeAreaBar(edge: .bottom) {
             Button {
                 onStartCooking(model.servings)

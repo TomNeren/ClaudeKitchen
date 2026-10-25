@@ -28,6 +28,7 @@ final class VoiceModeModel {
     private let device: DeviceProfile
     private let listener = SpeechListener()
     private let speaker = Speaker()
+    private let log: VoiceLogStore
     private var loop: Task<Void, Never>?
     /// The last shutdown of the listener; a new start waits for it.
     private var shutdown: Task<Void, Never>?
@@ -35,9 +36,10 @@ final class VoiceModeModel {
     private var restarts = 0
     private static let maxRestarts = 3
 
-    init(cooking: CookingScreenModel, device: DeviceProfile = .omniCook) {
+    init(cooking: CookingScreenModel, device: DeviceProfile = .omniCook, log: VoiceLogStore = .shared) {
         self.cooking = cooking
         self.device = device
+        self.log = log
     }
 
     var isOn: Bool {
@@ -99,10 +101,18 @@ final class VoiceModeModel {
     }
 
     private func handle(_ sentence: String) async {
-        guard state == .listening, let command = VoiceCommand.parse(sentence) else { return }
+        guard state == .listening else { return }
+        let command = VoiceCommand.parse(sentence)
+        let logging = VoiceLogStore.isEnabled
+        if logging {
+            // Ignored sentences too: they show what the rules missed.
+            await log.append(.init(date: .now, heard: sentence, command: command?.logName))
+        }
+        guard let command else { return }
         state = .answering
         defer { if state == .answering { state = .listening } }
         guard case (let reply, let isUnchecked)? = await reply(to: command), !Task.isCancelled else { return }
+        if logging { await log.setLastReply(reply) }
         exchange = Exchange(heard: sentence, reply: reply, isUnchecked: isUnchecked)
         listener.isMuted = true
         await speaker.say(reply)

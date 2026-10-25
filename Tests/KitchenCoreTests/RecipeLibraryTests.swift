@@ -20,6 +20,17 @@ struct RecipeLibraryTests {
         }
     }
 
+    @Test func substitutesAreNamedWithAPositiveRatioAndDifferFromTheOriginal() throws {
+        for recipe in try RecipeLibrary.bundled() {
+            for ingredient in recipe.ingredients {
+                for substitute in ingredient.substitutes {
+                    #expect(!substitute.name.isEmpty && substitute.ratio > 0, "\(recipe.id)/\(ingredient.id)")
+                    #expect(substitute.name != ingredient.name, "\(recipe.id)/\(ingredient.id)")
+                }
+            }
+        }
+    }
+
     @Test func everyBundledRecipeRoundTripsThroughJSON() throws {
         for recipe in try RecipeLibrary.bundled() {
             let data = try JSONEncoder().encode(recipe)
