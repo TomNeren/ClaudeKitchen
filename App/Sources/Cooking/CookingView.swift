@@ -10,8 +10,11 @@ struct CookingView: View {
     private let onFinish: @MainActor () -> Void
 
     /// `recipe` and `servings` seed the screen model once.
-    init(recipe: Recipe, servings: Int, onFinish: @escaping @MainActor () -> Void) {
-        self.model = CookingScreenModel(recipe: recipe, servings: servings)
+    init(
+        recipe: Recipe, servings: Int, alarms: any AlarmScheduler = SystemAlarmScheduler.shared,
+        onFinish: @escaping @MainActor () -> Void
+    ) {
+        self.model = CookingScreenModel(recipe: recipe, servings: servings, alarms: alarms)
         self.onFinish = onFinish
     }
 
@@ -60,7 +63,10 @@ struct CookingView: View {
             if phase == .active { model.tick() }
         }
         .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
-        .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
+        .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
+            model.end()
+        }
         .sensoryFeedback(.success, trigger: session.finishedTimerCount)
         .sensoryFeedback(.selection, trigger: session.stepIndex)
     }
@@ -321,7 +327,7 @@ private struct TimerControl: View {
 #Preview {
     if let recipe = Recipe.fixtures.first {
         NavigationStack {
-            CookingView(recipe: recipe, servings: 3) {}
+            CookingView(recipe: recipe, servings: 3, alarms: NoAlarmScheduler()) {}
         }
     }
 }

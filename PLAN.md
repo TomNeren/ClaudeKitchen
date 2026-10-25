@@ -291,7 +291,7 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M1 | `KitchenCore`: Modelle, JSON-Schema, 3 Rezepte migriert, Skalierung, Formatierung, `DeviceProfile.validate`, Kochsitzung mit Timer, Ersatzzutaten | Erledigt: 33 Tests grün unter Linux |
 | M2 | Bibliothek + Rezeptdetail mit Glas-Chrome, Palette, Hero/MeshGradient, Suche | Erledigt (PR #4): CI grün, 41 Tests; Optik offen laut Geräte-Prüfliste |
 | M3 | Kochmodus mit Gerätekonsole, Timer, Bildschirm-wach | Erledigt (PR #5): CI grün, 47 Tests; Durchkochen offen laut Geräte-Prüfliste |
-| M4 | Hintergrund-Timer, Mitteilungen, Live Activity mit Knöpfen, App Intents für Siri (Sprachmodus Schicht 1) | Timer überlebt Sperren und App-Wechsel, „Hey Siri, nächster Schritt“ funktioniert |
+| M4 | Hintergrund-Timer, Mitteilungen, Live Activity mit Knöpfen, App Intents für Siri (Sprachmodus Schicht 1) | M4a Timer per AlarmKit erledigt (PR #6, 50 Tests); M4b Live Activity mit Schritt-Knöpfen, M4c Siri folgen |
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion | Test-Checkliste abgehakt |
 | M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Importiertes Rezept besteht Validierung |
 | M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Ein Rezept komplett per Sprache durchkochbar |
@@ -311,6 +311,7 @@ Getroffen (2026-10-25):
 9. (Loop, umkehrbar) **App-Icon kommt mit M5**; bis dahin verlangt der Build keins.
 10. (Loop, umkehrbar) **Ein laufender Timer bleibt beim Schrittwechsel erhalten** und zeigt „Timer aus Schritt N“; erst Zurücksetzen lädt den Timer des aktuellen Schritts.
 11. (Loop, umkehrbar) **Mit „Bewegung reduzieren“** wechseln Schritte per Überblendung und nur über die Knöpfe, ohne Wischen.
+12. (Loop, umkehrbar) **Timer im Hintergrund über AlarmKit** statt normaler Mitteilung: klingelt auch bei Stumm-Modus und Fokus, mit Countdown auf Sperrbildschirm und Dynamic Island (Widget-Extension). Ein abgelaufener Alarm klingelt weiter, bis du ihn stoppst.
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
@@ -364,3 +365,7 @@ Geräte-Prüfliste. Der Loop endet, wenn M7 gemergt ist oder alles Verbleibende 
 - [ ] M3: Ein Rezept komplett durchkochen: Wischen und Knöpfe, Gerätekonsole lesbar aus etwa 60 cm
 - [ ] M3: Timer: Start, Pause, Zurücksetzen, Haptik beim Ablauf; Bildschirm bleibt an
 - [ ] M3: Timer läuft nach App-Wechsel richtig weiter (Mitteilung im Hintergrund erst ab M4)
+- [ ] M4a: Erlaubnis-Abfrage für Alarme beim ersten Timer-Start
+- [ ] M4a: Timer klingelt bei gesperrtem iPhone und im Stumm-Modus; Countdown auf Sperrbildschirm und in der Dynamic Island
+- [ ] M4a: Pause in der App nimmt den Countdown vom Sperrbildschirm, Fortsetzen zeigt ihn wieder; Zurücksetzen und Verlassen des Kochmodus entfernen ihn
+- [ ] M4a: Ein abgelaufener Alarm klingelt weiter, auch wenn du den Kochmodus verlässt, bis du ihn stoppst

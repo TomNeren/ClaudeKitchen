@@ -9,10 +9,18 @@ final class CookingScreenModel {
     private(set) var now: ContinuousClock.Instant
 
     private let clock = ContinuousClock()
+    private let alarms: any AlarmScheduler
+    /// Last alarm handed to the scheduler, and the chain of pending hand-overs so they apply in order.
+    private var appliedAlarm: TimerAlarm?
+    private var alarmUpdate: Task<Void, Never>?
 
-    init(recipe: Recipe, servings: Int, profile: DeviceProfile = .omniCook) {
+    init(
+        recipe: Recipe, servings: Int, profile: DeviceProfile = .omniCook,
+        alarms: any AlarmScheduler = SystemAlarmScheduler.shared
+    ) {
         session = CookingSession(recipe: recipe, servings: servings, servingsRange: profile.servingsRange(for: recipe))
         now = clock.now
+        self.alarms = alarms
     }
 
     var remaining: Duration? { session.timer.remaining(at: now) }
@@ -28,7 +36,23 @@ final class CookingScreenModel {
     func tick() {
         guard session.isTimerRunning else { return }
         now = clock.now
+        let finished = session.finishedTimerCount
         session.send(.tick(now))
+        if session.finishedTimerCount != finished {
+            syncAlarm()
+        }
+    }
+
+    /// Leaving the cooking mode removes the timer, unless it already rang: then it rings until the cook stops it.
+    func end() {
+        if case .finished = session.alarm?.phase { return }
+        appliedAlarm = nil
+        let previous = alarmUpdate
+        let alarms = self.alarms
+        alarmUpdate = Task {
+            await previous?.value
+            await alarms.apply(nil)
+        }
     }
 
     /// Ticks four times a second while a timer runs and idles otherwise. Cancelled with the view's `.task`.
@@ -42,5 +66,19 @@ final class CookingScreenModel {
     private func send(_ action: CookingAction) {
         session.send(action)
         now = clock.now
+        syncAlarm()
+    }
+
+    /// Hands the session's alarm to the system whenever it changes, one hand-over after the other.
+    private func syncAlarm() {
+        let alarm = session.alarm
+        guard alarm != appliedAlarm else { return }
+        appliedAlarm = alarm
+        let previous = alarmUpdate
+        let alarms = self.alarms
+        alarmUpdate = Task {
+            await previous?.value
+            await alarms.apply(alarm)
+        }
     }
 }
