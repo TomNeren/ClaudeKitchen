@@ -363,7 +363,7 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion, App-Icon | Erledigt (PR #8); Gefühl und Lesbarkeit offen laut Geräte-Prüfliste |
 | M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Importiertes Rezept besteht Validierung |
 | M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Ein Rezept komplett per Sprache durchkochbar |
-| M8 | M8a in Arbeit. Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
+| M8 | M8a erledigt (PR #12), M8b offen. Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
 | M9 | Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil; in der App Umschalter Original/Gesund mit Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
 | M10 | Rezeptbestand: `origin`, `references`, `variantOf`, 12 traditionelle Rezepte; Bibliothek filtert nach Küche | Alle 12 bestehen `validate` und sind vollständig zugeordnet |
 | M11 | Einkauf und Vorrat: Bedarf minus Vorrat, Mindestbestand, Abbuchen nach dem Kochen, Export nach Erinnerungen und Teilen (Abschnitt 3d) | Logik-Tests in KitchenCore; Export am Gerät laut Prüfliste |
