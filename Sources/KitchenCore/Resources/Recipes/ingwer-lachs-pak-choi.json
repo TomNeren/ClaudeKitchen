@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "ingwer-lachs-pak-choi",
+  "name": "Ingwer-Lachs mit Pak Choi",
+  "tag": "Asiatisch · Dampf",
+  "baseServings": 3,
+  "totalMinutes": 25,
+  "verified": false,
+  "ingredients": [
+    { "id": "wasser", "name": "Wasser", "quantity": 700, "unit": "g", "note": "in den Topf", "scales": false },
+    { "id": "lachs", "name": "Lachsfilet", "quantity": 3, "unit": "Stk", "note": "à 150 g",
+      "substitutes": [
+        { "name": "Kabeljaufilet", "ratio": 1, "note": "2 Min kürzer dämpfen" },
+        { "name": "Lachsforelle", "ratio": 1 }
+      ] },
+    { "id": "pak-choi", "name": "Pak Choi", "quantity": 300, "unit": "g",
+      "substitutes": [ { "name": "Brokkoli", "ratio": 1, "note": "in Röschen, mit dem Lachs zusammen 7 Min" } ] },
+    { "id": "ingwer", "name": "Ingwer, in Scheiben", "quantity": 25, "unit": "g" },
+    { "id": "fruehlingszwiebel", "name": "Frühlingszwiebel", "quantity": 2, "unit": "Stk" },
+    { "id": "sojasauce", "name": "Sojasauce", "quantity": 30, "unit": "g" },
+    { "id": "sesamoel", "name": "Sesamöl", "quantity": 10, "unit": "g" },
+    { "id": "limette", "name": "Limette", "quantity": 1, "unit": "Stk",
+      "substitutes": [ { "name": "Zitrone", "ratio": 1 } ] },
+    { "id": "honig", "name": "Honig", "quantity": 1, "unit": "TL",
+      "substitutes": [ { "name": "Ahornsirup", "ratio": 1 } ] },
+    { "id": "sesam", "name": "Sesam, geröstet", "quantity": 1, "unit": "EL" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Vorbereiten", "text": "Wasser in den Topf geben und den Dampfaufsatz vorbereiten.",
+      "note": "Max. 2 kg in einer Lage.", "ingredientIDs": ["wasser"] },
+    { "id": "s2", "phase": "Einlegen", "text": "Lachs und Ingwerscheiben in den Dampfaufsatz legen.",
+      "note": "Haut nach unten, Ingwer auf den Fisch.", "ingredientIDs": ["lachs", "ingwer"],
+      "accessory": "steamer" },
+    { "id": "s3", "phase": "Dämpfen", "text": "Modus „Dampfgaren“ wählen und starten.",
+      "note": "Temperatur und Stufe sind im Dampfmodus fest. Deckel schließen.",
+      "setting": { "program": "steam", "heat": "steam", "seconds": 720 }, "accessory": "steamer" },
+    { "id": "s4", "phase": "Gemüse", "text": "Pak Choi halbiert dazulegen und weiter dämpfen.",
+      "note": "Kommt später dazu, damit er grün und knackig bleibt.", "ingredientIDs": ["pak-choi"],
+      "setting": { "program": "steam", "heat": "steam", "seconds": 300 }, "accessory": "steamer" },
+    { "id": "s5", "phase": "Dressing", "text": "Dressing rühren: Sojasauce, Sesamöl, Limettensaft, Honig.",
+      "note": "In einer Schale verquirlen, nicht im Topf.",
+      "ingredientIDs": ["sojasauce", "sesamoel", "limette", "honig"] },
+    { "id": "s6", "phase": "Anrichten",
+      "text": "Lachs und Pak Choi anrichten, Dressing darüber, Sesam und Frühlingszwiebel.",
+      "note": "Fertig.", "ingredientIDs": ["sesam", "fruehlingszwiebel"] }
+  ]
+}

@@ -41,11 +41,45 @@ Vorbild ist das Artefakt **„Omni Cook Kochführung“** (claude.ai/artifact/QB
   bevor es gespeichert wird. Das ist der eigentliche Mehrwert von „aufbereiten“.
 - **Eigene Rezepte** anlegen und bearbeiten (SwiftData).
 - **Einkaufsliste** aus mehreren Rezepten, Export an Erinnerungen.
-- **Freihändige Bedienung**: „Weiter“ per Sprache (App Intents / Siri) oder per Annäherung, weil
-  man beim Kochen schmutzige Hände hat.
+- **Sprachmodus** mit Gespräch statt nur Vorlesen, siehe Abschnitt 3a.
 - **Wochenplan**.
 - **Dampf-Menüs**: Hauptgericht im Dampfaufsatz, Beilage im Topf gleichzeitig (z. B. Lachs oben, Reis
   unten). Die App plant die Reihenfolge so, dass beides zur selben Zeit fertig ist.
+
+### 3a. Sprachmodus: mit dem Handy übers Kochen reden
+
+Ziel: Beim Kochen mit nassen Händen fragen „Was ist der nächste Schritt?“, „Wie lange noch?“ oder
+„Mir fehlt der Feta, was kann ich nehmen?“ und eine gesprochene Antwort bekommen. Vorlesen allein reicht nicht.
+
+**Was die Live Activity dabei leisten kann und was nicht:** Sie zeigt Schritt und Timer auf dem
+Sperrbildschirm und in der Dynamic Island und bekommt Knöpfe („Weiter“, „Timer starten“) über App Intents.
+Ein Gespräch kann sie nicht führen. Das Gespräch läuft im Kochmodus der App, die ohnehin den Bildschirm
+wach hält. Bei gesperrtem Gerät übernimmt Siri über dieselben App Intents.
+
+**Aufbau in drei Schichten:**
+
+| Schicht | Technik | Was sie kann |
+|---|---|---|
+| 1. Feste Befehle | App Intents + Siri, Knöpfe in der Live Activity | „Weiter“, „Zurück“, „Timer starten“, „Wie lange noch?“, auch bei gesperrtem Gerät |
+| 2. Gespräch im Kochmodus | `SpeechAnalyzer` (Spracherkennung auf dem Gerät) → Absichtserkennung → Antwort per `AVSpeechSynthesizer` | Freies Sprechen ohne Tippen; einfache Fragen werden ohne KI beantwortet |
+| 3. Offene Fragen | Foundation Models (Sprachmodell von Apple auf dem Gerät) mit Werkzeugen für aktuellen Schritt, Zutaten und Ersatzliste; optional Claude API für schwierige Fälle | „Geht das auch ohne Kokosmilch?“, „Kann ich statt Spinat Mangold nehmen?“ |
+
+**Ersatzzutaten:** Jede Zutat im Rezept-JSON kann eine gepflegte Ersatzliste tragen (Name, Mengenverhältnis,
+Hinweis). Seit M1 ist das im Datenmodell, inklusive Mengenberechnung für die gewählte Portionszahl
+(`Ingredient.substitutions`). Die gepflegte Liste ist die verlässliche Antwort. Das Sprachmodell darf
+darüber hinaus Vorschläge machen, kennzeichnet sie aber als ungeprüft. Ändert ein Ersatz die Garzeit
+(z. B. Kabeljau statt Lachs), steht das im Hinweis.
+
+**Wo die Logik sitzt:** Absichtserkennung für feste Befehle und Ersatzsuche liegen in `KitchenCore` und sind
+unter Linux testbar. Spracherkennung, Sprachausgabe, Foundation Models und Siri liegen in der App.
+
+**Einschränkungen, die vorher zu prüfen sind:**
+- Foundation Models braucht ein Gerät mit Apple Intelligence (iPhone 15 Pro oder neuer, iPad mit M-Chip)
+  und eingeschaltete Apple Intelligence. Ohne das bleiben Schicht 1 und 2.
+- Deutsch für `SpeechAnalyzer` und Foundation Models gilt als unterstützt, das prüfe ich vor dem Bau.
+- Ein eigenes Weckwort („Hey Omni“) erlaubt iOS nicht. Im Kochmodus hört die App deshalb dauerhaft zu,
+  solange er offen ist, mit sichtbarer Mikrofonanzeige. Alternativ: ein großer Sprechknopf.
+- Dauerhaftes Zuhören kostet Akku. Für einen Kochvorgang von 30 bis 60 Minuten ist das vertretbar.
 
 ### Bewusst nicht im Plan
 - Direkte Gerätesteuerung über WLAN: in einer früheren Session untersucht, derzeit nicht machbar (Abschnitt 6.2).
@@ -255,12 +289,13 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | # | Inhalt | Ergebnis / Abnahme |
 |---|---|---|
 | M0 | Repo-Gerüst. Erledigt durch PR #1: `KitchenCore`, Projekt-Skills, Linux-CI, Umgebung „ClaudeKitchen“. Neu: `App/project.yml` (XcodeGen), leere App, macOS-Job in der CI | CI baut KitchenCore und die leere App grün |
-| M1 | `KitchenCore`: Modelle, JSON-Schema, 3 Rezepte migriert, Skalierung, `DeviceProfile.validate`, Timer-Logik | Alle Tests grün, auch unter Linux |
+| M1 | `KitchenCore`: Modelle, JSON-Schema, 3 Rezepte migriert, Skalierung, Formatierung, `DeviceProfile.validate`, Kochsitzung mit Timer, Ersatzzutaten | Erledigt: 33 Tests grün unter Linux |
 | M2 | Bibliothek + Rezeptdetail mit Glas-Chrome, Palette, Hero/MeshGradient | Screenshots vom Gerät |
 | M3 | Kochmodus mit Gerätekonsole, Timer, Bildschirm-wach | Ein Rezept komplett durchkochbar |
-| M4 | Hintergrund-Timer, Mitteilungen, Live Activity | Timer überlebt Sperren und App-Wechsel |
+| M4 | Hintergrund-Timer, Mitteilungen, Live Activity mit Knöpfen, App Intents für Siri (Sprachmodus Schicht 1) | Timer überlebt Sperren und App-Wechsel, „Hey Siri, nächster Schritt“ funktioniert |
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion | Test-Checkliste abgehakt |
 | M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Importiertes Rezept besteht Validierung |
+| M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Ein Rezept komplett per Sprache durchkochbar |
 
 ## 9. Entscheidungen
 

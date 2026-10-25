@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "zitronen-linsen-eintopf",
+  "name": "Zitronen-Linsen-Eintopf",
+  "tag": "Mediterran · Ikaria",
+  "baseServings": 3,
+  "totalMinutes": 35,
+  "verified": false,
+  "ingredients": [
+    { "id": "zwiebel", "name": "Zwiebel", "quantity": 1, "unit": "Stk" },
+    { "id": "knoblauch", "name": "Knoblauch", "quantity": 2, "unit": "Zehen" },
+    { "id": "olivenoel", "name": "Olivenöl", "quantity": 30, "unit": "g" },
+    { "id": "linsen", "name": "Rote Linsen", "quantity": 200, "unit": "g",
+      "substitutes": [
+        { "name": "Gelbe Linsen", "ratio": 1 },
+        { "name": "Berglinsen", "ratio": 1, "note": "10 Min länger köcheln, bleiben bissfester" }
+      ] },
+    { "id": "tomaten", "name": "Gehackte Tomaten", "quantity": 400, "unit": "g", "note": "Dose" },
+    { "id": "bruehe", "name": "Gemüsebrühe", "quantity": 500, "unit": "g", "note": "heiß" },
+    { "id": "oregano", "name": "Oregano, getrocknet", "quantity": 2, "unit": "TL",
+      "substitutes": [ { "name": "Thymian, getrocknet", "ratio": 1 } ] },
+    { "id": "lorbeer", "name": "Lorbeerblatt", "quantity": 1, "unit": "Stk", "scales": false },
+    { "id": "zitrone", "name": "Zitrone", "quantity": 1, "unit": "Stk", "note": "Saft und Schale",
+      "substitutes": [ { "name": "Limette", "ratio": 1, "note": "etwas herber" } ] },
+    { "id": "feta", "name": "Feta", "quantity": 120, "unit": "g",
+      "substitutes": [
+        { "name": "Hirtenkäse", "ratio": 1 },
+        { "name": "Griechischer Joghurt", "ratio": 1, "note": "als Klecks statt gebröselt" }
+      ] },
+    { "id": "salz-pfeffer", "name": "Salz, Pfeffer" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Vorbereiten", "text": "Zwiebel und Knoblauch schälen und in den Topf geben.",
+      "note": "Grob halbiert reicht, das Gerät zerkleinert.", "ingredientIDs": ["zwiebel", "knoblauch"],
+      "setting": { "speed": 5, "seconds": 5 } },
+    { "id": "s2", "phase": "Anschwitzen", "text": "Olivenöl zugeben und alles andünsten.",
+      "note": "Linkslauf hält es in Bewegung, ohne zu pürieren.", "ingredientIDs": ["olivenoel"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 180 } },
+    { "id": "s3", "phase": "Zugeben", "text": "Linsen, Tomaten, heiße Brühe, Oregano und Lorbeer zugeben.",
+      "note": "Füllmarke 2,2 l nicht überschreiten.",
+      "ingredientIDs": ["linsen", "tomaten", "bruehe", "oregano", "lorbeer"] },
+    { "id": "s4", "phase": "Köcheln", "text": "Deckel schließen und köcheln lassen, bis die Linsen weich sind.",
+      "note": "Messbecher aufsetzen. Bei Bedarf einen Schuss Wasser nachgeben.",
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 1200 } },
+    { "id": "s5", "phase": "Abschmecken", "text": "Lorbeer entfernen. Zitronensaft und -schale unterrühren, abschmecken.",
+      "note": "Die Säure macht den Eintopf frisch.", "ingredientIDs": ["zitrone", "salz-pfeffer"],
+      "setting": { "speed": 1, "reverse": true, "seconds": 60 } },
+    { "id": "s6", "phase": "Anrichten", "text": "In Schalen füllen und mit zerbröseltem Feta bestreuen. Fertig.",
+      "note": "Dazu passt ein Löffel Joghurt.", "ingredientIDs": ["feta"] }
+  ]
+}

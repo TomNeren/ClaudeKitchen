@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "id": "kichererbsen-spinat-curry",
+  "name": "Kichererbsen-Spinat-Curry",
+  "tag": "Indisch · Curry",
+  "baseServings": 3,
+  "totalMinutes": 30,
+  "verified": false,
+  "ingredients": [
+    { "id": "zwiebel", "name": "Zwiebel", "quantity": 1, "unit": "Stk" },
+    { "id": "knoblauch", "name": "Knoblauch", "quantity": 2, "unit": "Zehen" },
+    { "id": "ingwer", "name": "Ingwer, frisch", "quantity": 20, "unit": "g",
+      "substitutes": [ { "name": "Ingwerpulver", "ratio": 0.1, "note": "etwa 1 TL statt 20 g" } ] },
+    { "id": "oel", "name": "Olivenöl oder Ghee", "quantity": 25, "unit": "g" },
+    { "id": "kreuzkuemmel", "name": "Kreuzkümmel, gemahlen", "quantity": 1, "unit": "TL" },
+    { "id": "kurkuma", "name": "Kurkuma", "quantity": 1, "unit": "TL" },
+    { "id": "garam-masala", "name": "Garam Masala", "quantity": 2, "unit": "TL",
+      "substitutes": [ { "name": "Currypulver", "ratio": 1, "note": "weniger tief im Geschmack" } ] },
+    { "id": "tomaten", "name": "Gehackte Tomaten", "quantity": 400, "unit": "g", "note": "Dose" },
+    { "id": "kichererbsen", "name": "Kichererbsen, abgetropft", "quantity": 400, "unit": "g",
+      "substitutes": [ { "name": "Weiße Bohnen, abgetropft", "ratio": 1 } ] },
+    { "id": "kokosmilch", "name": "Kokosmilch", "quantity": 200, "unit": "g",
+      "substitutes": [
+        { "name": "Sahne", "ratio": 1, "note": "weniger exotisch" },
+        { "name": "Griechischer Joghurt", "ratio": 1, "note": "erst am Ende ohne Hitze unterrühren, sonst flockt er" }
+      ] },
+    { "id": "spinat", "name": "Blattspinat", "quantity": 200, "unit": "g", "note": "frisch oder TK",
+      "substitutes": [ { "name": "Mangold", "ratio": 1, "note": "Stiele klein schneiden, 2 Min länger" } ] },
+    { "id": "salz", "name": "Salz" },
+    { "id": "blumenkohl", "name": "Blumenkohl", "quantity": 500, "unit": "g", "note": "für Blumenkohlreis" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Vorbereiten", "text": "Zwiebel, Knoblauch und Ingwer schälen und in den Topf geben.",
+      "note": "Ingwer grob würfeln.", "ingredientIDs": ["zwiebel", "knoblauch", "ingwer"],
+      "setting": { "speed": 5, "seconds": 6 } },
+    { "id": "s2", "phase": "Gewürze", "text": "Öl und die Gewürze zugeben und anrösten.",
+      "note": "Kurz anrösten macht die Gewürze rund. Linkslauf gegen Anbrennen.",
+      "ingredientIDs": ["oel", "kreuzkuemmel", "kurkuma", "garam-masala"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 240 } },
+    { "id": "s3", "phase": "Köcheln", "text": "Tomaten, Kichererbsen und Kokosmilch zugeben, Deckel schließen.",
+      "note": "Messbecher aufsetzen.", "ingredientIDs": ["tomaten", "kichererbsen", "kokosmilch"],
+      "setting": { "heat": 95, "speed": 1, "reverse": true, "seconds": 720 } },
+    { "id": "s4", "phase": "Spinat", "text": "Spinat zugeben und zusammenfallen lassen, dann salzen.",
+      "note": "TK-Spinat vorher antauen.", "ingredientIDs": ["spinat", "salz"],
+      "setting": { "heat": 90, "speed": 1, "reverse": true, "seconds": 240 } },
+    { "id": "s5", "phase": "Beilage", "text": "Für Blumenkohlreis: Blumenkohl in Röschen 8 Sek zerkleinern.",
+      "note": "Curry vorher umfüllen und warm halten. Sauberer Topf, kurz pulsen. Roh oder 3 Min gedämpft.",
+      "ingredientIDs": ["blumenkohl"], "setting": { "speed": 5, "seconds": 8 }, "freshPot": true },
+    { "id": "s6", "phase": "Anrichten", "text": "Curry auf dem Blumenkohlreis anrichten.",
+      "note": "Mit frischem Koriander servieren." }
+  ]
+}
