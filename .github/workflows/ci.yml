@@ -49,4 +49,39 @@ jobs:
         run: swift test
 
       - name: Lint
-        run: swift format lint --strict --recursive Sources Tests Package.swift
+        run: swift format lint --strict --recursive Sources Tests Package.swift App/Sources
+
+  app-ios:
+    # Xcode 27 ships on its own image label (macOS 27, Apple Silicon), not on macos-26.
+    runs-on: xcode-27
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 27
+        run: |
+          ls -d /Applications/Xcode*.app
+          XCODE=$(ls -d /Applications/Xcode_27*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$XCODE" ]; then
+            sudo xcode-select -s "$XCODE/Contents/Developer"
+          fi
+          xcodebuild -version
+          if ! xcodebuild -version | head -1 | grep -q '^Xcode 27'; then
+            echo "::error::No Xcode 27 on this runner image; KitchenCore needs Swift 6.4 tools."
+            exit 1
+          fi
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate project
+        run: xcodegen generate --spec App/project.yml
+
+      - name: Build app for iOS Simulator
+        run: |
+          xcodebuild build \
+            -project App/ClaudeKitchen.xcodeproj \
+            -scheme ClaudeKitchen \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO
