@@ -1,21 +1,47 @@
 # ClaudeKitchen
 
-Swift-App (iOS/iPadOS 26+), die Rezepte für den TOKIT Omni Cook Schritt für Schritt aufbereitet.
-Gesamtplan und Entscheidungen: `PLAN.md`.
+Swift 6 iOS/iPadOS cooking app: guided step-by-step cooking for a multicooker, with device settings per step, timers and portion scaling.
 
-## Regeln
-- Sprache der App und der Doku: Deutsch. Keine Gedankenstriche (em dash) in Texten.
-- Kernlogik gehört in das Paket `OmniKit` ohne SwiftUI-Abhängigkeit, damit sie unter Linux testbar bleibt.
-- Gerätewerte (Temperatur, Stufen, Füllmenge, Regeln) nur über `DeviceProfile`, nie fest im UI-Code.
-- Jedes Rezept-JSON muss `DeviceProfile.validate` bestehen; der Test läuft über alle Bundle-Rezepte.
-- Kein eingechecktes `.xcodeproj`: Projekt wird mit XcodeGen aus `project.yml` erzeugt.
+**Targets iOS 27 only** (Swift 6.4.1, `swift-tools-version: 6.4`). No fallbacks for older systems. Motion is modern and high fidelity: tuned, interruptible, tokenised (see `app-architecture`, section 6).
 
-## Liquid Glass
-- Vor Glas-Code den Skill `liquid-glass` laden (Verfügbarkeiten), für Animation `liquid-glass-motion`.
-- Glas nur auf Bedienebene (Leisten, Gerätekonsole, Buttons), nie auf Schritttext oder Zutatenliste.
-- Benachbarte Glasflächen in einen `GlassEffectContainer`. Kein `.if`-Modifier, stattdessen `.identity`.
-- Keine `opacity < 1` auf Glas oder Vorfahren. Unter Glas immer Bild oder MeshGradient, keine Einfarbfläche.
+## Layout
 
-## Bauen und Prüfen
-- In der Cloud-Umgebung gibt es kein Xcode: `OmniKit` mit `swift test` prüfen, die App über GitHub Actions (macOS).
-- Glasdarstellung nur auf echtem Gerät beurteilen, nicht anhand von Simulator-Screenshots.
+- `Package.swift`, `Sources/KitchenCore`, `Tests/KitchenCoreTests`: platform-neutral logic. Builds and tests on Linux.
+- `App/` (to come): Xcode project with the SwiftUI app. Builds only on a Mac with Xcode.
+
+Read the `app-architecture` skill before adding features or types. KitchenCore imports only Foundation.
+
+## Commands
+
+```bash
+swift build --build-tests
+swift test
+swift format lint --recursive Sources Tests
+```
+
+## CI
+
+`.github/workflows/ci.yml` runs build, test and strict lint on a GitHub-hosted `ubuntu-24.04` runner with Swift 6.4.1 (installed via swiftly, cached), read-only permissions. The repo is public: never use a self-hosted runner for pull request jobs, since fork PRs could run code on it.
+
+## Cloud sessions
+
+Cloud sessions run on Linux: there is no Xcode, iOS SDK, SwiftUI or simulator. Write and test logic in KitchenCore. App code written in the cloud is not compiled there; say so in the PR.
+
+## Skills in this repo
+
+- `app-architecture`: our own rules for structure, concurrency, state, testing.
+- `liquid-glass`, `liquid-glass-motion`, `apple-motion-feel`: Liquid Glass material, motion and spring values (MIT, Yordi de Kleijn).
+- `swiftui-expert-skill`: SwiftUI for iOS with SDK 27 API reference (`references/latest-apis.md`), state, layout, lists, performance, Instruments traces (MIT, Antoine van der Lee).
+
+## Projektregeln (TOKIT Omni Cook)
+
+Gesamtplan, Gerätedaten und Entscheidungen: `PLAN.md`.
+
+- Zielgerät ist der TOKIT Omni Cook (Original, 2,2 l, Dampfaufsatz vorhanden). Die App steuert das Gerät nicht, sie begleitet den manuellen Modus (`PLAN.md`, Abschnitt 6.2).
+- Gerätewerte (Temperatur, Stufen, Laufzeit, Füllmenge, Zubehör, Regeln) nur über `DeviceProfile` in KitchenCore, nie fest im UI-Code.
+- Jedes gebündelte Rezept muss `DeviceProfile.validate` bestehen; ein Test lädt alle JSON-Dateien.
+- Unbelegte Geräteregeln (z. B. „über 60 °C keine hohe Stufe“) sind Warnungen, keine Fehler.
+- Kein eingechecktes `.xcodeproj`: Das App-Projekt entsteht mit XcodeGen aus `App/project.yml`.
+- Doku und Texte für Menschen auf Deutsch, ohne Gedankenstriche (em dash). Code und Kommentare auf Englisch (siehe `app-architecture`).
+- Glas nur auf der Bedienebene (Leisten, Gerätekonsole, Buttons), nie auf Schritttext oder Zutatenliste. Unter Glas immer Bild oder MeshGradient, keine Einfarbfläche.
+- Kein Geheimnis ins Repo (öffentlich): API-Schlüssel gehören in die Keychain der App.
