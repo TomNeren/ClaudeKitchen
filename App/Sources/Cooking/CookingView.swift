@@ -92,7 +92,13 @@ struct CookingView: View {
             isFirstStep: session.isFirstStep, isLastStep: session.isLastStep,
             accent: Palette.accent(for: session.recipe.id),
             onPrevious: { withAnimation(Motion.stepAdvance) { model.previous() } },
-            onNext: session.isLastStep ? onFinish : { withAnimation(Motion.stepAdvance) { model.next() } },
+            onNext: {
+                if session.isLastStep {
+                    onFinish()
+                } else {
+                    withAnimation(Motion.stepAdvance) { model.next() }
+                }
+            },
             onStart: model.startTimer, onPause: model.pauseTimer, onReset: model.resetTimer)
     }
 
