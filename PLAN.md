@@ -62,7 +62,7 @@ wach hält. Bei gesperrtem Gerät übernimmt Siri über dieselben App Intents.
 |---|---|---|
 | 1. Feste Befehle | App Intents + Siri, Knöpfe in der Live Activity | „Weiter“, „Zurück“, „Timer starten“, „Wie lange noch?“, auch bei gesperrtem Gerät |
 | 2. Gespräch im Kochmodus | `SpeechAnalyzer` (Spracherkennung auf dem Gerät) → Absichtserkennung → Antwort per `AVSpeechSynthesizer` | Freies Sprechen ohne Tippen; einfache Fragen werden ohne KI beantwortet |
-| 3. Offene Fragen | Foundation Models (Sprachmodell von Apple auf dem Gerät) mit Werkzeugen für aktuellen Schritt, Zutaten und Ersatzliste; optional Claude API für schwierige Fälle | „Geht das auch ohne Kokosmilch?“, „Kann ich statt Spinat Mangold nehmen?“ |
+| 3. Offene Fragen | Foundation Models (Sprachmodell von Apple auf dem Gerät), Rezept, Portionen, aktueller Schritt und Ersatzliste als Kontext (Entscheidung 21) | „Omni, geht das auch ohne Kokosmilch?“, „Kann ich statt Spinat Mangold nehmen?“ |
 
 **Ersatzzutaten:** Jede Zutat im Rezept-JSON kann eine gepflegte Ersatzliste tragen (Name, Mengenverhältnis,
 Hinweis). Seit M1 ist das im Datenmodell, inklusive Mengenberechnung für die gewählte Portionszahl
@@ -294,7 +294,7 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M4 | Hintergrund-Timer, Mitteilungen, Live Activity mit Knöpfen, App Intents für Siri (Sprachmodus Schicht 1) | Erledigt: M4a Timer per AlarmKit (PR #6), M4b/M4c Live Activity mit Schritt-Knöpfen und Siri (PR #7); 53 Tests; Bedienung offen laut Geräte-Prüfliste |
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion, App-Icon | Erledigt (PR #8); Gefühl und Lesbarkeit offen laut Geräte-Prüfliste |
 | M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Erledigt (PR #10, 68 Tests): Import aus Text oder https-Link, Prüfung, Speichern, Löschen; Editor bei Bedarf; Test am Gerät braucht API-Schlüssel |
-| M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Ein Rezept komplett per Sprache durchkochbar |
+| M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Erledigt (PR #11, 76 Tests): `VoiceCommand` in KitchenCore, Zuhören, Antworten und KI-Fragen in der App; Durchkochen per Sprache offen laut Geräte-Prüfliste |
 
 ## 9. Entscheidungen
 
@@ -319,6 +319,10 @@ Getroffen (2026-10-25):
 17. **Rezept-Import über die Claude API mit API-Schlüssel** (deine Entscheidung). Ein Claude-Abo ist für eigene Apps nicht zugelassen, das Agent SDK läuft nicht auf iOS. Die App ruft die Messages API per HTTPS auf (kein offizielles Swift-SDK), Modell Claude Opus 5.5 mit niedrigem Aufwand, Antwort als festes JSON-Schema, danach `DeviceProfile.validate`. Schlüssel nur in der Keychain.
 18. (Loop, umkehrbar) **Eigene Rezepte als JSON-Dateien** in Application Support, im selben Format wie die mitgelieferten, statt SwiftData. Einfacher, ohne Migrationen, jederzeit exportierbar.
 19. (Loop, umkehrbar) **Kein Rezept-Editor in M6.** Importierte Rezepte lassen sich ansehen, kochen und löschen; Ändern heißt vorerst neu importieren. Ein Editor kommt, wenn du ihn vermisst.
+20. (Loop, umkehrbar) **Was beim Dauerzuhören zählt:** Feste Befehle („weiter“, „wie lange noch“, „Timer starten“, „welche Zutaten“) nur, wenn der Satz im Wesentlichen der Befehl ist (höchstens zwei Zusatzwörter wie „bitte“), auch nach „Omni“: „Omni, was mache ich, wenn der Reis nicht fertig ist?“ geht nicht weiter, sondern ist eine Frage. Ersatzfragen ohne „Omni“ („mir fehlt Lachs“, „was kann ich statt Kokosmilch nehmen“) nur bis 8 Wörter, und die App schweigt, wenn die Zutat nicht im Rezept steht („ich habe keine Ahnung …“). Nach „Omni“ geht alles Übrige ans Sprachmodell, auch „Omni, kann ich statt Spinat Mangold nehmen?“; nur „Omni, mir fehlt …“ und „Omni, Ersatz für …“ bleiben Ersatzfragen. Ein echtes Weckwort, das das Gerät aufweckt, erlaubt iOS nicht; „Omni“ filtert nur im laufenden Zuhören.
+21. (Loop, umkehrbar) **Freie Fragen mit Apples Sprachmodell auf dem Gerät**, nicht mit der Claude API: ohne Netz, ohne Kosten, schnell genug zum Vorlesen. Jede Frage bekommt eine neue Sitzung mit Rezept, Portionen, aktuellem Schritt, Ersatzliste und Gerätegrenzen als Kontext statt Werkzeugaufrufen (Rezepte sind kurz, das Kontextfenster läuft nie voll). Antworten stehen als „KI-Antwort, ungeprüft“ in der Statusanzeige. Ersatz aus der gepflegten Liste geht immer vor, das Modell kommt nur bei Zutaten ohne Liste dran.
+22. (Loop, umkehrbar) **Zuhören startet mit dem Kochmodus** (Entscheidung 7) und lässt sich über das Mikrofon oben rechts abschalten; das Abschalten gilt auch für spätere Kochvorgänge. Während die App spricht, ist das Mikrofon stumm, damit sie sich nicht selbst hört. Ausgabe über den Lautsprecher, andere Audio-Wiedergabe wird leiser. Im Hintergrund hört die App nicht zu (dafür sind Siri und die Live Activity da) und setzt beim Zurückkehren fort. Nach einem Anruf, Siri oder einem Wechsel auf AirPods startet sie das Zuhören von selbst neu (höchstens dreimal ohne erkannten Satz dazwischen).
+23. (Loop, umkehrbar) **Schrittbefehle per Sprache gehen denselben Weg wie Siri** (`CookingIntentTarget.perform`) und sagen dasselbe. „Weiter“ im letzten Schritt beendet den Kochmodus nicht, das bleibt beim Knopf.
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
@@ -387,3 +391,10 @@ Geräte-Prüfliste. Der Loop endet, wenn M7 gemergt ist oder alles Verbleibende 
 - [ ] M6: API-Schlüssel in den Einstellungen eintragen und wieder entfernen
 - [ ] M6: Import aus kopiertem Text und aus einem Link (https), Vorschau mit Prüfung, Speichern; eigenes Rezept erscheint oben in der Bibliothek, Löschen per langem Druck
 - [ ] M6: Werte eines importierten Rezepts einmal am Gerät gegenprüfen
+- [ ] M7: Beim ersten Kochmodus fragt iOS nach Mikrofon (und ggf. Spracherkennung); das deutsche Sprachmodell lädt, Statusanzeige zeigt „Ich höre zu“
+- [ ] M7: Ein Rezept komplett per Sprache durchkochen: „weiter“, „zurück“, „nochmal“, „wie lange noch“, „Timer starten“, „Pause“, „welche Zutaten“, mit laufendem Gerät und Dunstabzug
+- [ ] M7: Gespräch in der Küche (längere Sätze ohne „Omni“) löst nichts aus; die App reagiert nicht auf ihre eigene Stimme
+- [ ] M7: „Mir fehlt der Lachs“ im Ingwer-Lachs nennt Kabeljau und Lachsforelle mit Menge für die gewählten Portionen
+- [ ] M7: „Omni, kann ich statt Spinat Mangold nehmen?“ beantwortet das Sprachmodell kurz, mit Hinweis „KI-Antwort, ungeprüft“; ohne Apple Intelligence kommt ein klarer Hinweis
+- [ ] M7: Mikrofon aus bleibt aus beim nächsten Rezept; App in den Hintergrund und zurück setzt das Zuhören fort; Antworten kommen aus dem Lautsprecher
+- [ ] M7: Nach einem Anruf und nach dem Verbinden von AirPods hört die App wieder zu (Statusanzeige und ein „weiter“ prüfen)

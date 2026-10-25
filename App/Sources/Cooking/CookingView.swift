@@ -5,6 +5,7 @@ import UIKit
 /// Full-screen guided cook: one step at a time, device console and timer in glass at the bottom.
 struct CookingView: View {
     @State private var model: CookingScreenModel
+    @State private var voice: VoiceModeModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     private let onFinish: @MainActor () -> Void
@@ -14,7 +15,9 @@ struct CookingView: View {
         recipe: Recipe, servings: Int, alarms: any AlarmScheduler = SystemAlarmScheduler.shared,
         onFinish: @escaping @MainActor () -> Void
     ) {
-        self.model = CookingScreenModel(recipe: recipe, servings: servings, alarms: alarms)
+        let model = CookingScreenModel(recipe: recipe, servings: servings, alarms: alarms)
+        self.model = model
+        self.voice = VoiceModeModel(cooking: model)
         self.onFinish = onFinish
     }
 
@@ -44,7 +47,13 @@ struct CookingView: View {
                             .padding(16)
                     }
                 }
-                .modifier(CookingChrome(model: model))
+                .safeAreaBar(edge: .top) {
+                    VoiceStatus(voice: voice)
+                        .padding(.horizontal, 16)
+                        .animation(Motion.voiceStatus, value: voice.state)
+                        .animation(Motion.voiceStatus, value: voice.exchange)
+                }
+                .modifier(CookingChrome(model: model, voice: voice))
         }
     }
 
@@ -118,7 +127,10 @@ struct CookingView: View {
 /// Everything the cooking screen needs regardless of layout: background, title, clock, idle timer, feedback.
 private struct CookingChrome: ViewModifier {
     let model: CookingScreenModel
+    let voice: VoiceModeModel
     @Environment(\.scenePhase) private var scenePhase
+    /// Listening is on by default; switching it off sticks for later cooks.
+    @AppStorage("voiceModeOn") private var voiceModeOn = true
 
     private var session: CookingSession { model.session }
 
@@ -127,16 +139,39 @@ private struct CookingChrome: ViewModifier {
             .background { WarmBackground(tint: Palette.accent(for: session.recipe.id)) }
             .navigationTitle(session.recipe.name)
             .toolbarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(
+                        voice.isOn ? "Zuhören beenden" : "Zuhören",
+                        systemImage: voice.isOn ? "mic.fill" : "mic.slash"
+                    ) {
+                        voice.toggle()
+                        voiceModeOn = voice.isOn
+                    }
+                    .symbolEffect(.pulse, isActive: voice.state == .listening)
+                }
+            }
             .task { await model.runClock() }
             .onChange(of: scenePhase) { _, phase in
-                if phase == .active { model.tick() }
+                switch phase {
+                case .active:
+                    model.tick()
+                    if voiceModeOn { voice.start() }
+                case .background:
+                    // No microphone in the background; listening resumes when the cook comes back.
+                    voice.stop()
+                default:
+                    break
+                }
             }
             .onAppear {
                 UIApplication.shared.isIdleTimerDisabled = true
                 model.begin()
+                if voiceModeOn { voice.start() }
             }
             .onDisappear {
                 UIApplication.shared.isIdleTimerDisabled = false
+                voice.stop()
                 model.end()
             }
             .sensoryFeedback(.success, trigger: session.finishedTimerCount)
@@ -369,6 +404,48 @@ private struct TimerControl: View {
     if let recipe = Recipe.fixtures.first {
         NavigationStack {
             CookingView(recipe: recipe, servings: 3, alarms: NoAlarmScheduler()) {}
+        }
+    }
+}
+
+/// What the voice mode heard and answered, in a glass pill above the step. Hidden while the mode is off.
+private struct VoiceStatus: View {
+    let voice: VoiceModeModel
+
+    var body: some View {
+        if let text {
+            VStack(alignment: .leading, spacing: 2) {
+                if let heard = voice.exchange?.heard, voice.state != .starting {
+                    Text("„\(heard)“")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                Text(text)
+                    .font(.subheadline)
+                    .lineLimit(3)
+                if voice.exchange?.isUnchecked == true, voice.state != .starting {
+                    Label("KI-Antwort, ungeprüft", systemImage: "sparkles")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .glassEffect(.regular, in: .rect(cornerRadius: 20))
+            .transition(.opacity)
+            .accessibilityElement(children: .combine)
+        }
+    }
+
+    private var text: String? {
+        switch voice.state {
+        case .off: nil
+        case .starting: "Zuhören wird vorbereitet …"
+        case .failed(let message): message
+        case .listening, .answering:
+            voice.exchange?.reply ?? "Ich höre zu. Sag zum Beispiel „weiter“ oder „Omni, …“ für eine Frage."
         }
     }
 }
