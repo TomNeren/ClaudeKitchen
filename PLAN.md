@@ -293,7 +293,7 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M3 | Kochmodus mit Gerätekonsole, Timer, Bildschirm-wach | Erledigt (PR #5): CI grün, 47 Tests; Durchkochen offen laut Geräte-Prüfliste |
 | M4 | Hintergrund-Timer, Mitteilungen, Live Activity mit Knöpfen, App Intents für Siri (Sprachmodus Schicht 1) | Erledigt: M4a Timer per AlarmKit (PR #6), M4b/M4c Live Activity mit Schritt-Knöpfen und Siri (PR #7); 53 Tests; Bedienung offen laut Geräte-Prüfliste |
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion, App-Icon | Erledigt (PR #8); Gefühl und Lesbarkeit offen laut Geräte-Prüfliste |
-| M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | In Arbeit (PR #10): Import aus Text oder Link, Prüfung, Speichern, Löschen; ein Editor folgt bei Bedarf |
+| M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Erledigt (PR #10, 68 Tests): Import aus Text oder https-Link, Prüfung, Speichern, Löschen; Editor bei Bedarf; Test am Gerät braucht API-Schlüssel |
 | M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Ein Rezept komplett per Sprache durchkochbar |
 
 ## 9. Entscheidungen
