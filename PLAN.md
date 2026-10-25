@@ -111,9 +111,10 @@ stehen nebeneinander, die App zeigt, was sich geändert hat und warum.
 - **Lebensmittelkatalog:** Jedes Lebensmittel hat eine ID, Namen und Synonyme, eine Gruppe, eine Rolle
   (Würze, Aromabasis, Grundzutat, Fett, Flüssigkeit) und Umrechnungen (Gramm je Stück, je TL/EL). Jede
   Zutat in einem Rezept verweist auf ein Lebensmittel (`food`). Ein Test prüft das für alle Rezepte.
-- **Nährwerte (kcal, Ballaststoffe, Salz) bewusst später.** Der BLS 4.0 ist seit Dezember 2025 frei
-  abrufbar, seine genaue Lizenz für die Weitergabe ist aber ungeklärt. Wenn Nährwerte kommen, dann aus
-  USDA FoodData Central (CC0) oder aus dem BLS, sobald die Lizenz geklärt ist.
+- **Nährwerte (M8c):** kcal, Kohlenhydrate, Ballaststoffe, Eiweiß, Fett, Natrium je 100 g für jedes Lebensmittel
+  im Katalog, aus USDA FoodData Central (CC0, mit FDC-ID je Eintrag zum Nachprüfen). Gebraucht für die Ziele
+  Abnehmen, Low Carb und Blutdruck. Der BLS 4.0 wäre für deutsche Lebensmittel genauer, seine Lizenz für die
+  Weitergabe ist aber ungeklärt.
 
 **Umwandlung (KitchenCore, deterministisch):**
 - Tauschregeln als JSON: von Lebensmittel, zu Lebensmittel, Mengenverhältnis, Begründung mit Quellenverweis,
@@ -124,10 +125,25 @@ stehen nebeneinander, die App zeigt, was sich geändert hat und warum.
   verarbeitetes Fleisch 0 g“) im Vergleich zur DGE-Zielmenge. Eine einzelne Gesundheitszahl wäre nicht belegt.
 - Freie Umschreibungen über die Claude API (M6) müssen dieselben Invarianten bestehen.
 
+**Ziele (Entscheidung 25):** Du wählst ein Ziel, jedes Ziel ist ein eigener Regelsatz mit eigenen Quellen.
+Die Invarianten (Würzen und Aromabasis bleiben, `validate` besteht) gelten für alle.
+
+| Ziel | Was es ändert | Evidenzbasis (vor dem Einchecken zu prüfen) |
+|---|---|---|
+| **Ausgewogen (Standard)** | Vollkorn statt Weißmehl, mehr Hülsenfrüchte und Gemüse, verarbeitetes Fleisch ersetzen, Pflanzenöl statt Butter, Sahne und Kokos | DGE 2024, Schwingshackl 2017 |
+| **Blutdruck** | Wie Ausgewogen, dazu weniger Salz und salzige Würzsaucen (Sojasauce, Brühe) mit Ersatz durch Säure, Kräuter, Kalium-reiches Gemüse; mehr Milchprodukte (fettarm) | DASH-Studien, WHO-Salzempfehlung |
+| **Abnehmen** | Energiedichte senken: mehr Gemüse und Hülsenfrüchte, weniger Fett und Zucker, Portionsgröße mit kcal je Portion | DGE, Studien zu Energiedichte |
+| **Low Carb** | Getreide, Reis, Kartoffeln und Zucker ersetzen (z. B. Blumenkohlreis, mehr Gemüse, Hülsenfrüchte in Maßen) | Evidenz gemischt: als Vorliebe geführt, nicht als „gesünder“; ein Hinweis zeigt, wo es von Ausgewogen abweicht |
+
+Weitere Ziele (z. B. Blutzucker, Darmgesundheit, viel Eiweiß) lassen sich als neue Regelsätze ergänzen.
+Widersprechen sich zwei Ziele (Vollkornreis gegen Blumenkohlreis), gewinnt das gewählte, und die App zeigt
+den Unterschied zu Ausgewogen.
+
 ### 3c. Rezeptbestand: authentisch und traditionell
 
-- Gerichte aus Asien (Indien, Thailand, Vietnam, Japan, Korea), Südamerika und Mexiko, Türkei und Levante.
-  Startbestand 12 Rezepte, erweiterbar.
+- Neun Küchenräume (Entscheidung 29): Indien, Thailand, Südostasien (Vietnam, Indonesien, Malaysia,
+  Philippinen), China, Japan und Korea, Türkei und Levante, Georgien, Europa (Mittelmeer und Osteuropa),
+  Mexiko und Peru. Startbestand 27 Rezepte (je 3), erweiterbar.
 - Neue Felder: `origin` (Küche, Region), `references` (Standardwerke oder Kulturerbe-Einträge, nur
   zitiert), `variantOf` (die gesunde Variante verweist auf das Original).
 - **Recht:** Zutatenlisten mit Mengen sind in der Regel nicht geschützt, ausformulierte Anleitungen schon.
@@ -372,8 +388,8 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Erledigt (PR #10, 68 Tests): Import aus Text oder https-Link, Prüfung, Speichern, Löschen; Editor bei Bedarf; Test am Gerät braucht API-Schlüssel |
 | M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Erledigt (PR #11, 76 Tests): `VoiceCommand` in KitchenCore, Zuhören, Antworten und KI-Fragen in der App; Durchkochen per Sprache offen laut Geräte-Prüfliste |
 | M8 | M8a erledigt (PR #12), M8b im Review. Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
-| M9 | Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil; in der App Umschalter Original/Gesund mit Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
-| M10 | Rezeptbestand: `origin`, `references`, `variantOf`, 12 traditionelle Rezepte; Bibliothek filtert nach Küche | Alle 12 bestehen `validate` und sind vollständig zugeordnet |
+| M9 | Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil, Ziele Ausgewogen, Blutdruck, Abnehmen, Low Carb; in der App Umschalter Original/Variante mit Zielwahl, Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
+| M10 | Rezeptbestand: `origin`, `references`, `variantOf`, 27 traditionelle Rezepte aus neun Küchenräumen; Bibliothek filtert nach Küche | Alle 27 bestehen `validate` und sind vollständig zugeordnet |
 | M11 | Einkauf und Vorrat: Bedarf minus Vorrat, Mindestbestand, Abbuchen nach dem Kochen, Export nach Erinnerungen und Teilen (Abschnitt 3d) | Logik-Tests in KitchenCore; Export am Gerät laut Prüfliste |
 
 ## 9. Entscheidungen
@@ -407,14 +423,18 @@ Getroffen (2026-10-25):
 24. (Loop, umkehrbar) **Reihenfolge nach M7: M8 → M9 → M10 → M11.** Alles ist weitgehend unter Linux testbar.
     Importierte Rezepte (M6) bekommen ab M8 ebenfalls `food`-Verweise, damit sie umgeschrieben und eingekauft
     werden können.
-25. (Loop, umkehrbar) **„Gesund“ heißt allgemein günstig nach DGE 2024 und Metaanalysen zur Gesamtsterblichkeit**,
-    kein Ziel wie Abnehmen, Low Carb oder Blutdruck. Ziele lassen sich später als eigene Regelsätze ergänzen.
+25. **„Gesund“ ist wählbar** (deine Entscheidung): Ausgewogen nach DGE 2024 und Studien als Standard, dazu
+    Blutdruck, Abnehmen und Low Carb als eigene Regelsätze, erweiterbar (Abschnitt 3b). Low Carb wird als
+    Vorliebe geführt, nicht als gesünder, weil die Evidenz gemischt ist.
 26. (Loop, umkehrbar) **Würzen und Aromabasis sind unantastbar:** Lebensmittel mit Rolle „Würze“ (Gewürze, Kräuter,
     Würzsaucen, Säure) oder „Aromabasis“ (Zwiebel, Knoblauch, Ingwer) werden nie getauscht oder in der Menge verändert.
     Salz ist die Ausnahme, die nur einen Hinweis bekommt. Gewichte je Stück, TL und EL im Katalog sind
     Haushaltsnäherungen, keine Messwerte.
 27. **Keine REWE-Anbindung über inoffizielle Schnittstellen** (Abschnitt 3d), Einkaufsliste über Erinnerungen und Teilen.
-28. (Loop, umkehrbar) **Nährwerte erst nach Lizenzklärung**, M8 und M9 kommen ohne kcal aus.
+28. (Loop, umkehrbar) **Nährwerte aus USDA FoodData Central (CC0)** als Scheibe M8c, weil Abnehmen und Low Carb
+    sie brauchen. Der BLS bleibt Option, falls seine Lizenz die Weitergabe erlaubt.
+29. **Küchen für M10** (deine Entscheidung): Indien, Thailand, Südostasien, China, Japan und Korea, Türkei und
+    Levante, Georgien, Europa, Mexiko und Peru, je 3 Rezepte.
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
@@ -423,11 +443,9 @@ Offen (mit Empfehlung):
    Import ab M6.
 3. **Apple Developer Account / Signing** für Gerätetests und Live Activities. Für den Eigengebrauch reicht
    ein kostenloses Konto (Apps laufen 7 Tage), mit bezahltem Konto entfällt das Neusignieren.
-4. **Welche Küchen zuerst** im Rezeptbestand (M10). Empfehlung: je 3 aus Indien/Thailand, Türkei/Levante,
-   Mexiko/Peru und Japan/Korea.
-5. **BLS-4.0-Lizenz:** Anfrage beim Max Rubner-Institut, ob abgeleitete Werte in ein öffentliches Repo dürfen.
+4. **BLS-4.0-Lizenz:** Anfrage beim Max Rubner-Institut, ob abgeleitete Werte in ein öffentliches Repo dürfen.
    Empfehlung: nur bei Bedarf an Nährwerten stellen, bis dahin USDA (CC0).
-6. **Authentizität prüfen:** Wer hakt die Rezept-Prüfliste ab? Empfehlung: du beim ersten Kochen, bei Zweifeln
+5. **Authentizität prüfen:** Wer hakt die Rezept-Prüfliste ab? Empfehlung: du beim ersten Kochen, bei Zweifeln
    jemand aus der jeweiligen Küche.
 
 ## 10. Gauntlet-Loop: Umsetzung der restlichen Meilensteine
@@ -439,8 +457,9 @@ feste Reihe von Prüfungen bestehen (den „Gauntlet“), bevor er nach `main` g
 M2 Bibliothek und Rezeptansicht → M3 Kochmodus → M4 Hintergrund-Timer, Live Activity, Siri →
 M5 Barrierefreiheit, iPad, Motion → M6 Rezept-Import → M7 Sprachmodus → M8 Evidenz-Datenbank → M9 Gesund umschreiben → M10 Rezeptbestand →
 M11 Einkauf und Vorrat (Entscheidung 24).
-Scheiben für die neuen Meilensteine: M8a Datenmodell und Katalog, M8b geprüfte Einstufungen; M9a Umwandlung
-in KitchenCore, M9b Ansicht Original/Gesund; M10a Felder, M10b bis M10d je 4 Rezepte; M11a Logik, M11b App
+Scheiben für die neuen Meilensteine: M8a Datenmodell und Katalog, M8b geprüfte Einstufungen, M8c Nährwerte;
+M9a Umwandlung Ausgewogen in KitchenCore, M9b Ziele Blutdruck, Abnehmen, Low Carb, M9c Ansicht mit Zielwahl;
+M10a Felder, M10b bis M10j je 3 Rezepte (ein Küchenraum pro Scheibe); M11a Logik, M11b App
 mit Speicherung, Erinnerungen und Teilen.
 Große Meilensteine werden in Scheiben geteilt (je ein PR), z. B. M4a Timer und Mitteilungen, M4b Live Activity.
 
