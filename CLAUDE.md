@@ -21,7 +21,7 @@ swift format lint --recursive Sources Tests
 
 ## CI
 
-`.github/workflows/ci.yml` runs build, test and strict lint on a GitHub-hosted `ubuntu-24.04` runner with Swift 6.4.1 (installed via swiftly, cached), read-only permissions. A second job, `app-ios`, runs on a GitHub-hosted `macos-26` runner: it selects Xcode 27, generates the project with XcodeGen and builds the app for the iOS Simulator without signing. The repo is public: never use a self-hosted runner for pull request jobs, since fork PRs could run code on it.
+`.github/workflows/ci.yml` runs build, test and strict lint on a GitHub-hosted `ubuntu-24.04` runner with Swift 6.4.1 (installed via swiftly, cached), read-only permissions. A second job, `app-ios`, runs on the GitHub-hosted `xcode-27` image (macOS 27, Apple Silicon; `macos-26` only has Xcode 26): it selects Xcode 27, generates the project with XcodeGen and builds the app for the iOS Simulator without signing. The repo is public: never use a self-hosted runner for pull request jobs, since fork PRs could run code on it.
 
 ## Cloud sessions
 

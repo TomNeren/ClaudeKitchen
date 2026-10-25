@@ -63,7 +63,7 @@ Vorbild ist das Artefakt **„Omni Cook Kochführung“** (claude.ai/artifact/QB
 | Projektstruktur | **XcodeGen** (`App/project.yml`) statt eingechecktem `.xcodeproj` | Keine Merge-Konflikte in `project.pbxproj`, Projekt aus Text erzeugbar | Tuist, oder reines SwiftPM-App-Paket |
 | Kernlogik | Swift Package **`KitchenCore`** (aus PR #1: Modelle, Skalierung, Geräteregeln, Kochsitzung als Zustandsautomat, Timer), importiert nur Foundation | Läuft und testet auch unter Linux, also hier in der Cloud-Umgebung | |
 | Tests | Swift Testing für `KitchenCore`, UI-Tests für Kochmodus | | |
-| CI | GitHub Actions, gehostete Runner (Repo ist öffentlich, Minuten kostenlos): Linux-Job für `KitchenCore` (Build, Test, Lint) und **macOS-Job** (`xcodegen`, `xcodebuild` für den Simulator) | Hier gibt es kein Xcode; ohne macOS-Job kann ich App-Code nicht kompilieren | Nur lokal auf deinem Mac bauen |
+| CI | GitHub Actions, gehostete Runner (Repo ist öffentlich, Minuten kostenlos): Linux-Job für `KitchenCore` (Build, Test, Lint) und **macOS-Job** auf dem Image `xcode-27` (`xcodegen`, `xcodebuild` für den Simulator) | Hier gibt es kein Xcode; ohne macOS-Job kann ich App-Code nicht kompilieren | Nur lokal auf deinem Mac bauen |
 
 **Wichtig zur Arbeitsweise:** In dieser Cloud-Umgebung läuft Linux ohne Xcode. Ich kann hier
 `KitchenCore` mit Swift 6.4.1 für Linux bauen und testen, die SwiftUI-App selbst aber nur über
