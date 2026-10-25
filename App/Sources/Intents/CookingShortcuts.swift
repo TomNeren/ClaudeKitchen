@@ -1,23 +1,12 @@
 import AppIntents
-import KitchenCore
-
-/// Answers questions about the running cook. Set by the cooking screen while it is open.
-@MainActor
-enum CookingQuestions {
-    static var currentStep: (@MainActor () -> String)?
-    static var remainingTime: (@MainActor () -> String)?
-}
 
 struct CurrentStepIntent: AppIntent {
     static var title: LocalizedStringResource { "Aktueller Schritt" }
     static var description: IntentDescription { "Liest den aktuellen Kochschritt mit Geräteeinstellung vor." }
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let answer = await MainActor.run { CookingQuestions.currentStep?() } ?? Self.noCooking
-        return .result(dialog: "\(answer)")
+        .result(dialog: "\(await CookingIntentBridge.perform(.currentStep))")
     }
-
-    static let noCooking = "Gerade ist kein Kochmodus offen."
 }
 
 struct RemainingTimeIntent: AppIntent {
@@ -25,8 +14,7 @@ struct RemainingTimeIntent: AppIntent {
     static var description: IntentDescription { "Sagt, wie lange der Kochtimer noch läuft." }
 
     func perform() async throws -> some IntentResult & ProvidesDialog {
-        let answer = await MainActor.run { CookingQuestions.remainingTime?() } ?? CurrentStepIntent.noCooking
-        return .result(dialog: "\(answer)")
+        .result(dialog: "\(await CookingIntentBridge.perform(.remainingTime))")
     }
 }
 
@@ -50,9 +38,7 @@ struct CookingShortcuts: AppShortcutsProvider {
             shortTitle: "Restzeit", systemImageName: "timer")
         AppShortcut(
             intent: CurrentStepIntent(),
-            phrases: [
-                "Was ist der nächste Schritt in \(.applicationName)", "Aktueller Schritt in \(.applicationName)",
-            ],
+            phrases: ["Welcher Schritt ist dran in \(.applicationName)", "Aktueller Schritt in \(.applicationName)"],
             shortTitle: "Aktueller Schritt", systemImageName: "text.bubble")
     }
 }

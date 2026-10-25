@@ -47,22 +47,16 @@ final class CookingScreenModel {
     /// Entering the cooking mode: shows the step Live Activity and lets Siri and the activity's buttons reach this
     /// cook.
     func begin() {
-        CookingIntentBridge.handler = { [weak self] command in self?.handle(command) }
-        CookingQuestions.currentStep = { [weak self] in
-            self.map { CookingAnswers.currentStep(of: $0.session) } ?? CurrentStepIntent.noCooking
-        }
-        CookingQuestions.remainingTime = { [weak self] in
-            self.map { CookingAnswers.remainingTime(of: $0.session, at: $0.clock.now) } ?? CurrentStepIntent.noCooking
-        }
+        CookingIntentBridge.current = self
         liveActivity.show(session)
     }
 
     /// Leaving the cooking mode ends the Live Activity and removes the timer, unless it already rang: then it rings
     /// until the cook stops it.
     func end() {
-        CookingIntentBridge.handler = nil
-        CookingQuestions.currentStep = nil
-        CookingQuestions.remainingTime = nil
+        if CookingIntentBridge.current === self {
+            CookingIntentBridge.current = nil
+        }
         liveActivity.end()
         if case .finished = session.alarm?.phase { return }
         appliedAlarm = nil
@@ -89,15 +83,6 @@ final class CookingScreenModel {
         liveActivity.show(session)
     }
 
-    private func handle(_ command: CookingIntentCommand) {
-        switch command {
-        case .next: next()
-        case .previous: previous()
-        case .startTimer: startTimer()
-        case .pauseTimer: pauseTimer()
-        }
-    }
-
     /// Hands the session's alarm to the system whenever it changes, one hand-over after the other.
     private func syncAlarm() {
         let alarm = session.alarm
@@ -109,5 +94,63 @@ final class CookingScreenModel {
             await previous?.value
             await alarms.apply(alarm)
         }
+    }
+}
+
+extension CookingScreenModel: CookingIntentTarget {
+    func perform(_ command: CookingIntentCommand) async -> String {
+        // The app may have been suspended: catch up first, so a timer that ran out counts as finished.
+        tick()
+        let answer: String
+        switch command {
+        case .next:
+            if session.isLastStep {
+                answer = "Das ist schon der letzte Schritt."
+            } else {
+                next()
+                answer = stepAnswer
+            }
+        case .previous:
+            if session.isFirstStep {
+                answer = "Das ist schon der erste Schritt."
+            } else {
+                previous()
+                answer = stepAnswer
+            }
+        case .startTimer:
+            switch session.timer {
+            case .ready, .paused:
+                startTimer()
+                answer = "Timer läuft. \(remainingAnswer)"
+            case .running:
+                answer = "Der Timer läuft schon. \(remainingAnswer)"
+            case .finished:
+                answer = "Der Timer ist abgelaufen."
+            case .none:
+                answer = "Dieser Schritt hat keinen Timer."
+            }
+        case .pauseTimer:
+            if session.isTimerRunning {
+                pauseTimer()
+                answer = "Timer pausiert. \(remainingAnswer)"
+            } else {
+                answer = "Gerade läuft kein Timer."
+            }
+        case .currentStep:
+            answer = stepAnswer
+        case .remainingTime:
+            answer = remainingAnswer
+        }
+        await alarmUpdate?.value
+        await liveActivity.flush()
+        return answer
+    }
+
+    private var stepAnswer: String {
+        session.status(at: clock.now).map(CookingAnswers.step) ?? "Dieses Rezept hat keine Schritte."
+    }
+
+    private var remainingAnswer: String {
+        session.status(at: clock.now).map(CookingAnswers.remainingTime) ?? "Gerade läuft kein Timer."
     }
 }
