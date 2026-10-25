@@ -46,31 +46,40 @@ struct RecipeDetailView: View {
         }
     }
 
+    /// Grows with Dynamic Type instead of clipping: a minimum height, not a fixed one.
     private var hero: some View {
-        ZStack(alignment: .bottomLeading) {
-            WarmBackground(tint: Palette.accent(for: model.recipe.id))
-                .frame(height: 260)
-            VStack(alignment: .leading, spacing: 10) {
-                Glyph(recipe: model.recipe, size: 64)
-                Text(model.recipe.tag.uppercased())
-                    .font(.caption.weight(.semibold))
-                    .tracking(0.8)
-                    .foregroundStyle(Palette.ink.opacity(0.75))
-                Text(model.recipe.name)
-                    .font(.largeTitle.weight(.semibold))
-                    .fontDesign(.serif)
-                    .foregroundStyle(Palette.ink)
+        VStack(alignment: .leading, spacing: 10) {
+            Glyph(recipe: model.recipe, size: 64)
+            Text(model.recipe.tag.uppercased())
+                .font(.caption.weight(.semibold))
+                .tracking(0.8)
+                .foregroundStyle(Palette.ink.opacity(0.75))
+            Text(model.recipe.name)
+                .font(.largeTitle.weight(.semibold))
+                .fontDesign(.serif)
+                .foregroundStyle(Palette.ink)
+            ViewThatFits(in: .horizontal) {
                 HStack {
-                    Text("≈ \(model.recipe.totalMinutes) Min · \(model.recipe.steps.count) Schritte")
-                        .font(.subheadline)
-                        .foregroundStyle(Palette.ink.opacity(0.75))
-                        .monospacedDigit()
+                    heroMeta
                     Spacer()
                     ServingsStepper(model: model)
                 }
+                VStack(alignment: .leading, spacing: 12) {
+                    heroMeta
+                    ServingsStepper(model: model)
+                }
             }
-            .padding(20)
         }
+        .padding(20)
+        .frame(maxWidth: .infinity, minHeight: 260, alignment: .bottomLeading)
+        .background { WarmBackground(tint: Palette.accent(for: model.recipe.id)) }
+    }
+
+    private var heroMeta: some View {
+        Text("≈ \(model.recipe.totalMinutes) Min · \(model.recipe.steps.count) Schritte")
+            .font(.subheadline)
+            .foregroundStyle(Palette.ink.opacity(0.75))
+            .monospacedDigit()
     }
 }
 

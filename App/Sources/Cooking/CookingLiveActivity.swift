@@ -15,7 +15,7 @@ final class CookingLiveActivity {
 
     /// Shows `session` on the Lock Screen, starting the activity on first use. Unchanged states are skipped.
     func show(_ session: CookingSession) {
-        guard let state = Self.state(for: session), state != lastState else { return }
+        guard let state = CookingActivityAttributes.ContentState(session: session), state != lastState else { return }
         lastState = state
         let content = ActivityContent(state: state, staleDate: nil)
         if let activityID {
@@ -62,14 +62,5 @@ final class CookingLiveActivity {
         for activity in GuideActivity.activities where ids.contains(activity.id) {
             await activity.end(nil, dismissalPolicy: .immediate)
         }
-    }
-
-    static func state(for session: CookingSession) -> CookingActivityAttributes.ContentState? {
-        guard let step = session.currentStep else { return nil }
-        return CookingActivityAttributes.ContentState(
-            stepNumber: session.stepIndex + 1, totalSteps: session.recipe.steps.count, phase: step.phase,
-            text: step.text,
-            settingText: step.setting.map { SettingFormatter.parts(of: $0).joined(separator: " · ") } ?? "",
-            isFirstStep: session.isFirstStep, isLastStep: session.isLastStep)
     }
 }

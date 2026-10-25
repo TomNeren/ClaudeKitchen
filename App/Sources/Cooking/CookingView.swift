@@ -5,8 +5,8 @@ import UIKit
 /// Full-screen guided cook: one step at a time, device console and timer in glass at the bottom.
 struct CookingView: View {
     @State private var model: CookingScreenModel
-    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     private let onFinish: @MainActor () -> Void
 
     /// `recipe` and `servings` seed the screen model once.
@@ -25,11 +25,30 @@ struct CookingView: View {
             ContentUnavailableView(
                 "Keine Schritte", systemImage: "list.bullet", description: Text("Dieses Rezept hat keine Schritte."))
         } else {
-            content
+            // One view tree for every size class: only the position of the controls changes, so resizing an iPad
+            // window never runs the lifecycle (and never ends the cook).
+            stepArea
+                .safeAreaBar(edge: .bottom) {
+                    if horizontalSizeClass != .regular {
+                        controls
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 8)
+                    }
+                }
+                .safeAreaInset(edge: .trailing, spacing: 0) {
+                    if horizontalSizeClass == .regular {
+                        // iPad: console and timer always in view next to the step, about 40 % of the width.
+                        controls
+                            .containerRelativeFrame(.horizontal) { width, _ in min(400, width * 0.4) }
+                            .frame(maxHeight: .infinity, alignment: .bottom)
+                            .padding(16)
+                    }
+                }
+                .modifier(CookingChrome(model: model))
         }
     }
 
-    private var content: some View {
+    private var stepArea: some View {
         VStack(spacing: 0) {
             ProgressDots(count: session.recipe.steps.count, current: session.stepIndex)
                 .padding(.horizontal, 16)
@@ -47,31 +66,8 @@ struct CookingView: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
-                .animation(Motion.stepAdvance, value: session.stepIndex)
             }
         }
-        .safeAreaBar(edge: .bottom) {
-            controls
-                .padding(.horizontal, 16)
-                .padding(.bottom, 8)
-        }
-        .background { WarmBackground(tint: Palette.accent(for: session.recipe.id)) }
-        .navigationTitle(session.recipe.name)
-        .toolbarTitleDisplayMode(.inline)
-        .task { await model.runClock() }
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .active { model.tick() }
-        }
-        .onAppear {
-            UIApplication.shared.isIdleTimerDisabled = true
-            model.begin()
-        }
-        .onDisappear {
-            UIApplication.shared.isIdleTimerDisabled = false
-            model.end()
-        }
-        .sensoryFeedback(.success, trigger: session.finishedTimerCount)
-        .sensoryFeedback(.selection, trigger: session.stepIndex)
     }
 
     private func page(for index: Int) -> some View {
@@ -95,7 +91,14 @@ struct CookingView: View {
             },
             isFirstStep: session.isFirstStep, isLastStep: session.isLastStep,
             accent: Palette.accent(for: session.recipe.id),
-            onPrevious: model.previous, onNext: session.isLastStep ? onFinish : model.next,
+            onPrevious: { withAnimation(Motion.stepAdvance) { model.previous() } },
+            onNext: {
+                if session.isLastStep {
+                    onFinish()
+                } else {
+                    withAnimation(Motion.stepAdvance) { model.next() }
+                }
+            },
             onStart: model.startTimer, onPause: model.pauseTimer, onReset: model.resetTimer)
     }
 
@@ -109,6 +112,35 @@ struct CookingView: View {
                 }
             }
         )
+    }
+}
+
+/// Everything the cooking screen needs regardless of layout: background, title, clock, idle timer, feedback.
+private struct CookingChrome: ViewModifier {
+    let model: CookingScreenModel
+    @Environment(\.scenePhase) private var scenePhase
+
+    private var session: CookingSession { model.session }
+
+    func body(content: Content) -> some View {
+        content
+            .background { WarmBackground(tint: Palette.accent(for: session.recipe.id)) }
+            .navigationTitle(session.recipe.name)
+            .toolbarTitleDisplayMode(.inline)
+            .task { await model.runClock() }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active { model.tick() }
+            }
+            .onAppear {
+                UIApplication.shared.isIdleTimerDisabled = true
+                model.begin()
+            }
+            .onDisappear {
+                UIApplication.shared.isIdleTimerDisabled = false
+                model.end()
+            }
+            .sensoryFeedback(.success, trigger: session.finishedTimerCount)
+            .sensoryFeedback(.selection, trigger: session.stepIndex)
     }
 }
 
@@ -243,9 +275,15 @@ private struct CookingControls: View {
 /// What to set on the device for this step, one glass tile per value.
 private struct DeviceConsole: View {
     let parts: [SettingFormatter.Part]
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        HStack(spacing: 12) {
+        // At accessibility text sizes the tiles go two per row, so values stay legible without the console
+        // pushing the step text off screen.
+        let columns = Array(
+            repeating: GridItem(.flexible(), spacing: 12),
+            count: dynamicTypeSize.isAccessibilitySize ? 2 : max(parts.count, 1))
+        LazyVGrid(columns: columns, spacing: 12) {
             ForEach(parts, id: \.kind) { part in
                 VStack(spacing: 2) {
                     Text(part.label.uppercased())
