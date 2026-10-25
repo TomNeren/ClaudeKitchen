@@ -8,7 +8,8 @@ let package = Package(
         .library(name: "KitchenCore", targets: ["KitchenCore"])
     ],
     targets: [
-        .target(name: "KitchenCore", resources: [.copy("Resources/Recipes")]),
+        .target(
+            name: "KitchenCore", resources: [.copy("Resources/Recipes"), .copy("Resources/Evidence")]),
         .testTarget(name: "KitchenCoreTests", dependencies: ["KitchenCore"]),
     ],
     swiftLanguageModes: [.v6]

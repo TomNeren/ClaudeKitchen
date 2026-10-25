@@ -81,8 +81,77 @@ unter Linux testbar. Spracherkennung, Sprachausgabe, Foundation Models und Siri 
   hört die App zu, solange er offen ist, mit sichtbarer Mikrofonanzeige und einem Knopf zum Stummschalten.
 - Dauerhaftes Zuhören kostet Akku. Für einen Kochvorgang von 30 bis 60 Minuten ist das vertretbar.
 
+### 3b. Gesund umschreiben: Evidenz-Datenbank und Umwandlung
+
+Ziel: Ein traditionelles Rezept wird zu einer gesünderen Variante umgeschrieben. **Die Gewürze und das
+Würzprinzip bleiben original, die Grundzutaten ändern sich** (z. B. Weißreis zu Vollkornreis oder halb
+Linsen, Sahne zu Joghurt, verarbeitetes Fleisch zu Hülsenfrüchten oder Fisch). Original und Variante
+stehen nebeneinander, die App zeigt, was sich geändert hat und warum.
+
+**Evidenz-Datenbank (KitchenCore, JSON im Repo):**
+- **Ebene Lebensmittelgruppe, nicht Einzelprodukt.** Gute Evidenz gibt es für Gruppen (Vollkorn,
+  Hülsenfrüchte, Nüsse, Gemüse, Obst, Fisch, rotes und verarbeitetes Fleisch, Milchprodukte,
+  zuckergesüßte Getränke, raffiniertes Getreide). Für einzelne Produkte wäre jede Zahl Scheingenauigkeit.
+- Pro Gruppe: Richtung (günstig, neutral, begrenzen), Evidenzgrad (nur eingetragen, wenn die Quelle selbst
+  GRADE oder NutriGrade nennt, sonst „nicht bewertet“), Effekt mit Dosis (z. B. relatives Risiko
+  Gesamtsterblichkeit je Portion pro Tag), Zielmenge laut DGE 2024, Quellenliste mit DOI.
+- Basisquellen: Dosis-Wirkungs-Metaanalyse Schwingshackl et al. 2017 (AJCN, DOI 10.3945/ajcn.117.153148),
+  Umbrella Review 2025 (Adv Nutr, DOI 10.1016/j.advnut.2025.100393), DGE-Empfehlungen 2024, IARC zu
+  rotem und verarbeitetem Fleisch, EAT-Lancet 2025 als Ergänzung. Jede Zahl wird vor dem Einchecken an
+  der Originalarbeit geprüft; Werte aus Suchzusammenfassungen gehen nicht ungeprüft ins Repo.
+- Die Einstufungen sind **selbst formuliert mit Zitat**, keine kopierten Datensätze. IHME-Daten (nur nicht
+  kommerziell) und Open Food Facts (Share-Alike) kommen nicht ins Repo.
+- **Lebensmittelkatalog:** Jedes Lebensmittel hat eine ID, Namen und Synonyme, eine Gruppe, eine Rolle
+  (Würze, Aromabasis, Grundzutat, Fett, Flüssigkeit) und Umrechnungen (Gramm je Stück, je TL/EL). Jede
+  Zutat in einem Rezept verweist auf ein Lebensmittel (`food`). Ein Test prüft das für alle Rezepte.
+- **Nährwerte (kcal, Ballaststoffe, Salz) bewusst später.** Der BLS 4.0 ist seit Dezember 2025 frei
+  abrufbar, seine genaue Lizenz für die Weitergabe ist aber ungeklärt. Wenn Nährwerte kommen, dann aus
+  USDA FoodData Central (CC0) oder aus dem BLS, sobald die Lizenz geklärt ist.
+
+**Umwandlung (KitchenCore, deterministisch):**
+- Tauschregeln als JSON: von Lebensmittel, zu Lebensmittel, Mengenverhältnis, Begründung mit Quellenverweis,
+  Folgen für die Zubereitung (zusätzliche Garzeit, Hinweis am Schritt, z. B. „Vollkornreis 15 Min länger“).
+- `HealthyVariant` erzeugt aus einem Rezept die Variante und eine Änderungsliste. Feste Invarianten mit Tests:
+  Würzen bleiben unverändert, die Variante besteht `DeviceProfile.validate`, Garzeiten passen sich an.
+- Statt einer Gesamtnote ein **Gruppenprofil pro Portion** („Hülsenfrüchte 120 g, Vollkorn 60 g,
+  verarbeitetes Fleisch 0 g“) im Vergleich zur DGE-Zielmenge. Eine einzelne Gesundheitszahl wäre nicht belegt.
+- Freie Umschreibungen über die Claude API (M6) müssen dieselben Invarianten bestehen.
+
+### 3c. Rezeptbestand: authentisch und traditionell
+
+- Gerichte aus Asien (Indien, Thailand, Vietnam, Japan, Korea), Südamerika und Mexiko, Türkei und Levante.
+  Startbestand 12 Rezepte, erweiterbar.
+- Neue Felder: `origin` (Küche, Region), `references` (Standardwerke oder Kulturerbe-Einträge, nur
+  zitiert), `variantOf` (die gesunde Variante verweist auf das Original).
+- **Recht:** Zutatenlisten mit Mengen sind in der Regel nicht geschützt, ausformulierte Anleitungen schon.
+  Deshalb werden alle Texte selbst formuliert, keine Texte oder Fotos aus Blogs, Kochbüchern oder Datensätzen
+  wie RecipeNLG. Wikibooks (CC BY-SA) nur, wenn Namensnennung und Share-Alike für diese Datei gelten.
+- **Grenze:** Ob ein Rezept authentisch ist, kann Claude nicht belegen, nur plausibel machen. Jedes Rezept
+  startet mit `verified: false` und einer Prüfliste (Gewürze, Technik), die du oder jemand aus der jeweiligen
+  Küche abhaken kann.
+
+### 3d. Einkauf und Vorrat
+
+- **Vorrat:** Bestand pro Lebensmittel (Menge und Einheit). Gewürze nur als „da, fast leer, leer“. Für
+  Grundvorräte (Reis, Linsen, Öl) ein Mindestbestand.
+- **Abbuchen:** Am Ende des Kochmodus („Fertig“) werden die skalierten Mengen vom Vorrat abgezogen, mit
+  Rückgängig.
+- **Einkaufsliste = Bedarf minus Vorrat**, plus alles unter dem Mindestbestand. Gleiche Lebensmittel werden
+  zusammengefasst und in Einkaufseinheiten gerundet, sortiert nach Marktbereich (Obst und Gemüse, Trockenware,
+  Kühlung). Nach dem Einkauf bucht „Eingekauft“ die Liste in den Vorrat.
+- **Übergabe:** Export in eine Liste in Apple Erinnerungen (EventKit) und als Text über das Teilen-Menü
+  (z. B. für Bring!).
+- **REWE-Abholung: kein offizieller Weg.** REWE, Picnic, Knuspr, Flink, EDEKA und Kaufland bieten keine
+  öffentliche Schnittstelle für Warenkorb oder Liste. Es gibt nur reverse-engineerte Bibliotheken. Die kommen
+  aus demselben Grund nicht in den Plan wie die Gerätesteuerung (Abschnitt 6.3): AGB, Zugangsdaten, Bruch bei
+  jedem Update. Die REWE-Bestellung bleibt Handarbeit mit der sortierten Liste als Vorlage.
+- Logik (Bedarf, Vorrat, Zusammenfassen, Runden) liegt in KitchenCore. Gespeichert wird wie bei eigenen
+  Rezepten als JSON in Application Support (Entscheidung 18).
+
 ### Bewusst nicht im Plan
 - Direkte Gerätesteuerung über WLAN: in einer früheren Session untersucht, derzeit nicht machbar (Abschnitt 6.2).
+- Warenkorb-Übergabe an REWE oder andere Händler über inoffizielle Schnittstellen (Abschnitt 3d).
+- Eine einzelne Gesundheitsnote pro Rezept (Abschnitt 3b).
 
 ## 4. Plattform und Technik
 
@@ -295,7 +364,11 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion, App-Icon | Erledigt (PR #8); Gefühl und Lesbarkeit offen laut Geräte-Prüfliste |
 | M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Erledigt (PR #10, 68 Tests): Import aus Text oder https-Link, Prüfung, Speichern, Löschen; Editor bei Bedarf; Test am Gerät braucht API-Schlüssel |
 | M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Erledigt (PR #11, 76 Tests): `VoiceCommand` in KitchenCore, Zuhören, Antworten und KI-Fragen in der App; Durchkochen per Sprache offen laut Geräte-Prüfliste |
-| M8 | (v2) Sprachprotokoll, Ersatzlisten für alle Rezepte, Rezept-Editor | In Arbeit: Protokoll in den Einstellungen, Editor für eigene Rezepte und Kopien; Bedienung am Handy offen laut Geräte-Prüfliste |
+| M8 | M8a erledigt (PR #12), M8b offen. Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
+| M9 | Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil; in der App Umschalter Original/Gesund mit Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
+| M10 | Rezeptbestand: `origin`, `references`, `variantOf`, 12 traditionelle Rezepte; Bibliothek filtert nach Küche | Alle 12 bestehen `validate` und sind vollständig zugeordnet |
+| M11 | Einkauf und Vorrat: Bedarf minus Vorrat, Mindestbestand, Abbuchen nach dem Kochen, Export nach Erinnerungen und Teilen (Abschnitt 3d) | Logik-Tests in KitchenCore; Export am Gerät laut Prüfliste |
+| M12 | (v2) Sprachprotokoll, Ersatzlisten für alle Rezepte, Rezept-Editor (PR #13, unabhängig von M8 bis M11) | In Arbeit: Protokoll in den Einstellungen, Editor für eigene Rezepte und Kopien; Bedienung am Handy offen laut Geräte-Prüfliste |
 
 ## 9. Entscheidungen
 
@@ -319,14 +392,26 @@ Getroffen (2026-10-25):
 16. (Loop, umkehrbar) **iPad**: Kochmodus mit Schritt links und Bedienleiste rechts (40 % der Breite, höchstens 400 pt) in regulärer Breite; ein gemeinsamer Ansichtsbaum für alle Größen.
 17. **Rezept-Import über die Claude API mit API-Schlüssel** (deine Entscheidung). Ein Claude-Abo ist für eigene Apps nicht zugelassen, das Agent SDK läuft nicht auf iOS. Die App ruft die Messages API per HTTPS auf (kein offizielles Swift-SDK), Modell Claude Opus 5.5 mit niedrigem Aufwand, Antwort als festes JSON-Schema, danach `DeviceProfile.validate`. Schlüssel nur in der Keychain.
 18. (Loop, umkehrbar) **Eigene Rezepte als JSON-Dateien** in Application Support, im selben Format wie die mitgelieferten, statt SwiftData. Einfacher, ohne Migrationen, jederzeit exportierbar.
-19. (Loop, umkehrbar) **Kein Rezept-Editor in M6.** Importierte Rezepte lassen sich ansehen, kochen und löschen; Ändern heißt vorerst neu importieren. Ein Editor kommt, wenn du ihn vermisst. Überholt durch M8 (Entscheidung 26).
+19. (Loop, umkehrbar) **Kein Rezept-Editor in M6.** Importierte Rezepte lassen sich ansehen, kochen und löschen; Ändern heißt vorerst neu importieren. Ein Editor kommt, wenn du ihn vermisst. Überholt durch M12 (Entscheidung 31).
 20. (Loop, umkehrbar) **Was beim Dauerzuhören zählt:** Feste Befehle („weiter“, „wie lange noch“, „Timer starten“, „welche Zutaten“) nur, wenn der Satz im Wesentlichen der Befehl ist (höchstens zwei Zusatzwörter wie „bitte“), auch nach „Omni“: „Omni, was mache ich, wenn der Reis nicht fertig ist?“ geht nicht weiter, sondern ist eine Frage. Ersatzfragen ohne „Omni“ („mir fehlt Lachs“, „was kann ich statt Kokosmilch nehmen“) nur bis 8 Wörter, und die App schweigt, wenn die Zutat nicht im Rezept steht („ich habe keine Ahnung …“). Nach „Omni“ geht alles Übrige ans Sprachmodell, auch „Omni, kann ich statt Spinat Mangold nehmen?“; nur „Omni, mir fehlt …“ und „Omni, Ersatz für …“ bleiben Ersatzfragen. Ein echtes Weckwort, das das Gerät aufweckt, erlaubt iOS nicht; „Omni“ filtert nur im laufenden Zuhören.
 21. (Loop, umkehrbar) **Freie Fragen mit Apples Sprachmodell auf dem Gerät**, nicht mit der Claude API: ohne Netz, ohne Kosten, schnell genug zum Vorlesen. Jede Frage bekommt eine neue Sitzung mit Rezept, Portionen, aktuellem Schritt, Ersatzliste und Gerätegrenzen als Kontext statt Werkzeugaufrufen (Rezepte sind kurz, das Kontextfenster läuft nie voll). Antworten stehen als „KI-Antwort, ungeprüft“ in der Statusanzeige. Ersatz aus der gepflegten Liste geht immer vor, das Modell kommt nur bei Zutaten ohne Liste dran.
 22. (Loop, umkehrbar) **Zuhören startet mit dem Kochmodus** (Entscheidung 7) und lässt sich über das Mikrofon oben rechts abschalten; das Abschalten gilt auch für spätere Kochvorgänge. Während die App spricht, ist das Mikrofon stumm, damit sie sich nicht selbst hört. Ausgabe über den Lautsprecher, andere Audio-Wiedergabe wird leiser. Im Hintergrund hört die App nicht zu (dafür sind Siri und die Live Activity da) und setzt beim Zurückkehren fort. Nach einem Anruf, Siri oder einem Wechsel auf AirPods startet sie das Zuhören von selbst neu (höchstens dreimal ohne erkannten Satz dazwischen).
 23. (Loop, umkehrbar) **Schrittbefehle per Sprache gehen denselben Weg wie Siri** (`CookingIntentTarget.perform`) und sagen dasselbe. „Weiter“ im letzten Schritt beendet den Kochmodus nicht, das bleibt beim Knopf.
-24. (umkehrbar) **Sprachprotokoll ist an** (von dir gewünscht) und lässt sich in den Einstellungen abschalten. Es schreibt jeden Satz mit, den der Kochmodus hört, auch die ignorierten, mit erkanntem Befehl und Antwort. Höchstens 500 Einträge, nur auf diesem Gerät, teilbar als Text (Tabulator-getrennt) und löschbar. Teile es nach ein paar Kochvorgängen, dann schärfe ich die Regeln aus Entscheidung 20 nach.
-25. (umkehrbar) **Ersatzlisten für alle drei Rezepte** ergänzt. Ersatz steht immer in der Einheit der Originalzutat; wo das irreführt (Knoblauch als Pulver, Lorbeer) bleibt die Liste leer und das Sprachmodell darf mit „Omni“ helfen. Wasser und Salz haben keinen Ersatz.
-26. (umkehrbar) **Rezept-Editor für das Handy:** ein Formular mit Rezept, Zutaten und Schritten, Details eine Ebene tiefer, Sortieren über einen Knopf unten. Neue Zutaten und Schritte öffnen sich sofort zum Ausfüllen. Alle Gerätewerte (Temperatur in 5er-Schritten, Stufen, Laufzeit) kommen aus `DeviceProfile`, Dampf setzt Programm und Aufsatz mit. Sichern geht erst ohne Fehler (Name, Schritttext, Gerätegrenzen), Warnungen wie die Füllmarke bleiben sichtbar. Mitgelieferte Rezepte werden als eigene Kopie bearbeitet, das Original bleibt. Neue Rezepte über „+“ in der Bibliothek.
+
+24. (Loop, umkehrbar) **Reihenfolge nach M7: M8 → M9 → M10 → M11.** Alles ist weitgehend unter Linux testbar.
+    Importierte Rezepte (M6) bekommen ab M8 ebenfalls `food`-Verweise, damit sie umgeschrieben und eingekauft
+    werden können.
+25. (Loop, umkehrbar) **„Gesund“ heißt allgemein günstig nach DGE 2024 und Metaanalysen zur Gesamtsterblichkeit**,
+    kein Ziel wie Abnehmen, Low Carb oder Blutdruck. Ziele lassen sich später als eigene Regelsätze ergänzen.
+26. (Loop, umkehrbar) **Würzen und Aromabasis sind unantastbar:** Lebensmittel mit Rolle „Würze“ (Gewürze, Kräuter,
+    Würzsaucen, Säure) oder „Aromabasis“ (Zwiebel, Knoblauch, Ingwer) werden nie getauscht oder in der Menge verändert.
+    Salz ist die Ausnahme, die nur einen Hinweis bekommt. Gewichte je Stück, TL und EL im Katalog sind
+    Haushaltsnäherungen, keine Messwerte.
+27. **Keine REWE-Anbindung über inoffizielle Schnittstellen** (Abschnitt 3d), Einkaufsliste über Erinnerungen und Teilen.
+28. (Loop, umkehrbar) **Nährwerte erst nach Lizenzklärung**, M8 und M9 kommen ohne kcal aus.
+29. (umkehrbar) **Sprachprotokoll ist an** (von dir gewünscht) und lässt sich in den Einstellungen abschalten. Es schreibt jeden Satz mit, den der Kochmodus hört, auch die ignorierten, mit erkanntem Befehl und Antwort. Höchstens 500 Einträge, nur auf diesem Gerät, teilbar als Text (Tabulator-getrennt) und löschbar. Teile es nach ein paar Kochvorgängen, dann schärfe ich die Regeln aus Entscheidung 20 nach.
+30. (umkehrbar) **Ersatzlisten für alle drei Rezepte** ergänzt, zusätzlich zu den Einträgen aus M8a. Ersatz steht immer in der Einheit der Originalzutat; wo das irreführt (Knoblauch als Pulver, Lorbeer) bleibt die Liste leer und das Sprachmodell darf mit „Omni“ helfen. Wasser und Salz haben keinen Ersatz.
+31. (umkehrbar) **Rezept-Editor für das Handy:** ein Formular mit Rezept, Zutaten und Schritten, Details eine Ebene tiefer, Sortieren über einen Knopf unten. Neue Zutaten und Schritte öffnen sich sofort zum Ausfüllen. Alle Gerätewerte (Temperatur in 5er-Schritten, Stufen, Laufzeit) kommen aus `DeviceProfile`, Dampf setzt Programm und Aufsatz mit. Sichern geht erst ohne Fehler (Name, Schritttext, Gerätegrenzen), Warnungen wie die Füllmarke bleiben sichtbar. Mitgelieferte Rezepte werden als eigene Kopie bearbeitet, das Original bleibt. Neue Rezepte über „+“ in der Bibliothek.
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
@@ -335,6 +420,12 @@ Offen (mit Empfehlung):
    Import ab M6.
 3. **Apple Developer Account / Signing** für Gerätetests und Live Activities. Für den Eigengebrauch reicht
    ein kostenloses Konto (Apps laufen 7 Tage), mit bezahltem Konto entfällt das Neusignieren.
+4. **Welche Küchen zuerst** im Rezeptbestand (M10). Empfehlung: je 3 aus Indien/Thailand, Türkei/Levante,
+   Mexiko/Peru und Japan/Korea.
+5. **BLS-4.0-Lizenz:** Anfrage beim Max Rubner-Institut, ob abgeleitete Werte in ein öffentliches Repo dürfen.
+   Empfehlung: nur bei Bedarf an Nährwerten stellen, bis dahin USDA (CC0).
+6. **Authentizität prüfen:** Wer hakt die Rezept-Prüfliste ab? Empfehlung: du beim ersten Kochen, bei Zweifeln
+   jemand aus der jeweiligen Küche.
 
 ## 10. Gauntlet-Loop: Umsetzung der restlichen Meilensteine
 
@@ -343,7 +434,11 @@ feste Reihe von Prüfungen bestehen (den „Gauntlet“), bevor er nach `main` g
 
 ### Reihenfolge
 M2 Bibliothek und Rezeptansicht → M3 Kochmodus → M4 Hintergrund-Timer, Live Activity, Siri →
-M5 Barrierefreiheit, iPad, Motion → M6 Rezept-Import und eigene Rezepte → M7 Sprachmodus.
+M5 Barrierefreiheit, iPad, Motion → M6 Rezept-Import → M7 Sprachmodus → M8 Evidenz-Datenbank → M9 Gesund umschreiben → M10 Rezeptbestand →
+M11 Einkauf und Vorrat (Entscheidung 24).
+Scheiben für die neuen Meilensteine: M8a Datenmodell und Katalog, M8b geprüfte Einstufungen; M9a Umwandlung
+in KitchenCore, M9b Ansicht Original/Gesund; M10a Felder, M10b bis M10d je 4 Rezepte; M11a Logik, M11b App
+mit Speicherung, Erinnerungen und Teilen.
 Große Meilensteine werden in Scheiben geteilt (je ein PR), z. B. M4a Timer und Mitteilungen, M4b Live Activity.
 
 ### Ablauf pro Scheibe
@@ -372,6 +467,11 @@ Große Meilensteine werden in Scheiben geteilt (je ein PR), z. B. M4a Timer und 
 In der Cloud gibt es kein Gerät. Glasdarstellung, Motion-Gefühl, Live Activity, Siri, Mikrofon und
 Sprachmodell lassen sich nur kompilieren, nicht erleben. Was nur am Gerät prüfbar ist, landet in der
 Geräte-Prüfliste. Der Loop endet, wenn M7 gemergt ist oder alles Verbleibende auf dich wartet.
+
+**Zusatzstufe für Daten (M8 bis M10):** G1b Datenprüfung. Jede Zahl in der Evidenz-Datei wird gegen ihre
+Quelle (DOI) geprüft, jedes Rezept gegen `validate` und den Lebensmittelkatalog. Die mechanische Prüfung
+(Schema, Vollständigkeit, jede Datei, keine Stichproben) läuft als eigener Prüfauftrag mit vollständiger
+Fehlerliste.
 
 ### Geräte-Prüfliste (iPhone 18)
 - [ ] M2: Glas der Suchleiste, des Portionsreglers und des Start-Buttons wirkt über dem Farbverlauf (nicht flach)
@@ -402,8 +502,8 @@ Geräte-Prüfliste. Der Loop endet, wenn M7 gemergt ist oder alles Verbleibende 
 - [ ] M7: „Omni, kann ich statt Spinat Mangold nehmen?“ beantwortet das Sprachmodell kurz, mit Hinweis „KI-Antwort, ungeprüft“; ohne Apple Intelligence kommt ein klarer Hinweis
 - [ ] M7: Mikrofon aus bleibt aus beim nächsten Rezept; App in den Hintergrund und zurück setzt das Zuhören fort; Antworten kommen aus dem Lautsprecher
 - [ ] M7: Nach einem Anruf und nach dem Verbinden von AirPods hört die App wieder zu (Statusanzeige und ein „weiter“ prüfen)
-- [ ] M8: Sprachprotokoll in den Einstellungen: nach einem Kochvorgang stehen die Sätze darin, Teilen als Text klappt, Löschen leert es
-- [ ] M8: „Mir fehlt die Sojasauce“ im Ingwer-Lachs nennt Tamari und Fischsauce mit Menge
-- [ ] M8: Neues Rezept über „+“ anlegen, mit zwei Zutaten und drei Schritten (einer mit Dampf), sichern und kochen
-- [ ] M8: Mitgeliefertes Rezept bearbeiten: es entsteht eine eigene Kopie, die Ansicht wechselt auf die Kopie
-- [ ] M8: Editor mit einer Hand am iPhone: Tastatur verdeckt nichts Wichtiges, Sortieren und Wischen zum Löschen funktionieren, Abbrechen fragt bei Änderungen nach
+- [ ] M12: Sprachprotokoll in den Einstellungen: nach einem Kochvorgang stehen die Sätze darin, Teilen als Text klappt, Löschen leert es
+- [ ] M12: „Mir fehlt die Sojasauce“ im Ingwer-Lachs nennt Tamari und Fischsauce mit Menge
+- [ ] M12: Neues Rezept über „+“ anlegen, mit zwei Zutaten und drei Schritten (einer mit Dampf), sichern und kochen
+- [ ] M12: Mitgeliefertes Rezept bearbeiten: es entsteht eine eigene Kopie, die Ansicht wechselt auf die Kopie
+- [ ] M12: Editor mit einer Hand am iPhone: Tastatur verdeckt nichts Wichtiges, Sortieren und Wischen zum Löschen funktionieren, Abbrechen fragt bei Änderungen nach
