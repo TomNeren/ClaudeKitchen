@@ -82,3 +82,31 @@ private struct StepButtons: View {
         .buttonStyle(.bordered)
     }
 }
+
+extension CookingActivityAttributes {
+    fileprivate static let preview = CookingActivityAttributes(recipeName: "Zitronen-Linsen-Eintopf")
+}
+
+extension CookingActivityAttributes.ContentState {
+    fileprivate static let firstStep = Self(
+        stepNumber: 1, totalSteps: 6, phase: "Vorbereiten",
+        text: "Zwiebel und Knoblauch schälen und in den Topf geben.", settingText: "Stufe 5 · 5 Sek",
+        isFirstStep: true, isLastStep: false)
+    fileprivate static let middleStep = Self(
+        stepNumber: 4, totalSteps: 6, phase: "Köcheln",
+        text: "Deckel schließen und köcheln lassen, bis die Linsen weich sind.",
+        settingText: "100 °C · Linkslauf 1 · 20 Min", isFirstStep: false, isLastStep: false)
+}
+
+#Preview("Sperrbildschirm", as: .content, using: CookingActivityAttributes.preview) {
+    CookingGuideActivity()
+} contentStates: {
+    CookingActivityAttributes.ContentState.firstStep
+    CookingActivityAttributes.ContentState.middleStep
+}
+
+#Preview("Dynamic Island", as: .dynamicIsland(.expanded), using: CookingActivityAttributes.preview) {
+    CookingGuideActivity()
+} contentStates: {
+    CookingActivityAttributes.ContentState.middleStep
+}

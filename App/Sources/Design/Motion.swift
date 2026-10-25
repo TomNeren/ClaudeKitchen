@@ -1,16 +1,19 @@
 import SwiftUI
 
 /// Named motion tokens. Views use these instead of literal animation values.
-/// Values are first-pass presets; tune them on device (see app-architecture, section 6).
+///
+/// Values follow the apple-motion-feel rule "bounce is earned by momentum": everything here is tap-driven, so it is
+/// critically damped (`bounce: 0`). The step pager's swipe is momentum-driven but animated by the system pager.
+/// Re-check each value on an iPhone at 120 Hz (device checklist in PLAN.md).
 enum Motion {
-    /// Servings stepper value change.
-    static let servings: Animation = .snappy(duration: 0.25)
-    /// Search results appearing and disappearing.
-    static let searchResults: Animation = .smooth(duration: 0.3)
-    /// Moving between steps in the cooking mode.
-    static let stepAdvance: Animation = .smooth(duration: 0.35)
+    /// Servings stepper value change: small, tap-driven.
+    static let servings: Animation = .spring(duration: 0.3, bounce: 0)
+    /// Search results appearing and disappearing: repositioning cards.
+    static let searchResults: Animation = .spring(duration: 0.4, bounce: 0)
+    /// Moving between steps with the Weiter and Zurück buttons: a move, tap-driven.
+    static let stepAdvance: Animation = .spring(duration: 0.4, bounce: 0)
     /// Step change with Reduce Motion: a cross-fade instead of travel, same timing.
-    static let stepCrossFade: Animation = .easeInOut(duration: 0.35)
-    /// Countdown digits rolling once a second.
-    static let timerTick: Animation = .snappy(duration: 0.2)
+    static let stepCrossFade: Animation = .easeInOut(duration: 0.4)
+    /// Countdown digits rolling once a second: must settle well inside the second.
+    static let timerTick: Animation = .spring(duration: 0.25, bounce: 0)
 }
