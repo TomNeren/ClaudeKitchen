@@ -345,21 +345,33 @@ private struct OriginSection: View {
                 SectionTitle(text: "Herkunft")
                 VStack(alignment: .leading, spacing: 10) {
                     if let origin = recipe.origin {
-                        Text([origin.cuisine.displayName, origin.region].compactMap { $0 }.joined(separator: " · "))
-                            .font(.headline)
-                            .foregroundStyle(Palette.ink)
+                        Text(
+                            [origin.cuisine.displayName, origin.region].compactMap { $0 }
+                                .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                                .joined(separator: " · ")
+                        )
+                        .font(.headline)
+                        .foregroundStyle(Palette.ink)
                     }
                     ForEach(recipe.references, id: \.self) { reference in
-                        Label(Self.text(for: reference), systemImage: "book.closed")
+                        if let url = reference.url, url.scheme == "https" {
+                            Link(destination: url) {
+                                Label(Self.text(for: reference), systemImage: "book.closed")
+                            }
                             .font(.subheadline)
-                            .foregroundStyle(Palette.muted)
+                            .tint(Palette.cool)
+                        } else {
+                            Label(Self.text(for: reference), systemImage: "book.closed")
+                                .font(.subheadline)
+                                .foregroundStyle(Palette.muted)
+                        }
                     }
                     if !recipe.authenticityChecks.isEmpty {
                         Text("Zum Prüfen beim ersten Kochen")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(Palette.ink)
                         ForEach(recipe.authenticityChecks, id: \.self) { check in
-                            Label(check, systemImage: "checkmark.circle")
+                            Label(check, systemImage: "circle")
                                 .font(.subheadline)
                                 .foregroundStyle(Palette.muted)
                         }

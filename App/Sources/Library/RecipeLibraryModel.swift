@@ -5,8 +5,14 @@ import Observation
 /// Owns the bundled recipes, the cook's own recipes and the search query of the library screen.
 @MainActor @Observable
 final class RecipeLibraryModel {
-    private(set) var bundled: [Recipe]
-    private(set) var own: [Recipe] = []
+    private(set) var bundled: [Recipe] {
+        didSet { cuisines = RecipeSearch.cuisines(in: recipes) }
+    }
+    private(set) var own: [Recipe] = [] {
+        didSet { cuisines = RecipeSearch.cuisines(in: recipes) }
+    }
+    /// Cuisines that have at least one recipe, for the filter menu. Kept up to date when recipes load.
+    private(set) var cuisines: [Cuisine] = []
     private(set) var loadFailed: Bool
     var query = ""
     /// Nil shows every cuisine.
@@ -28,17 +34,15 @@ final class RecipeLibraryModel {
                 loadFailed = true
             }
         }
+        cuisines = RecipeSearch.cuisines(in: recipes)
     }
 
     /// Own recipes first, they are the ones the cook added on purpose.
     var recipes: [Recipe] { own + bundled }
 
     var visibleRecipes: [Recipe] {
-        RecipeSearch.filter(recipes, query: query, cuisine: cuisine)
+        RecipeSearch.filter(recipes, query: query, cuisine: cuisine, cuisineName: \.displayName)
     }
-
-    /// Cuisines that have at least one recipe, for the filter menu.
-    var cuisines: [Cuisine] { RecipeSearch.cuisines(in: recipes) }
 
     func recipe(_ id: RecipeID) -> Recipe? {
         recipes.first { $0.id == id }

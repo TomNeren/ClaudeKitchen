@@ -35,16 +35,59 @@ struct RecipeSearchTests {
 
 @Suite("Recipe origin")
 struct RecipeOriginTests {
-    @Test func filtersByCuisineAndQueryTogether() throws {
-        let recipes = try RecipeLibrary.bundled()
-        #expect(RecipeSearch.filter(recipes, query: "", cuisine: .india).map(\.id) == ["kichererbsen-spinat-curry"])
-        #expect(RecipeSearch.filter(recipes, query: "linsen", cuisine: .india).isEmpty)
-        #expect(RecipeSearch.filter(recipes, query: "ikaria").map(\.id) == ["zitronen-linsen-eintopf"])
-        #expect(RecipeSearch.filter(recipes, query: "", cuisine: .georgia).isEmpty)
+    private static func recipe(_ id: RecipeID, _ name: String, _ origin: RecipeOrigin?) -> Recipe {
+        Recipe(
+            id: id, name: name, tag: "", baseServings: 2, totalMinutes: 10, ingredients: [], steps: [],
+            origin: origin)
     }
 
-    @Test func listsTheCuisinesPresentInCanonicalOrder() throws {
-        #expect(RecipeSearch.cuisines(in: try RecipeLibrary.bundled()) == [.india, .europe])
+    private static let recipes = [
+        recipe("dal", "Dal Makhani", RecipeOrigin(cuisine: .india, region: "Punjab")),
+        recipe("lobio", "Lobio", RecipeOrigin(cuisine: .georgia)),
+        recipe("own", "Eigenes Linsengericht", nil),
+        recipe("chana", "Chana Masala", RecipeOrigin(cuisine: .india)),
+    ]
+
+    @Test func filtersByCuisineAndQueryTogether() {
+        #expect(RecipeSearch.filter(Self.recipes, query: "", cuisine: .india).map(\.id) == ["dal", "chana"])
+        #expect(RecipeSearch.filter(Self.recipes, query: "chana", cuisine: .india).map(\.id) == ["chana"])
+        #expect(RecipeSearch.filter(Self.recipes, query: "lobio", cuisine: .india).isEmpty)
+        #expect(RecipeSearch.filter(Self.recipes, query: "", cuisine: .china).isEmpty)
+    }
+
+    @Test func queryMatchesRegionAndCuisineName() {
+        #expect(RecipeSearch.filter(Self.recipes, query: "punjab").map(\.id) == ["dal"])
+        #expect(RecipeSearch.filter(Self.recipes, query: "georgia").map(\.id) == ["lobio"])
+        let german = RecipeSearch.filter(Self.recipes, query: "indien") { $0 == .india ? "Indien" : "" }
+        #expect(german.map(\.id) == ["dal", "chana"])
+    }
+
+    @Test func listsTheCuisinesPresentInCanonicalOrder() {
+        #expect(RecipeSearch.cuisines(in: Self.recipes) == [.india, .georgia])
+    }
+
+    @Test func copyKeepsOriginReferencesAndChecks() {
+        var original = Self.recipes[0]
+        original.references = [RecipeReference(title: "Werk")]
+        original.authenticityChecks = ["Butter und Sahne gehören dazu"]
+        let copy = original.copy(id: "mein-dal", name: "Mein Dal")
+        #expect(copy.origin == original.origin)
+        #expect(copy.references == original.references && copy.authenticityChecks == original.authenticityChecks)
+    }
+
+    /// The hand-written Codable lists every stored property; a new one must be added there too.
+    @Test func codableCoversEveryStoredProperty() throws {
+        let labels = Mirror(reflecting: Self.recipes[0]).children.compactMap(\.label)
+        #expect(
+            labels == [
+                "id", "name", "tag", "baseServings", "totalMinutes", "ingredients", "steps", "verified", "variantOf",
+                "origin", "references", "authenticityChecks", "schemaVersion",
+            ])
+        var full = Self.recipes[0]
+        full.variantOf = "x"
+        full.references = [RecipeReference(title: "T", author: "A", year: 1, url: URL(string: "https://example.org"))]
+        full.authenticityChecks = ["c"]
+        #expect(try RecipeLibrary.decode(JSONEncoder().encode(full)) == full)
     }
 
     @Test func decodesOriginReferencesAndChecks() throws {

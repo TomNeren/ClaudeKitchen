@@ -97,6 +97,16 @@ struct RecipeLibraryView: View {
             ContentUnavailableView(
                 "Rezepte nicht lesbar", systemImage: "exclamationmark.triangle",
                 description: Text("Die mitgelieferten Rezepte konnten nicht geladen werden."))
+        } else if isEmpty, let cuisine = model.cuisine {
+            ContentUnavailableView {
+                Label("Nichts aus \(cuisine.displayName)", systemImage: "line.3.horizontal.decrease.circle")
+            } description: {
+                Text(
+                    model.query.isEmpty
+                        ? "Für diese Küche gibt es noch kein Rezept." : "Keine Treffer für „\(model.query)“.")
+            } actions: {
+                Button("Filter zurücksetzen") { model.cuisine = nil }
+            }
         } else if isEmpty {
             ContentUnavailableView.search(text: model.query)
         }
