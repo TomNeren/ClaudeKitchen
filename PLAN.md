@@ -142,6 +142,30 @@ Weitere Ziele (z. B. Blutzucker, Darmgesundheit, viel Eiweiß) lassen sich als n
 Widersprechen sich zwei Ziele (Vollkornreis gegen Blumenkohlreis), gewinnt das gewählte, und die App zeigt
 den Unterschied zu Ausgewogen.
 
+**Stand M9a:** Regeln stehen in `Resources/Evidence/rewrite-rules.json`, jede mit Wortlaut der DGE-Seite.
+Ausgewogen tauscht Weißreis gegen Vollkornreis (15 Min länger), Nudeln gegen Vollkornnudeln (2 Min länger), Mehl zur
+Hälfte gegen Vollkornmehl, Butter gegen 80 % Olivenöl und Ghee zur Hälfte gegen Olivenöl. Die Variante heißt
+`<rezept>-<ziel>`, behält das Original als ersten Ersatz („Original“), rechnet Mengen in TL und EL über das Gewicht um
+und überspringt einen Tausch, der die 99-Minuten-Grenze sprengen würde. Die Zusatzgarzeit kommt einmal auf den längsten
+beheizten Schritt ab dem Zugeben bis zum nächsten frischen Topf; eine Regel muss die Gruppe verbessern, sonst gilt
+sie als Fehler. **Offen:** Kokosmilch und Sahne. Die DGE-Seite begründet „Pflanzliche Öle bevorzugen“, sagt aber nichts
+wörtlich zu Kokos oder Sahne; ein Tausch dafür braucht eine eigene Quelle (z. B. DGE-Leitlinie Fett). Von den drei
+mitgelieferten Rezepten ändert Ausgewogen deshalb noch keines, die Regeln greifen bei den Rezepten aus M10.
+
+**Stand M9b:** Jedes Ziel hat ein Kriterium: Ausgewogen die Gruppenbewertung, Blutdruck Natrium, Abnehmen kcal und
+Low Carb Kohlenhydrate je 100 g. Eine Regel muss ihr Kriterium verbessern und darf die Gruppe nicht verschlechtern.
+Blutdruck erbt die Regeln von Ausgewogen (eigene Regeln gehen vor), weil die DASH-Kost Vollkorn einschließt; eine geerbte
+Regel darf das Kriterium des erbenden Ziels nicht verschlechtern. Abnehmen und Low Carb erben nicht: Vollkornreis hat
+gleich viel kcal, und Ghee halb gegen Öl spart keine. Mengen in Stk werden zu Gramm, wenn das neue Lebensmittel kein
+Stückgewicht hat (3 Kartoffeln werden 450 g Blumenkohl). Regeln und Hinweise:
+- Blutdruck: Sojasauce zu salzreduzierter Sojasauce, Gemüsebrühe zur Hälfte zu Wasser (Sacks 2001, DASH-Sodium);
+  Hinweis, dass Salz nach Geschmack nicht mitzählt und die DGE bis zu 6 g am Tag nennt.
+- Abnehmen: Kokosmilch zur Hälfte zu Wasser (Ello-Martin 2007); Hinweis auf kcal pro Portion.
+- Low Carb: Kartoffel zu Blumenkohl (Seidelmann 2018); Hinweis, dass Low Carb eine Vorliebe ist und Reis und Nudeln
+  nicht im selben Schritt getauscht werden, weil Blumenkohl darin zerkocht.
+Alle Zitate prüft `Scripts/check_evidence_quotes.py`. Damit ändern Blutdruck (Lachs, Linsen-Eintopf) und Abnehmen
+(Curry) schon mitgelieferte Rezepte.
+
 ### 3c. Rezeptbestand: authentisch und traditionell
 
 - Neun Küchenräume (Entscheidung 32): Indien, Thailand, Südostasien (Vietnam, Indonesien, Malaysia,
@@ -173,6 +197,70 @@ den Unterschied zu Ausgewogen.
   jedem Update. Die REWE-Bestellung bleibt Handarbeit mit der sortierten Liste als Vorlage.
 - Logik (Bedarf, Vorrat, Zusammenfassen, Runden) liegt in KitchenCore. Gespeichert wird wie bei eigenen
   Rezepten als JSON in Application Support (Entscheidung 18).
+
+### 3e. Parallele Timer
+
+**Ausgangslage:** Die Kochsitzung kennt genau einen Timer. Läuft er, bleibt er beim Schrittwechsel stehen
+(Entscheidung 10), und der Timer des neuen Schritts lässt sich erst nach Ablauf oder Zurücksetzen starten.
+
+**Was wirklich parallel läuft:** Der Omni Cook hat einen Topf, also läuft immer höchstens ein Gerätetimer.
+Parallel ist nur Arbeit neben dem Gerät: Reis auf dem Herd, etwas im Ofen, Einweichen, Marinieren, Ruhen
+lassen. Die drei ersten Rezepte brauchen das nicht (beim Curry kommt der Blumenkohl laut Schritt 5 erst nach
+dem Umfüllen in den sauberen Topf). Seit M10 ist der Bedarf belegt (Stand M10h, 24 Rezepte):
+- Wartezeiten neben dem Gerät ohne Timer: Dal Tadka (30 Min einweichen), Jeera-Reis (20 Min einweichen),
+  Chicken Adobo (30 Min marinieren). Kocht man Dal und Reis zusammen, laufen beide gleichzeitig.
+- Kurze Pfannenarbeit ohne nennenswerte Zeit: Mercimek Çorbası (Butter mit Pul Biber), Chicken Adobo
+  (anbraten). Braucht keinen Timer.
+- Einweichen über Nacht (Kuru Fasulye, Lobio) ist kein Timer, sondern eine Erinnerung am Vortag und gehört
+  nicht in M13.
+Dazu kommen importierte Rezepte aus M6, die oft Herd oder Ofen nutzen.
+
+**Regeln:**
+- Ein Schritt hat höchstens einen Timer: entweder den Gerätetimer (`setting.duration`) oder einen neuen
+  **Nebentimer** mit Ort (Herd, Ofen, Arbeitsfläche) und Dauer. Beides zugleich lehnt `validate` ab.
+- **Höchstens ein Gerätetimer** ist aktiv (laufend oder pausiert). Ein zweiter Start wird abgelehnt, die
+  Oberfläche sagt warum („Das Gerät läuft noch: Köcheln, 8 Minuten“).
+- **Nebentimer laufen unabhängig**, höchstens 4 gleichzeitig (Grenze im `DeviceProfile`, weil Sperrbildschirm
+  und Dynamic Island nicht mehr sinnvoll zeigen).
+- Entscheidung 10 bleibt: Jeder aktive Timer gehört zu seinem Schritt und läuft beim Schrittwechsel weiter.
+  Neu ist nur, dass der Timer des aktuellen Schritts trotzdem startbar ist.
+- Zurücksetzen und Pause wirken auf den Timer des aktuellen Schritts. Andere Timer bedient man über ihre
+  eigene Zeile in der Timer-Liste.
+
+**Datenmodell (KitchenCore), Skizze:**
+```swift
+public enum TimerPlace: String, Sendable, Hashable, Codable { case device, stove, oven, counter }
+public struct SideTimer: Sendable, Hashable, Codable {   // new optional field Step.sideTimer
+    public var place: TimerPlace                         // never .device, checked by validate
+    public var duration: Duration
+}
+public struct ActiveTimer: Sendable, Equatable {
+    public let stepID: StepID
+    public let place: TimerPlace
+    public var state: TimerState                         // existing enum, unchanged
+}
+// CookingSession: `timer` and `timerStepIndex` become `timers: [ActiveTimer]` (sorted by end instant).
+// `timer` stays as the current step's timer, so CookingStatus, Siri and the view keep working during the switch.
+// CookingAction.startTimer/pauseTimer/resetTimer get an optional StepID (nil = current step).
+// New: CookingSession.startRefusal(for:) -> .deviceBusy(ActiveTimer) | .tooManyTimers | nil
+```
+- `finishedTimerCount` zählt weiter jeden abgelaufenen Timer einzeln, auch wenn ein Tick mehrere beendet.
+- `TimerAlarm` bekommt die `StepID` als stabile Kennung; die Sitzung liefert `alarms: [TimerAlarm]`.
+- Rezept-JSON bekommt `schemaVersion` 2 mit `sideTimer`; ein Test dekodiert die alte Form unverändert.
+
+**App:**
+- `AlarmScheduler.apply(_ alarms: [TimerAlarm])` gleicht ab statt alles zu löschen: neue Alarme planen,
+  verschwundene abbrechen, laufende in Ruhe lassen. `SystemAlarmScheduler` führt dafür eine Zuordnung
+  `StepID` zu `Alarm.ID`. Heute löscht er bei jeder Änderung alle Alarme der App, das muss weg.
+- Kochmodus: Die Timer-Zeile in der Gerätekonsole wird eine Liste. Der Timer des aktuellen Schritts steht
+  oben, andere aktive Timer darunter als kompakte Zeilen mit Ort, Schrittname und Restzeit; Tippen springt
+  zum Schritt. Glas bleibt auf der Bedienebene (Projektregel).
+- Schritt-Live-Activity: zusätzlich „2 Timer“ und der nächste Ablauf. Die Countdowns selbst zeigt AlarmKit,
+  je Timer einer.
+- Siri und Sprachmodus: „Wie lange noch“ nennt alle aktiven Timer, der früheste zuerst, höchstens drei.
+  „Timer starten“ und „Timer pausieren“ meinen den aktuellen Schritt; hat er keinen, aber genau ein anderer
+  Timer läuft, diesen. Bei mehreren sagt die App, welche laufen, und bittet um den Knopf.
+- Editor (M12) und Import (M6): Feld „Nebentimer“ mit Ort und Dauer; das Import-Schema bekommt dasselbe Feld.
 
 ### Bewusst nicht im Plan
 - Direkte Gerätesteuerung über WLAN: in einer früheren Session untersucht, derzeit nicht machbar (Abschnitt 6.2).
@@ -390,11 +478,12 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion, App-Icon | Erledigt (PR #8); Gefühl und Lesbarkeit offen laut Geräte-Prüfliste |
 | M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Erledigt (PR #10, 68 Tests): Import aus Text oder https-Link, Prüfung, Speichern, Löschen; Editor bei Bedarf; Test am Gerät braucht API-Schlüssel |
 | M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Erledigt (PR #11, 76 Tests): `VoiceCommand` in KitchenCore, Zuhören, Antworten und KI-Fragen in der App; Durchkochen per Sprache offen laut Geräte-Prüfliste |
-| M8 | M8a erledigt (PR #12), M8b erledigt (PR #14), M8c im Review. Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
-| M9 | Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil, Ziele Ausgewogen, Blutdruck, Abnehmen, Low Carb; in der App Umschalter Original/Variante mit Zielwahl, Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
-| M10 | Rezeptbestand: `origin`, `references`, `variantOf`, 27 traditionelle Rezepte aus neun Küchenräumen; Bibliothek filtert nach Küche | Alle 27 bestehen `validate` und sind vollständig zugeordnet |
+| M8 | M8a erledigt (PR #12), M8b erledigt (PR #14), M8c erledigt (PR #16). Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
+| M9 | Erledigt: M9a (PR #18), M9b (PR #19), M9c (PR #20). Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil, Ziele Ausgewogen, Blutdruck, Abnehmen, Low Carb; in der App Umschalter Original/Variante mit Zielwahl, Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
+| M10 | Erledigt: M10a (PR #21), M10b Indien (PR #22), M10c Thailand (PR #23), M10d Südostasien (PR #24), M10e China (PR #25), M10f Japan und Korea (PR #26), M10g Türkei und Levante (PR #27), M10h Georgien (PR #28). M10i Europa im Review. Rezeptbestand: `origin`, `references`, `variantOf`, Ziel 27 traditionelle Rezepte aus neun Küchenräumen, Stand 26 aus acht, Mexiko und Peru fehlen noch (ohne das eigene Lachsrezept); Bibliothek filtert nach Küche | Alle bestehen `validate` und sind vollständig zugeordnet |
 | M11 | Einkauf und Vorrat: Bedarf minus Vorrat, Mindestbestand, Abbuchen nach dem Kochen, Export nach Erinnerungen und Teilen (Abschnitt 3d) | Logik-Tests in KitchenCore; Export am Gerät laut Prüfliste |
 | M12 | (v2) Sprachprotokoll, Ersatzlisten für alle Rezepte, Rezept-Editor (PR #13, unabhängig von M8 bis M11) | In Arbeit: Protokoll in den Einstellungen, Editor für eigene Rezepte und Kopien; Bedienung am Handy offen laut Geräte-Prüfliste |
+| M13 | Parallele Timer (Abschnitt 3e): höchstens ein Gerätetimer, dazu bis zu 4 Nebentimer für Herd, Ofen und Arbeitsfläche. M13a KitchenCore, M13b App (Alarme abgleichen, Timer-Liste, Live Activity, Siri), M13c Editor und Import | Tests: zweiter Gerätetimer abgelehnt; Gerätetimer und Nebentimer laufen und enden unabhängig; ein Tick beendet mehrere und zählt jeden; Zurücksetzen trifft nur den aktuellen Schritt; Entscheidung 10 gilt weiter; altes Rezept-JSON dekodiert unverändert; `validate` lehnt Schritt mit beiden Timern ab. Am Gerät laut Prüfliste |
 
 ## 9. Entscheidungen
 
@@ -442,6 +531,9 @@ Getroffen (2026-10-25):
 31. (umkehrbar) **Rezept-Editor für das Handy:** ein Formular mit Rezept, Zutaten und Schritten, Details eine Ebene tiefer, Sortieren über einen Knopf unten. Neue Zutaten und Schritte öffnen sich sofort zum Ausfüllen. Alle Gerätewerte (Temperatur in 5er-Schritten, Stufen, Laufzeit) kommen aus `DeviceProfile`, Dampf setzt Programm und Aufsatz mit. Sichern geht erst ohne Fehler (Name, Schritttext, Gerätegrenzen), Warnungen wie die Füllmarke bleiben sichtbar. Mitgelieferte Rezepte werden als eigene Kopie bearbeitet, das Original bleibt. Neue Rezepte über „+“ in der Bibliothek. Für die Bedienung mit einer Hand: Zutaten als Zeile tippen („200 g Rote Linsen“, Eingabe, nächste) oder eine ganze Liste einfügen, die App zerlegt Menge, Einheit und Name selbst (g, kg, ml, l, TL, EL, Stk, Zehen, Brüche wie ½). Temperatur, Stufe und Laufzeit per Schnellwahl mit einem Tipp, Feineinstellung per Stepper. Schritte nach rechts wischen dupliziert, nach links löscht. Über der Zahlentastatur steht „Fertig“, Scrollen schließt die Tastatur.
 32. **Küchen für M10** (deine Entscheidung): Indien, Thailand, Südostasien, China, Japan und Korea, Türkei und
     Levante, Georgien, Europa, Mexiko und Peru, je 3 Rezepte.
+33. (Loop, umkehrbar) **Blutdruck darf eine Würze gegen ihre salzarme Variante tauschen**, etwa Sojasauce gegen
+    salzreduzierte Sojasauce. Das lockert Entscheidung 26 nur für ausdrücklich im Katalog verknüpfte Paare
+    (`lowSodiumVersionOf`); Geschmack und Menge bleiben gleich.
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
@@ -454,6 +546,12 @@ Offen (mit Empfehlung):
    Empfehlung: nur bei Bedarf an Nährwerten stellen, bis dahin USDA (CC0).
 5. **Authentizität prüfen:** Wer hakt die Rezept-Prüfliste ab? Empfehlung: du beim ersten Kochen, bei Zweifeln
    jemand aus der jeweiligen Küche.
+6. **Parallele Timer (M13): ob und wann.** Drei der 24 Rezepte haben Wartezeiten neben dem Gerät ohne
+   Timer (Abschnitt 3e). Der Umbau berührt Kochsitzung, AlarmKit, Live Activity, Siri, Editor und Import.
+   Möglichkeiten: (a) als Nächstes nach M10, vor M11, und die drei Wartezeiten (Dal Tadka, Jeera-Reis,
+   Chicken Adobo) als Nebentimer nachrüsten; (b) erst, wenn ein Rezept beim Kochen daran scheitert; (c) gar nicht, Nebenarbeit bleibt Text
+   im Schritt. Empfehlung: (a), aber nur M13a und M13b; M13c folgt, sobald du im Editor oder beim Import
+   einen Nebentimer vermisst.
 
 ## 10. Gauntlet-Loop: Umsetzung der restlichen Meilensteine
 
@@ -467,7 +565,8 @@ M11 Einkauf und Vorrat (Entscheidung 24).
 Scheiben für die neuen Meilensteine: M8a Datenmodell und Katalog, M8b geprüfte Einstufungen, M8c Nährwerte;
 M9a Umwandlung Ausgewogen in KitchenCore, M9b Ziele Blutdruck, Abnehmen, Low Carb, M9c Ansicht mit Zielwahl;
 M10a Felder, M10b bis M10j je 3 Rezepte (ein Küchenraum pro Scheibe); M11a Logik, M11b App
-mit Speicherung, Erinnerungen und Teilen.
+mit Speicherung, Erinnerungen und Teilen; M13a parallele Timer in KitchenCore, M13b App, M13c Editor und
+Import (Zeitpunkt: offene Entscheidung 6).
 Große Meilensteine werden in Scheiben geteilt (je ein PR), z. B. M4a Timer und Mitteilungen, M4b Live Activity.
 
 ### Ablauf pro Scheibe
@@ -521,6 +620,25 @@ Fehlerliste.
 - [ ] M5: iPad quer und hoch, auch im Split View: Kochmodus mit Leiste rechts; Größenwechsel bricht den Timer nicht ab
 - [ ] M5: Dynamic Type in Bedienungshilfen-Größen: Rezeptkopf wächst mit, Konsolen-Kacheln stehen untereinander
 - [ ] M5: VoiceOver durch Bibliothek, Rezeptansicht und Kochmodus
+- [ ] M9c: Rezeptansicht: Menü „Original“ über dem Farbverlauf wirkt als Glas neben dem Portionsregler; Ziel wählen zeigt „Was sich ändert“ ohne Ruckeln
+- [ ] M9c: Änderungsliste lesbar, Quelle aufklappbar, Nährwerte pro Portion stimmen mit der Zutatenliste überein; VoiceOver liest „X wird zu Y“
+- [ ] M9c: „Kochen starten“ mit gewähltem Ziel kocht die Variante (Zutaten, Schrittzeiten, Hinweise)
+- [ ] M10a: Bibliothek: Filter „Küche“ in der Leiste zeigt nur vorhandene Küchen, das Symbol ist gefüllt, solange ein Filter aktiv ist
+- [ ] M10a: Rezeptansicht: Abschnitt „Herkunft“ mit Küche, Region, Quellen und Prüfpunkten, nur bei Rezepten mit diesen Angaben
+- [ ] M10b: Dal Tadka, Jeera-Reis und Chana Masala einmal am Gerät kochen: Zeiten, Stufen und Wassermengen stimmen; Gewürze und Technik laut Prüfpunkten
+- [ ] M10b: Jeera-Reis gart ohne Rühren: heizt der Omni Cook bei 100 °C ohne Drehung gleichmäßig, oder braucht es Linkslauf Stufe 1?
+- [ ] M10b: Vollkornreis-Variante (Ausgewogen) mit 440 g Wasser und 33 Min: Reis gar, nichts angesetzt
+- [ ] M10c: Grünes Curry, Tom Kha Gai und Pad Krapow am Gerät: Paste fein genug nach 40 s auf Stufe 9, Hähnchen bei Stufe 6 grob statt Brei, Kokosmilch flockt nicht
+- [ ] M10d: Gà Kho Gừng: Karamell bei 160 °C bernsteinfarben, wie lange wirklich (Timer 7 Min ist Obergrenze); Chicken Adobo: Essig ohne Rühren aufkochen (Gerät heizt ohne Drehung?); Sayur Lodeh: Paste ohne Fasern, Kokosmilch flockt bei 90 °C nicht, Gemüse bissfest
+- [ ] M10e: Mapo Tofu: Tofu bleibt bei Linkslauf Stufe 1 ganz; Tomaten-Rührei: Ei weich nach 3 Min bei 100 °C; Wolfsbarsch: 10 Min Dampf für 150-g-Filets, Öl bei 160 °C heiß genug zum Zischen
+- [ ] M10f: Dashi: Kombu bei 60 °C ohne Rühren gleichmäßig warm, Katsuobushi sinkt bei 90 °C ab; Oyakodon: Ei nach 90 s bei 90 °C ohne Rühren halb gestockt; Misosuppe und Kimchi-Jjigae: Tofu bleibt bei Linkslauf Stufe 1 ganz
+- [ ] M10g: Mercimek: heiße Suppe auf Stufe 9 pürieren ohne Spritzen; Kuru Fasulye: eingeweichte Bohnen nach 80 Min bei 100 °C weich, aber ganz; Mujaddara: Zwiebeln nach 25 Min bei 130 °C tief goldbraun, Reis und Linsen gar ohne Ansetzen
+- [ ] M10h: Lobio: kochen eingeweichte Kidneybohnen bei 110 °C ohne Messbecher sichtbar sprudelnd (roh giftig, mindestens 10 Min kochen), Schaum bleibt im Topf, nach weiteren 60 Min weich; Stufe 3 für 4 s zerdrückt grob; Chakhokhbili: Huhn nimmt bei 160 °C mit 1 EL Öl Farbe, Sauce dickt ohne Messbecher ein; Ajapsandali: Schmoren ohne Rühren brennt nicht an
+- [ ] M10i: Pasta e ceci: Stufe 5 für 4 s lässt gut die Hälfte der Kichererbsen ganz, Ditalini kleben bei Linkslauf nicht an; Borschtsch: Rote Bete nach 8 Min bei 120 °C weich genug; Spanakorizo: Reis nach 18 Min saftig gar, Spinat brennt nicht an
+- [ ] M13: Gerätetimer und zwei Nebentimer gleichzeitig: drei AlarmKit-Countdowns auf dem Sperrbildschirm, jeder klingelt einzeln; Stoppen eines Alarms lässt die anderen laufen
+- [ ] M13: Pause eines Nebentimers nimmt nur dessen Countdown weg; Verlassen des Kochmodus entfernt alle nicht abgelaufenen
+- [ ] M13: Timer-Liste in der Gerätekonsole aus etwa 60 cm lesbar; Tippen auf eine Zeile springt zum Schritt
+- [ ] M13: „Wie lange noch in Omni Cook“ mit zwei laufenden Timern nennt beide, den früheren zuerst
 - [ ] M6: API-Schlüssel in den Einstellungen eintragen und wieder entfernen
 - [ ] M6: Import aus kopiertem Text und aus einem Link (https), Vorschau mit Prüfung, Speichern; eigenes Rezept erscheint oben in der Bibliothek, Löschen per langem Druck
 - [ ] M6: Werte eines importierten Rezepts einmal am Gerät gegenprüfen

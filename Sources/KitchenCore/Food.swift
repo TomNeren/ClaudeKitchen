@@ -31,10 +31,14 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
     /// True when the source has no entry for the food (for example a spice blend), so leaving out `nutrients` is
     /// deliberate.
     public var nutrientsUnavailable: Bool
+    /// The food this one is the low-sodium version of, for example reduced-sodium soy sauce of soy sauce. Only
+    /// such a pair lets the blood pressure goal touch a seasoning (decision 33).
+    public var lowSodiumVersionOf: FoodID?
 
     public init(
         id: FoodID, name: String, aliases: [String] = [], group: FoodGroupID, role: FoodRole,
-        gramsPerUnit: [MeasureUnit: Double] = [:], nutrients: Nutrients? = nil, nutrientsUnavailable: Bool = false
+        gramsPerUnit: [MeasureUnit: Double] = [:], nutrients: Nutrients? = nil, nutrientsUnavailable: Bool = false,
+        lowSodiumVersionOf: FoodID? = nil
     ) {
         self.id = id
         self.name = name
@@ -44,10 +48,11 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
         self.gramsPerUnit = gramsPerUnit
         self.nutrients = nutrients
         self.nutrientsUnavailable = nutrientsUnavailable
+        self.lowSodiumVersionOf = lowSodiumVersionOf
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, aliases, group, role, gramsPerUnit, nutrients, nutrientsUnavailable
+        case id, name, aliases, group, role, gramsPerUnit, nutrients, nutrientsUnavailable, lowSodiumVersionOf
     }
 
     public init(from decoder: any Decoder) throws {
@@ -60,6 +65,7 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
         gramsPerUnit = try container.decodeIfPresent([MeasureUnit: Double].self, forKey: .gramsPerUnit) ?? [:]
         nutrients = try container.decodeIfPresent(Nutrients.self, forKey: .nutrients)
         nutrientsUnavailable = try container.decodeIfPresent(Bool.self, forKey: .nutrientsUnavailable) ?? false
+        lowSodiumVersionOf = try container.decodeIfPresent(FoodID.self, forKey: .lowSodiumVersionOf)
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -78,6 +84,7 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
         if nutrientsUnavailable {
             try container.encode(true, forKey: .nutrientsUnavailable)
         }
+        try container.encodeIfPresent(lowSodiumVersionOf, forKey: .lowSodiumVersionOf)
     }
 
     /// The weight of `amount` in grams, nil if it is "to taste" or the unit has no known weight.
@@ -89,6 +96,11 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
 }
 
 extension MeasureUnit: CodingKeyRepresentable {}
+
+extension Food {
+    /// The catalog's plain water, which rules like `SwapRule.extraWaterPerGram` add to.
+    public static let water: FoodID = "water"
+}
 
 /// A group of foods with one health assessment, for example whole grains or processed meat.
 ///

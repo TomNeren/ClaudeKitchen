@@ -29,6 +29,9 @@ public struct FoodCatalog: Sendable, Hashable, Codable {
         self.targets = targets
     }
 
+    /// The bundled catalog, loaded once; nil if it cannot be read. Default weigher for `DeviceProfile`'s fill check.
+    public static let shared: FoodCatalog? = try? bundled()
+
     /// The catalog that ships with the app.
     public static func bundled() throws -> FoodCatalog {
         guard
@@ -95,6 +98,9 @@ public enum CatalogIssue: Sendable, Hashable {
     case missingNutrients(FoodID)
     /// Negative values, more saturated fat than fat, or more than 100 g of macronutrients per 100 g.
     case implausibleNutrients(FoodID)
+    /// `lowSodiumVersionOf` names an unknown food, one of another group, role or unit weights, or one without more
+    /// sodium.
+    case invalidLowSodiumVersion(FoodID)
     /// The effect's source is not among the sources its group cites.
     case uncitedEffectSource(group: FoodGroupID, source: SourceID)
     /// The relative risk is not positive, lies outside its interval, or the quote is missing.
@@ -168,6 +174,19 @@ extension FoodCatalog {
                 }
             } else if !food.nutrientsUnavailable {
                 issues.append(.missingNutrients(food.id))
+            }
+            if let originalID = food.lowSodiumVersionOf {
+                let original = self.food(originalID)
+                let isValid =
+                    original.map { original in
+                        original.group == food.group && original.role == food.role
+                            && original.gramsPerUnit == food.gramsPerUnit
+                            && (food.nutrients?.sodiumMilligrams ?? .infinity)
+                                < (original.nutrients?.sodiumMilligrams ?? 0)
+                    } ?? false
+                if !isValid {
+                    issues.append(.invalidLowSodiumVersion(food.id))
+                }
             }
         }
         return issues

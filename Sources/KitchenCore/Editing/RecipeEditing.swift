@@ -53,11 +53,13 @@ extension Recipe {
             steps: [Step(id: "s1", phase: "", text: "")])
     }
 
-    /// The same recipe under `id`, for example to change a bundled recipe as an own one. Not verified any more.
+    /// The same recipe under `id`, for example to change a bundled recipe as an own one. Keeps origin, references
+    /// and checks; not verified any more and no longer a variant.
     public func copy(id: RecipeID, name: String) -> Recipe {
         Recipe(
             id: id, name: name, tag: tag, baseServings: baseServings, totalMinutes: totalMinutes,
-            ingredients: ingredients, steps: steps, verified: false)
+            ingredients: ingredients, steps: steps, verified: false, origin: origin, references: references,
+            authenticityChecks: authenticityChecks, schemaVersion: schemaVersion)
     }
 
     /// Adds an ingredient with an id derived from `name` and returns that id.

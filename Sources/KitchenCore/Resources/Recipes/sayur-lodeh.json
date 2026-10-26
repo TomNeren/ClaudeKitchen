@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "sayur-lodeh",
+  "name": "Sayur Lodeh",
+  "tag": "Indonesisch · Gemüse in Kokosmilch",
+  "baseServings": 3,
+  "totalMinutes": 40,
+  "verified": false,
+  "origin": { "cuisine": "southeastAsia", "region": "Java" },
+  "references": [
+    { "title": "The Indonesian Kitchen", "author": "Sri Owen", "year": 1986 }
+  ],
+  "authenticityChecks": [
+    "Würzpaste aus Schalotten, Knoblauch, Kemiri, Galgant, Kurkuma, Koriander und Garnelenpaste",
+    "Salamblätter und Zitronengras für das Aroma, nicht mitessen",
+    "Gemüse bissfest, Brühe dünnflüssig, leicht süß mit Palmzucker"
+  ],
+  "ingredients": [
+    { "id": "schalotten", "name": "Schalotte", "food": "shallot", "quantity": 5, "unit": "Stk" },
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 3, "unit": "Zehen" },
+    { "id": "kemiri", "name": "Kemiri", "food": "candlenut", "quantity": 3, "unit": "Stk",
+      "substitutes": [ { "name": "Macadamianüsse", "ratio": 1, "note": "ähnlich mild und cremig" } ] },
+    { "id": "galgant", "name": "Galgant", "food": "galangal", "quantity": 15, "unit": "g" },
+    { "id": "kurkuma", "name": "Kurkuma", "food": "turmeric", "quantity": 1, "unit": "TL" },
+    { "id": "koriander", "name": "Koriander, gemahlen", "food": "coriander-ground", "quantity": 1, "unit": "TL" },
+    { "id": "kapi", "name": "Garnelenpaste", "food": "shrimp-paste", "quantity": 0.5, "unit": "TL" },
+    { "id": "chili", "name": "Rote Chili", "food": "red-chili", "quantity": 1, "unit": "Stk" },
+    { "id": "oel", "name": "Rapsöl", "food": "canola-oil", "quantity": 1, "unit": "EL" },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 300, "unit": "g" },
+    { "id": "kokosmilch", "name": "Kokosmilch", "food": "coconut-milk", "quantity": 400, "unit": "g" },
+    { "id": "salam", "name": "Salamblätter", "food": "salam-leaves", "quantity": 2, "unit": "Stk", "scales": false,
+      "eaten": false,
+      "substitutes": [ { "name": "Lorbeerblatt", "ratio": 1, "note": "anders im Aroma, aber besser als nichts" } ] },
+    { "id": "zitronengras", "name": "Zitronengras", "food": "lemongrass", "quantity": 1, "unit": "Stk", "note": "angedrückt",
+      "scales": false, "eaten": false },
+    { "id": "tempeh", "name": "Tempeh", "food": "tempeh", "quantity": 150, "unit": "g", "note": "in Würfeln" },
+    { "id": "chayote", "name": "Chayote", "food": "chayote", "quantity": 1, "unit": "Stk", "note": "in Stiften",
+      "substitutes": [ { "name": "Zucchini", "ratio": 1, "note": "weicher, erst mit den Bohnen zugeben" } ] },
+    { "id": "bohnen", "name": "Grüne Bohnen", "food": "green-beans", "quantity": 150, "unit": "g", "note": "in 4 cm Stücken" },
+    { "id": "kohl", "name": "Weißkohl", "food": "white-cabbage", "quantity": 150, "unit": "g", "note": "in Streifen" },
+    { "id": "palmzucker", "name": "Palmzucker", "food": "palm-sugar", "quantity": 1, "unit": "TL" },
+    { "id": "salz", "name": "Salz", "food": "salt" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Paste", "text": "Schalotten, Knoblauch, Kemiri, Galgant, Kurkuma, Koriander, Garnelenpaste und Chili grob zerkleinert in den Topf geben und fein mahlen.",
+      "ingredientIDs": ["schalotten", "knoblauch", "kemiri", "galgant", "kurkuma", "koriander", "kapi", "chili"],
+      "setting": { "speed": 9, "seconds": 30 } },
+    { "id": "s1b", "phase": "Nachmahlen", "text": "Mit dem Spatel nach unten schieben und noch einmal mahlen, bis keine Galgantfasern oder Nussstücke mehr zu sehen sind.",
+      "setting": { "speed": 9, "seconds": 20 } },
+    { "id": "s2", "phase": "Paste braten", "text": "Öl zugeben und die Paste braten, bis sie duftet.",
+      "note": "Ohne Messbecher.",
+      "ingredientIDs": ["oel"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 240 } },
+    { "id": "s3", "phase": "Köcheln", "text": "Wasser, Kokosmilch, Salamblätter, Zitronengras, Tempeh und Chayote zugeben und köcheln lassen.",
+      "note": "Messbecher einsetzen. Nur sanft köcheln, damit die Kokosmilch nicht flockt.",
+      "ingredientIDs": ["wasser", "kokosmilch", "salam", "zitronengras", "tempeh", "chayote"],
+      "setting": { "heat": 90, "speed": 1, "reverse": true, "seconds": 600 } },
+    { "id": "s4", "phase": "Gemüse", "text": "Bohnen, Kohl, Palmzucker und Salz zugeben und garen, bis das Gemüse bissfest ist.",
+      "ingredientIDs": ["bohnen", "kohl", "palmzucker", "salz"],
+      "setting": { "heat": 90, "speed": 1, "reverse": true, "seconds": 540 } },
+    { "id": "s5", "phase": "Anrichten", "text": "Salamblätter und Zitronengras entfernen und mit Reis servieren." }
+  ]
+}

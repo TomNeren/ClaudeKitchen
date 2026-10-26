@@ -1,21 +1,39 @@
 import KitchenCore
 import Observation
 
-/// Servings and derived values for one recipe screen. All rules come from KitchenCore.
+/// Servings, the chosen health goal and derived values for one recipe screen. All rules come from KitchenCore.
 @MainActor @Observable
 final class RecipeDetailModel {
+    /// The recipe as written; the variant, if a goal is chosen, is derived from it.
     let recipe: Recipe
     let profile: DeviceProfile
-    /// Range of the servings stepper: the app default, capped so the pot stays below the fill mark.
-    let servingsRange: ClosedRange<Int>
+    let advisor: HealthAdvisor?
+    /// Range of the servings stepper for the shown recipe: the app default, capped so the pot stays below the fill
+    /// mark. A goal can change it, because a variant can hold more or less volume.
+    private(set) var servingsRange: ClosedRange<Int>
     private(set) var servings: Int
+    /// Nil shows the original recipe.
+    var goal: RewriteGoalID? {
+        didSet {
+            variant = goal.flatMap { advisor?.variant(of: recipe, for: $0) }
+            servingsRange = profile.servingsRange(for: displayed)
+            servings = min(max(servings, servingsRange.lowerBound), servingsRange.upperBound)
+        }
+    }
+    private(set) var variant: RecipeVariant?
 
-    init(recipe: Recipe, profile: DeviceProfile = .omniCook) {
+    init(recipe: Recipe, profile: DeviceProfile = .omniCook, advisor: HealthAdvisor? = HealthGoals.advisor) {
         self.recipe = recipe
         self.profile = profile
+        self.advisor = advisor
         servingsRange = profile.servingsRange(for: recipe)
         servings = recipe.baseServings
     }
+
+    /// The recipe the screen shows and cooks: the variant for the chosen goal, else the original.
+    var displayed: Recipe { variant?.recipe ?? recipe }
+
+    var goals: [RewriteGoalID] { advisor?.goals ?? [] }
 
     var canDecrease: Bool { servings > servingsRange.lowerBound }
     var canIncrease: Bool { servings < servingsRange.upperBound }
@@ -29,13 +47,14 @@ final class RecipeDetailModel {
     }
 
     var ingredients: [(ingredient: Ingredient, text: String)] {
-        recipe.ingredients.map { ingredient in
+        let recipe = displayed
+        return recipe.ingredients.map { ingredient in
             (ingredient, AmountFormatter.string(for: ingredient.amount(from: recipe.baseServings, to: servings)))
         }
     }
 
     /// Validation warnings for the current servings, for example an exceeded fill mark.
     var warnings: [ValidationIssue] {
-        profile.validate(recipe, servings: servings).filter { $0.severity == .warning }
+        profile.validate(displayed, servings: servings).filter { $0.severity == .warning }
     }
 }

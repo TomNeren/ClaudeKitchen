@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "id": "spanakorizo",
+  "name": "Spanakorizo",
+  "tag": "Griechisch · Spinatreis",
+  "baseServings": 4,
+  "totalMinutes": 40,
+  "verified": false,
+  "origin": { "cuisine": "europe", "region": "Griechenland" },
+  "references": [
+    { "title": "Vefa's Kitchen", "author": "Vefa Alexiadou", "year": 2009 }
+  ],
+  "authenticityChecks": [
+    "Viel Spinat, Frühlingszwiebel und Dill, in reichlich Olivenöl",
+    "Reis weich und saftig, nicht körnig trocken",
+    "Mit Zitrone und Feta serviert"
+  ],
+  "ingredients": [
+    { "id": "zwiebel", "name": "Zwiebel", "food": "onion", "quantity": 1, "unit": "Stk", "note": "halbiert" },
+    { "id": "olivenoel", "name": "Olivenöl", "food": "olive-oil", "quantity": 4, "unit": "EL" },
+    { "id": "fruehlingszwiebeln", "name": "Frühlingszwiebeln", "food": "spring-onion", "quantity": 4, "unit": "Stk", "note": "in Ringen" },
+    { "id": "reis", "name": "Reis, Mittel- oder Langkorn", "food": "white-rice", "quantity": 150, "unit": "g" },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 400, "unit": "g", "note": "heiß" },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    { "id": "spinat", "name": "Blattspinat, tiefgekühlt", "food": "spinach", "quantity": 450, "unit": "g",
+      "note": "aufgetaut und leicht ausgedrückt" },
+    { "id": "dill", "name": "Dill", "food": "dill", "quantity": 15, "unit": "g", "note": "gehackt" },
+    { "id": "zitrone", "name": "Zitrone", "food": "lemon", "quantity": 1, "unit": "Stk", "note": "Saft, dazu Spalten zum Servieren" },
+    { "id": "pfeffer", "name": "Schwarzer Pfeffer", "food": "black-pepper" },
+    { "id": "feta", "name": "Feta", "food": "feta", "quantity": 100, "unit": "g", "note": "zum Servieren, nach Wunsch" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Hacken", "text": "Zwiebel in den Topf geben und zerkleinern.",
+      "ingredientIDs": ["zwiebel"],
+      "setting": { "speed": 5, "seconds": 4 } },
+    { "id": "s2", "phase": "Anschwitzen", "text": "Olivenöl und Frühlingszwiebeln zugeben und weich dünsten.",
+      "note": "Ohne Messbecher.",
+      "ingredientIDs": ["olivenoel", "fruehlingszwiebeln"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 240 } },
+    { "id": "s3", "phase": "Reis", "text": "Reis zugeben und im Öl glasig rühren.",
+      "ingredientIDs": ["reis"],
+      "setting": { "heat": 110, "speed": 1, "reverse": true, "seconds": 90 } },
+    { "id": "s4", "phase": "Garen", "text": "Heißes Wasser und Salz zugeben und den Reis vorgaren.",
+      "note": "Messbecher einsetzen.",
+      "ingredientIDs": ["wasser", "salz"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 600 } },
+    { "id": "s5", "phase": "Spinat", "text": "Spinat zugeben und garen, bis der Reis weich ist.",
+      "note": "Messbecher einsetzen. Der Reis soll saftig sein; ist er zu trocken, etwas heißes Wasser zugeben.",
+      "ingredientIDs": ["spinat"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 480 } },
+    { "id": "s6", "phase": "Dill und Zitrone", "text": "Dill und Zitronensaft unterrühren, mit Pfeffer abschmecken und ohne Hitze ruhen lassen.",
+      "ingredientIDs": ["dill", "zitrone", "pfeffer"],
+      "setting": { "seconds": 300 } },
+    { "id": "s7", "phase": "Anrichten", "text": "Mit Zitronenspalten und nach Wunsch Feta servieren.",
+      "ingredientIDs": ["feta"] }
+  ]
+}

@@ -6,6 +6,7 @@
   "baseServings": 3,
   "totalMinutes": 30,
   "verified": false,
+  "origin": { "cuisine": "india" },
   "ingredients": [
     { "id": "zwiebel", "name": "Zwiebel", "food": "onion", "quantity": 1, "unit": "Stk",
       "substitutes": [ { "name": "Schalotten", "ratio": 2 } ] },

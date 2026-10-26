@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "kuru-fasulye",
+  "name": "Kuru Fasulye",
+  "tag": "Türkisch · Bohneneintopf · über Nacht einweichen",
+  "baseServings": 4,
+  "totalMinutes": 100,
+  "verified": false,
+  "origin": { "cuisine": "turkeyLevant", "region": "Türkei" },
+  "references": [
+    { "title": "Classical Turkish Cooking", "author": "Ayla Algar", "year": 1991 }
+  ],
+  "authenticityChecks": [
+    "Getrocknete weiße Bohnen über Nacht eingeweicht und weich geschmort, nicht zerkocht",
+    "Grundlage aus Zwiebel, Olivenöl, Tomaten- und Paprikamark",
+    "Mit Reis (Pilav) und eingelegtem Gemüse (Turşu) serviert"
+  ],
+  "ingredients": [
+    { "id": "bohnen", "name": "Weiße Bohnen, eingeweicht", "food": "white-beans", "quantity": 550, "unit": "g",
+      "note": "aus etwa 250 g getrockneten Bohnen, abgegossen" },
+    { "id": "zwiebel", "name": "Zwiebel", "food": "onion", "quantity": 1, "unit": "Stk", "note": "halbiert" },
+    { "id": "olivenoel", "name": "Olivenöl", "food": "olive-oil", "quantity": 3, "unit": "EL" },
+    { "id": "tomatenmark", "name": "Tomatenmark", "food": "tomato-paste", "quantity": 1.5, "unit": "EL" },
+    { "id": "paprikamark", "name": "Paprikamark, scharf oder mild", "food": "pepper-paste", "quantity": 1, "unit": "EL",
+      "substitutes": [ { "name": "Tomatenmark", "ratio": 1, "note": "milder, weniger Tiefe" } ] },
+    { "id": "pul-biber", "name": "Pul Biber", "food": "pul-biber", "quantity": 1, "unit": "TL" },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 900, "unit": "g", "note": "heiß" },
+    { "id": "salz", "name": "Salz", "food": "salt" }
+  ],
+  "steps": [
+    { "id": "s0", "phase": "Einweichen", "text": "Am Vortag etwa 250 g getrocknete Bohnen in reichlich kaltem Wasser über Nacht einweichen. Vor dem Kochen abgießen.",
+      "note": "Die Bohnen nehmen gut das Doppelte ihres Gewichts an Wasser auf." },
+    { "id": "s1", "phase": "Hacken", "text": "Zwiebel in den Topf geben und zerkleinern.",
+      "ingredientIDs": ["zwiebel"],
+      "setting": { "speed": 5, "seconds": 5 } },
+    { "id": "s2", "phase": "Anschwitzen", "text": "Olivenöl zugeben und die Zwiebel glasig dünsten.",
+      "note": "Ohne Messbecher.",
+      "ingredientIDs": ["olivenoel"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 300 } },
+    { "id": "s3", "phase": "Mark", "text": "Tomatenmark, Paprikamark und Pul Biber zugeben und kurz mitrösten.",
+      "ingredientIDs": ["tomatenmark", "paprikamark", "pul-biber"],
+      "setting": { "heat": 110, "speed": 1, "reverse": true, "seconds": 90 } },
+    { "id": "s4", "phase": "Schmoren", "text": "Bohnen und heißes Wasser zugeben und köcheln, bis die Bohnen weich sind.",
+      "note": "Messbecher einsetzen. Die Garzeit hängt vom Alter der Bohnen ab; eine Bohne zwischen den Fingern drücken, sie soll ganz weich sein.",
+      "ingredientIDs": ["bohnen", "wasser"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 4800 } },
+    { "id": "s5", "phase": "Abschmecken", "text": "Salzen und ohne Messbecher etwas einkochen, bis die Sauce leicht sämig ist.",
+      "note": "Erst jetzt salzen, früh gesalzen werden die Bohnen nicht so weich.",
+      "ingredientIDs": ["salz"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 300 } },
+    { "id": "s6", "phase": "Anrichten", "text": "Mit Reis und eingelegtem Gemüse servieren." }
+  ]
+}

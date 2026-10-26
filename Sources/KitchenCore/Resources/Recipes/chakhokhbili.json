@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "id": "chakhokhbili",
+  "name": "Chakhokhbili",
+  "tag": "Georgisch · Huhn in Tomaten",
+  "baseServings": 4,
+  "totalMinutes": 55,
+  "verified": false,
+  "origin": { "cuisine": "georgia" },
+  "references": [
+    { "title": "The Georgian Feast", "author": "Darra Goldstein", "year": 1993 }
+  ],
+  "authenticityChecks": [
+    "Huhn zuerst kräftig angebraten, dann mit reichlich Zwiebeln in Butter",
+    "Frische Tomaten, Khmeli Suneli und Utskho Suneli",
+    "Zum Schluss viel Knoblauch und frische Kräuter: Koriander, Basilikum, Dill"
+  ],
+  "ingredients": [
+    { "id": "huhn", "name": "Hähnchenschenkel ohne Haut", "food": "chicken-thigh", "quantity": 600, "unit": "g",
+      "note": "in großen Stücken" },
+    { "id": "oel", "name": "Sonnenblumenöl", "food": "sunflower-oil", "quantity": 1, "unit": "EL" },
+    { "id": "butter", "name": "Butter", "food": "butter", "quantity": 20, "unit": "g" },
+    { "id": "zwiebeln", "name": "Zwiebeln", "food": "onion", "quantity": 2, "unit": "Stk", "note": "in Halbringen" },
+    { "id": "tomaten", "name": "Tomaten, reif", "food": "tomato", "quantity": 5, "unit": "Stk", "note": "gehäutet und gewürfelt" },
+    { "id": "khmeli-suneli", "name": "Khmeli Suneli", "food": "khmeli-suneli", "quantity": 1, "unit": "TL" },
+    { "id": "utskho-suneli", "name": "Utskho Suneli", "food": "utskho-suneli", "quantity": 0.5, "unit": "TL" },
+    { "id": "chili", "name": "Rote Chili", "food": "red-chili", "quantity": 1, "unit": "Stk", "note": "fein gehackt" },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 4, "unit": "Zehen", "note": "zerdrückt" },
+    { "id": "koriander", "name": "Koriandergrün", "food": "coriander-leaves", "quantity": 15, "unit": "g", "note": "gehackt" },
+    { "id": "basilikum", "name": "Basilikum", "food": "basil", "quantity": 10, "unit": "g", "note": "gehackt" },
+    { "id": "dill", "name": "Dill", "food": "dill", "quantity": 5, "unit": "g", "note": "gehackt" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Anbraten", "text": "Öl und Huhn in den Topf geben und kräftig anbraten.",
+      "note": "Ohne Messbecher. Es soll Farbe nehmen, nicht garen.",
+      "ingredientIDs": ["oel", "huhn"],
+      "setting": { "heat": 160, "speed": 1, "reverse": true, "seconds": 480 } },
+    { "id": "s2", "phase": "Zwiebeln", "text": "Butter und Zwiebeln zugeben und weich dünsten.",
+      "note": "Ohne Messbecher.",
+      "ingredientIDs": ["butter", "zwiebeln"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 420 } },
+    { "id": "s3", "phase": "Schmoren", "text": "Tomaten, Khmeli Suneli, Utskho Suneli, Chili und Salz zugeben und schmoren.",
+      "note": "Ohne Messbecher, damit die Sauce einkocht. Das Huhn soll zart sein und die Sauce sämig.",
+      "ingredientIDs": ["tomaten", "khmeli-suneli", "utskho-suneli", "chili", "salz"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 1500 } },
+    { "id": "s4", "phase": "Kräuter", "text": "Knoblauch und Kräuter unterrühren und kurz ziehen lassen.",
+      "ingredientIDs": ["knoblauch", "koriander", "basilikum", "dill"],
+      "setting": { "heat": 90, "speed": 1, "reverse": true, "seconds": 120 } },
+    { "id": "s5", "phase": "Anrichten", "text": "Mit Brot (Shoti oder Mchadi) servieren." }
+  ]
+}
