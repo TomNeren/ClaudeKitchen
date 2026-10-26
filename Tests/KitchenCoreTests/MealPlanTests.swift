@@ -51,6 +51,35 @@ struct MealPlanTests {
         #expect(state.pantry.items.isEmpty)
     }
 
+    @Test func cookingTakesServingsOffThePlanAndKeepsTheRest() {
+        var plan = MealPlan(entries: [.init(recipe: "dal", servings: 6, goal: "balanced")])
+        plan.cooked("dal", servings: 2)
+        #expect(plan.entries == [.init(recipe: "dal", servings: 4, goal: "balanced")])
+        plan.cooked("soup", servings: 2)
+        plan.cooked("dal", servings: 10)
+        #expect(plan.entries.isEmpty)
+    }
+
+    @Test func plansUseTheVariantOfTheirGoal() {
+        var plan = MealPlan()
+        plan.add("dal", servings: 2, goal: "low-carb")
+        var variant = Self.dal
+        variant.name = "Dal Low Carb"
+        let plans = plan.plans(in: [Self.dal]) { recipe, goal in goal == "low-carb" ? variant : nil }
+        #expect(plans.map(\.recipe.name) == ["Dal Low Carb"])
+        plan.add("dal", servings: 1)
+        #expect(plan.entries == [.init(recipe: "dal", servings: 3)])
+    }
+
+    @Test func ticksOfItemsThatLeftTheListAreDropped() {
+        var state = ShoppingState(checked: ["food:lentils", "food:rice"])
+        let list = ShoppingList(items: [
+            .init(food: "rice", name: "Reis", aisle: .dryGoods, quantity: .level, reason: .needed, recipes: [])
+        ])
+        state.keepChecks(on: list)
+        #expect(state.checked == ["food:rice"])
+    }
+
     @Test func cookingAVariantDeductsAndDropsTheOriginalFromThePlan() {
         var state = ShoppingState(
             plan: MealPlan(entries: [.init(recipe: "dal", servings: 2)]),

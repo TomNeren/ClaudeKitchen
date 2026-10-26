@@ -133,7 +133,8 @@ struct RecipeLibraryView: View {
                 RecipeDetailView(
                     recipe: recipe, isOwn: model.isOwn(id),
                     onEdit: { editing = model.editorRequest(for: id) },
-                    onAddToShopping: { shopping.add(recipe, servings: $0) }
+                    isPlanned: shopping.isPlanned(id),
+                    onAddToShopping: { shopping.add(recipe, servings: $0, goal: $1) }
                 ) { servings, goal in path.append(.cooking(id, servings: servings, goal: goal)) }
                 // A saved change gives the screen a fresh model.
                 .id(recipe)

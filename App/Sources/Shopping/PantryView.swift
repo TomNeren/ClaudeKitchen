@@ -17,6 +17,11 @@ struct PantryView: View {
                         model.setPantryItem(nil, for: entry.item.food)
                     }
                 }
+                .contextMenu {
+                    Button("Aus dem Vorrat entfernen", systemImage: "trash", role: .destructive) {
+                        model.setPantryItem(nil, for: entry.item.food)
+                    }
+                }
             }
         }
         .overlay {
@@ -34,7 +39,8 @@ struct PantryView: View {
             }
         }
         .sheet(isPresented: $isAdding) {
-            FoodPicker(foods: model.catalog?.foods.filter { $0.id != Food.water } ?? []) { food in
+            // Only foods not in the pantry yet, so picking one never resets an existing stock.
+            FoodPicker(foods: model.addableFoods) { food in
                 model.setPantryItem(model.newPantryItem(for: food), for: food.id)
             }
         }
@@ -113,10 +119,9 @@ private struct FoodPicker: View {
     }
 
     private var filtered: [Food] {
-        let sorted = foods.sorted { $0.name < $1.name }
         let words = query.split(whereSeparator: \.isWhitespace)
-        guard !words.isEmpty else { return sorted }
-        return sorted.filter { food in
+        guard !words.isEmpty else { return foods }
+        return foods.filter { food in
             words.allSatisfy { word in
                 food.name.localizedStandardContains(word)
                     || food.aliases.contains { $0.localizedStandardContains(word) }

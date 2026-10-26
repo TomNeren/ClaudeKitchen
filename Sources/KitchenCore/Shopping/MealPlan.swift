@@ -5,12 +5,15 @@ public struct MealPlan: Sendable, Hashable, Codable {
     public struct Entry: Sendable, Hashable, Codable, Identifiable {
         public var recipe: RecipeID
         public var servings: Int
+        /// The health goal whose variant is cooked, nil for the original.
+        public var goal: RewriteGoalID?
 
         public var id: RecipeID { recipe }
 
-        public init(recipe: RecipeID, servings: Int) {
+        public init(recipe: RecipeID, servings: Int, goal: RewriteGoalID? = nil) {
             self.recipe = recipe
             self.servings = servings
+            self.goal = goal
         }
     }
 
@@ -19,16 +22,27 @@ public struct MealPlan: Sendable, Hashable, Codable {
     public init(entries: [Entry] = []) {
         self.entries = []
         for entry in entries {
-            add(entry.recipe, servings: entry.servings)
+            add(entry.recipe, servings: entry.servings, goal: entry.goal)
         }
     }
 
-    /// Servings below 1 count as 1.
-    public mutating func add(_ recipe: RecipeID, servings: Int) {
+    /// Servings below 1 count as 1. A recipe already planned keeps one entry: its servings add up and the latest
+    /// goal wins.
+    public mutating func add(_ recipe: RecipeID, servings: Int, goal: RewriteGoalID? = nil) {
         if let index = entries.firstIndex(where: { $0.recipe == recipe }) {
             entries[index].servings += max(1, servings)
+            entries[index].goal = goal
         } else {
-            entries.append(Entry(recipe: recipe, servings: max(1, servings)))
+            entries.append(Entry(recipe: recipe, servings: max(1, servings), goal: goal))
+        }
+    }
+
+    /// Takes cooked servings off a planned recipe and drops it when none are left; an unplanned recipe is ignored.
+    public mutating func cooked(_ recipe: RecipeID, servings: Int) {
+        guard let index = entries.firstIndex(where: { $0.recipe == recipe }) else { return }
+        entries[index].servings -= max(1, servings)
+        if entries[index].servings <= 0 {
+            entries.remove(at: index)
         }
     }
 
@@ -42,10 +56,16 @@ public struct MealPlan: Sendable, Hashable, Codable {
         entries.removeAll { $0.recipe == recipe }
     }
 
-    /// The planned recipes found in `recipes`, in plan order; entries whose recipe is gone are skipped.
-    public func plans(in recipes: [Recipe]) -> [(recipe: Recipe, servings: Int)] {
+    /// The planned recipes found in `recipes`, in plan order; entries whose recipe is gone are skipped. `variant`
+    /// turns an entry's recipe into the one for its goal (the app passes the health advisor); nil keeps the original.
+    public func plans(
+        in recipes: [Recipe], variant: (Recipe, RewriteGoalID) -> Recipe? = { _, _ in nil }
+    ) -> [(recipe: Recipe, servings: Int)] {
         let byID = Dictionary(recipes.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        return entries.compactMap { entry in byID[entry.recipe].map { ($0, entry.servings) } }
+        return entries.compactMap { entry in
+            guard let recipe = byID[entry.recipe] else { return nil }
+            return (entry.goal.flatMap { variant(recipe, $0) } ?? recipe, entry.servings)
+        }
     }
 }
 
@@ -66,9 +86,11 @@ public struct ShoppingState: Sendable, Hashable, Codable {
         self.checked = checked
     }
 
-    /// The list for the plan, with recipes looked up in `recipes`.
-    public func list(recipes: [Recipe], catalog: FoodCatalog) -> ShoppingList {
-        ShoppingList(plans: plan.plans(in: recipes), pantry: pantry, catalog: catalog)
+    /// The list for the plan, with recipes looked up in `recipes` and turned into their goal's variant by `variant`.
+    public func list(
+        recipes: [Recipe], catalog: FoodCatalog, variant: (Recipe, RewriteGoalID) -> Recipe? = { _, _ in nil }
+    ) -> ShoppingList {
+        ShoppingList(plans: plan.plans(in: recipes, variant: variant), pantry: pantry, catalog: catalog)
     }
 
     /// Books the ticked-off items of `list` into the pantry and clears the ticks. The plan stays: the recipes are
@@ -78,9 +100,14 @@ public struct ShoppingState: Sendable, Hashable, Codable {
         checked = []
     }
 
-    /// Takes what `recipe` used out of the pantry and drops it from the plan.
+    /// Takes what `recipe` used out of the pantry and the cooked servings off the plan.
     public mutating func cooked(_ recipe: Recipe, servings: Int, catalog: FoodCatalog) {
         pantry = pantry.cooking(recipe, servings: servings, catalog: catalog)
-        plan.remove(recipe.variantOf ?? recipe.id)
+        plan.cooked(recipe.variantOf ?? recipe.id, servings: servings)
+    }
+
+    /// Drops ticks of items that are no longer on `list`, so they do not come back ticked later.
+    public mutating func keepChecks(on list: ShoppingList) {
+        checked.formIntersection(list.items.map(\.id))
     }
 }

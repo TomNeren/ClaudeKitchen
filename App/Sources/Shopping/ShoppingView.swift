@@ -9,9 +9,11 @@ struct ShoppingView: View {
     var body: some View {
         NavigationStack {
             List {
-                if let label = model.undoLabel {
+                if let undo = model.undo {
                     Section {
-                        Button("Rückgängig: \(label)", systemImage: "arrow.uturn.backward") { model.undo() }
+                        Button("Rückgängig: \(undo.label)", systemImage: "arrow.uturn.backward") {
+                            model.undoLastBooking()
+                        }
                     }
                 }
                 planSection
@@ -71,12 +73,12 @@ struct ShoppingView: View {
                 ForEach(planned) { plan in
                     Stepper(
                         value: Binding(
-                            get: { plan.servings }, set: { model.setServings($0, for: plan.recipe.id) }),
-                        in: 1...24
+                            get: { plan.entry.servings }, set: { model.setServings($0, for: plan.recipe.id) }),
+                        in: 1...max(24, plan.entry.servings)
                     ) {
                         VStack(alignment: .leading) {
                             Text(plan.recipe.name)
-                            Text(Portions.text(plan.servings)).font(.footnote).foregroundStyle(.secondary)
+                            Text(subtitle(for: plan.entry)).font(.footnote).foregroundStyle(.secondary)
                         }
                     }
                     .swipeActions {
@@ -84,9 +86,21 @@ struct ShoppingView: View {
                             model.remove(plan.recipe.id)
                         }
                     }
+                    .contextMenu {
+                        Button("Aus dem Plan entfernen", systemImage: "trash", role: .destructive) {
+                            model.remove(plan.recipe.id)
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+extension ShoppingView {
+    fileprivate func subtitle(for entry: MealPlan.Entry) -> String {
+        let servings = Portions.text(entry.servings)
+        return entry.goal.map { "\(servings), \(HealthGoals.name($0))" } ?? servings
     }
 }
 
