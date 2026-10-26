@@ -153,6 +153,80 @@ struct CookingSessionTests {
         #expect(session.finishedTimerCount == 2)
     }
 
+    @Test func tickWhilePausedChangesNothing() {
+        var session = CookingSession(recipe: recipe)
+        session.send(.next)
+        session.send(.startTimer(at: start))
+        session.send(.pauseTimer(at: start + .seconds(60)))
+        session.send(.tick(start + .seconds(1000)))
+        #expect(session.timer == .paused(remaining: .seconds(120)))
+        #expect(session.finishedTimerCount == 0)
+    }
+
+    @Test func startAfterFinishNeedsAReset() {
+        var session = CookingSession(recipe: recipe)
+        session.send(.next)
+        session.send(.startTimer(at: start))
+        session.send(.tick(start + .seconds(180)))
+        session.send(.startTimer(at: start + .seconds(200)))
+        #expect(session.timer == .finished)
+        session.send(.resetTimer)
+        session.send(.startTimer(at: start + .seconds(200)))
+        #expect(session.timer == .running(endsAt: start + .seconds(380)))
+    }
+
+    @Test func pausingExactlyAtTheEndFinishes() {
+        var session = CookingSession(recipe: recipe)
+        session.send(.next)
+        session.send(.startTimer(at: start))
+        session.send(.pauseTimer(at: start + .seconds(180)))
+        #expect(session.timer == .finished)
+        #expect(session.finishedTimerCount == 1)
+    }
+
+    @Test func timerFromAnotherStepFinishesThenResetLoadsTheCurrentStep() {
+        var session = CookingSession(recipe: recipe)
+        session.send(.next)
+        session.send(.startTimer(at: start))
+        session.send(.next)
+        session.send(.tick(start + .seconds(180)))
+        #expect(session.timer == .finished)
+        #expect(session.timerStepIndex == 1)
+        #expect(session.finishedTimerCount == 1)
+        session.send(.resetTimer)
+        #expect(session.timer == .ready(.seconds(60)))
+        #expect(session.timerStepIndex == 2)
+    }
+
+    @Test func servingsChangeDoesNotTouchARunningTimer() {
+        var session = CookingSession(recipe: recipe)
+        session.send(.next)
+        session.send(.startTimer(at: start))
+        session.send(.setServings(6))
+        #expect(session.servings == 6)
+        #expect(session.timer == .running(endsAt: start + .seconds(180)))
+    }
+
+    @Test func goingToTheCurrentStepKeepsItsTimer() {
+        var session = CookingSession(recipe: recipe)
+        session.send(.next)
+        session.send(.startTimer(at: start))
+        session.send(.goToStep(1))
+        #expect(session.timer == .running(endsAt: start + .seconds(180)))
+    }
+
+    @Test func emptyRecipeHasNoStepAndNoTimer() {
+        var session = CookingSession(
+            recipe: Recipe(
+                id: "empty", name: "Leer", tag: "", baseServings: 2, totalMinutes: 0, ingredients: [], steps: []))
+        #expect(session.currentStep == nil)
+        #expect(session.timer == .none)
+        session.send(.next)
+        session.send(.startTimer(at: start))
+        #expect(session.stepIndex == 0)
+        #expect(session.timer == .none)
+    }
+
     @Test func startsWithRequestedServingsClamped() {
         #expect(CookingSession(recipe: recipe, servings: 5).servings == 5)
         #expect(CookingSession(recipe: recipe, servings: 40).servings == 8)
