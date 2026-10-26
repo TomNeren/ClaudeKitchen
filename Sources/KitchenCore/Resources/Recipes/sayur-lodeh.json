@@ -43,20 +43,21 @@
   ],
   "steps": [
     { "id": "s1", "phase": "Paste", "text": "Schalotten, Knoblauch, Kemiri, Galgant, Kurkuma, Koriander, Garnelenpaste und Chili grob zerkleinert in den Topf geben und fein mahlen.",
-      "note": "Zwischendurch nach unten schieben.",
       "ingredientIDs": ["schalotten", "knoblauch", "kemiri", "galgant", "kurkuma", "koriander", "kapi", "chili"],
-      "setting": { "speed": 8, "seconds": 20 } },
+      "setting": { "speed": 9, "seconds": 30 } },
+    { "id": "s1b", "phase": "Nachmahlen", "text": "Mit dem Spatel nach unten schieben und noch einmal mahlen, bis keine Galgantfasern oder Nussstücke mehr zu sehen sind.",
+      "setting": { "speed": 9, "seconds": 20 } },
     { "id": "s2", "phase": "Paste braten", "text": "Öl zugeben und die Paste braten, bis sie duftet.",
       "note": "Ohne Messbecher.",
       "ingredientIDs": ["oel"],
       "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 240 } },
     { "id": "s3", "phase": "Köcheln", "text": "Wasser, Kokosmilch, Salamblätter, Zitronengras, Tempeh und Chayote zugeben und köcheln lassen.",
-      "note": "Messbecher einsetzen. Nicht sprudelnd kochen.",
+      "note": "Messbecher einsetzen. Nur sanft köcheln, damit die Kokosmilch nicht flockt.",
       "ingredientIDs": ["wasser", "kokosmilch", "salam", "zitronengras", "tempeh", "chayote"],
-      "setting": { "heat": 95, "speed": 1, "reverse": true, "seconds": 600 } },
+      "setting": { "heat": 90, "speed": 1, "reverse": true, "seconds": 600 } },
     { "id": "s4", "phase": "Gemüse", "text": "Bohnen, Kohl, Palmzucker und Salz zugeben und garen, bis das Gemüse bissfest ist.",
       "ingredientIDs": ["bohnen", "kohl", "palmzucker", "salz"],
-      "setting": { "heat": 95, "speed": 1, "reverse": true, "seconds": 480 } },
+      "setting": { "heat": 90, "speed": 1, "reverse": true, "seconds": 540 } },
     { "id": "s5", "phase": "Anrichten", "text": "Salamblätter und Zitronengras entfernen und mit Reis servieren." }
   ]
 }

@@ -4,7 +4,7 @@
   "name": "Gà Kho Gừng",
   "tag": "Vietnamesisch · Ingwer-Hähnchen",
   "baseServings": 3,
-  "totalMinutes": 50,
+  "totalMinutes": 55,
   "verified": false,
   "origin": { "cuisine": "southeastAsia", "region": "Vietnam" },
   "references": [
@@ -31,9 +31,9 @@
   ],
   "steps": [
     { "id": "s1", "phase": "Karamell", "text": "Zucker und Öl in den Topf geben und zu einem bernsteinfarbenen Karamell schmelzen.",
-      "note": "Ohne Messbecher. Am Gerät beobachten: dunkel goldbraun, nicht schwarz. Beim ersten Kochen die Zeit notieren.",
+      "note": "Ohne Messbecher. Die Zeit schließt das Aufheizen ein. Auf die Farbe achten, nicht auf den Timer: sobald es dunkel goldbraun ist, gleich weiter, sonst wird es bitter.",
       "ingredientIDs": ["zucker", "oel"],
-      "setting": { "heat": 160, "speed": 1, "reverse": true, "seconds": 240 } },
+      "setting": { "heat": 160, "speed": 1, "reverse": true, "seconds": 420 } },
     { "id": "s2", "phase": "Aromen", "text": "Schalotten, Knoblauch und Ingwer zugeben und im Karamell anschwitzen.",
       "note": "Vorsicht, es zischt.",
       "ingredientIDs": ["schalotten", "knoblauch", "ingwer"],

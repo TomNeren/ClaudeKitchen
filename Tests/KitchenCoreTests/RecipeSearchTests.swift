@@ -22,10 +22,10 @@ struct RecipeSearchTests {
     @Test func matchesNameTagAndIngredientsIgnoringCaseAndDiacritics() {
         #expect(ids("LINSEN") == ["zitronen-linsen-eintopf"])
         #expect(ids("dampf") == ["ingwer-lachs-pak-choi"])
-        // Computed by a plain substring check, independent of the search's own normalisation.
-        let withCoconutMilk = recipes.filter { $0.ingredients.contains { $0.name.lowercased().contains("kokosmilch") } }
-        #expect(Set(ids("kokosmilch")) == Set(withCoconutMilk.map(\.id.rawValue)))
-        #expect(ids("kokosmilch").contains("kichererbsen-spinat-curry") && !ids("kokosmilch").contains("dal-tadka"))
+        #expect(
+            Set(ids("kokosmilch")) == [
+                "kichererbsen-spinat-curry", "gaeng-keow-wan-gai", "tom-kha-gai", "sayur-lodeh",
+            ])
         #expect(ids("gemusebruhe") == ["zitronen-linsen-eintopf"])
     }
 

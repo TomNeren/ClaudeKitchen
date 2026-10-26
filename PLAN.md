@@ -557,7 +557,7 @@ Fehlerliste.
 - [ ] M10b: Jeera-Reis gart ohne Rühren: heizt der Omni Cook bei 100 °C ohne Drehung gleichmäßig, oder braucht es Linkslauf Stufe 1?
 - [ ] M10b: Vollkornreis-Variante (Ausgewogen) mit 440 g Wasser und 33 Min: Reis gar, nichts angesetzt
 - [ ] M10c: Grünes Curry, Tom Kha Gai und Pad Krapow am Gerät: Paste fein genug nach 40 s auf Stufe 9, Hähnchen bei Stufe 6 grob statt Brei, Kokosmilch flockt nicht
-- [ ] M10d: Gà Kho Gừng: Karamell bei 160 °C in 4 Min bernsteinfarben, nicht verbrannt; Chicken Adobo: Essig ohne Rühren aufkochen (Gerät heizt ohne Drehung?); Sayur Lodeh: Gemüse bissfest
+- [ ] M10d: Gà Kho Gừng: Karamell bei 160 °C bernsteinfarben, wie lange wirklich (Timer 7 Min ist Obergrenze); Chicken Adobo: Essig ohne Rühren aufkochen (Gerät heizt ohne Drehung?); Sayur Lodeh: Paste ohne Fasern, Kokosmilch flockt bei 90 °C nicht, Gemüse bissfest
 - [ ] M6: API-Schlüssel in den Einstellungen eintragen und wieder entfernen
 - [ ] M6: Import aus kopiertem Text und aus einem Link (https), Vorschau mit Prüfung, Speichern; eigenes Rezept erscheint oben in der Bibliothek, Löschen per langem Druck
 - [ ] M6: Werte eines importierten Rezepts einmal am Gerät gegenprüfen
