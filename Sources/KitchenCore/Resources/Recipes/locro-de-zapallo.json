@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "locro-de-zapallo",
+  "name": "Locro de zapallo",
+  "tag": "Peruanisch · Kürbiseintopf",
+  "baseServings": 4,
+  "totalMinutes": 50,
+  "verified": false,
+  "origin": { "cuisine": "mexicoPeru", "region": "Peru" },
+  "references": [
+    { "title": "Peru: The Cookbook", "author": "Gastón Acurio", "year": 2015 }
+  ],
+  "authenticityChecks": [
+    "Aderezo aus Zwiebel, Knoblauch und Ají amarillo in Öl angeschwitzt",
+    "Kürbis zerfällt teilweise und bindet den Eintopf, Kartoffeln, Mais und Erbsen bleiben stückig",
+    "Zum Schluss Milch und Würfel von Queso fresco, mit Reis serviert"
+  ],
+  "ingredients": [
+    { "id": "zwiebel", "name": "Zwiebel", "food": "onion", "quantity": 1, "unit": "Stk", "note": "halbiert" },
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 2, "unit": "Zehen" },
+    { "id": "oel", "name": "Rapsöl", "food": "canola-oil", "quantity": 2, "unit": "EL" },
+    { "id": "aji", "name": "Ají-Amarillo-Paste", "food": "aji-amarillo-paste", "quantity": 2, "unit": "EL" },
+    { "id": "kreuzkuemmel", "name": "Kreuzkümmel, gemahlen", "food": "cumin", "quantity": 0.5, "unit": "TL" },
+    { "id": "oregano", "name": "Oregano, getrocknet", "food": "oregano-dried", "quantity": 1, "unit": "TL" },
+    { "id": "kuerbis", "name": "Kürbis, Butternut", "food": "butternut", "quantity": 700, "unit": "g", "note": "geschält, in 2 cm Würfeln" },
+    { "id": "kartoffeln", "name": "Kartoffeln, festkochend", "food": "potato", "quantity": 2, "unit": "Stk", "note": "in 2 cm Würfeln" },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 250, "unit": "g" },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    { "id": "mais", "name": "Maiskörner, tiefgekühlt", "food": "sweet-corn", "quantity": 150, "unit": "g" },
+    { "id": "erbsen", "name": "Erbsen, tiefgekühlt", "food": "green-peas", "quantity": 80, "unit": "g" },
+    { "id": "milch", "name": "Milch", "food": "milk", "quantity": 100, "unit": "g" },
+    { "id": "kaese", "name": "Queso fresco", "food": "queso-fresco", "quantity": 100, "unit": "g", "note": "in Würfeln",
+      "substitutes": [ { "name": "Feta", "ratio": 1, "note": "salziger, dann weniger salzen" } ] }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Hacken", "text": "Zwiebel und Knoblauch in den Topf geben und zerkleinern.",
+      "ingredientIDs": ["zwiebel", "knoblauch"],
+      "setting": { "speed": 5, "seconds": 4 } },
+    { "id": "s2", "phase": "Aderezo", "text": "Öl zugeben und andünsten.",
+      "note": "Ohne Messbecher.",
+      "ingredientIDs": ["oel"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 240 } },
+    { "id": "s3", "phase": "Ají", "text": "Ají-Paste, Kreuzkümmel und Oregano zugeben und kurz mitbraten.",
+      "ingredientIDs": ["aji", "kreuzkuemmel", "oregano"],
+      "setting": { "heat": 110, "speed": 1, "reverse": true, "seconds": 90 } },
+    { "id": "s4", "phase": "Kürbis", "text": "Kürbis, Kartoffeln, Wasser und Salz zugeben und köcheln, bis der Kürbis zu zerfallen beginnt.",
+      "note": "Messbecher einsetzen.",
+      "ingredientIDs": ["kuerbis", "kartoffeln", "wasser", "salz"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 1200 } },
+    { "id": "s5", "phase": "Mais und Erbsen", "text": "Mais und Erbsen zugeben und mitgaren.",
+      "ingredientIDs": ["mais", "erbsen"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 300 } },
+    { "id": "s6", "phase": "Milch und Käse", "text": "Milch und Käse zugeben und nur erwärmen.",
+      "note": "Nicht mehr kochen, der Käse soll weich werden, aber nicht schmelzen.",
+      "ingredientIDs": ["milch", "kaese"],
+      "setting": { "heat": 85, "speed": 1, "reverse": true, "seconds": 120 } },
+    { "id": "s7", "phase": "Anrichten", "text": "Mit weißem Reis servieren." }
+  ]
+}
