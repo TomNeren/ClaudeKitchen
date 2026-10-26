@@ -30,7 +30,8 @@
     { "id": "erbsen", "name": "Erbsen, tiefgekühlt", "food": "green-peas", "quantity": 80, "unit": "g" },
     { "id": "milch", "name": "Milch", "food": "milk", "quantity": 100, "unit": "g" },
     { "id": "kaese", "name": "Queso fresco", "food": "queso-fresco", "quantity": 100, "unit": "g", "note": "in Würfeln",
-      "substitutes": [ { "name": "Feta", "ratio": 1, "note": "salziger, dann weniger salzen" } ] }
+      "substitutes": [ { "name": "Feta", "ratio": 1, "note": "salziger, dann weniger salzen" } ] },
+    { "id": "reis", "name": "Reis, weiß", "food": "white-rice", "quantity": 200, "unit": "g", "note": "separat gegart" }
   ],
   "steps": [
     { "id": "s1", "phase": "Hacken", "text": "Zwiebel und Knoblauch in den Topf geben und zerkleinern.",
@@ -44,16 +45,17 @@
       "ingredientIDs": ["aji", "kreuzkuemmel", "oregano"],
       "setting": { "heat": 110, "speed": 1, "reverse": true, "seconds": 90 } },
     { "id": "s4", "phase": "Kürbis", "text": "Kürbis, Kartoffeln, Wasser und Salz zugeben und köcheln, bis der Kürbis zu zerfallen beginnt.",
-      "note": "Messbecher einsetzen.",
+      "note": "Messbecher einsetzen. Reis in der Zwischenzeit separat garen.",
       "ingredientIDs": ["kuerbis", "kartoffeln", "wasser", "salz"],
       "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 1200 } },
     { "id": "s5", "phase": "Mais und Erbsen", "text": "Mais und Erbsen zugeben und mitgaren.",
       "ingredientIDs": ["mais", "erbsen"],
       "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 300 } },
-    { "id": "s6", "phase": "Milch und Käse", "text": "Milch und Käse zugeben und nur erwärmen.",
-      "note": "Nicht mehr kochen, der Käse soll weich werden, aber nicht schmelzen.",
+    { "id": "s6", "phase": "Milch und Käse", "text": "Milch und Käse unterheben und ohne Hitze ziehen lassen.",
+      "note": "Queso fresco schmilzt nicht, er wird in der heißen Suppe nur weich.",
       "ingredientIDs": ["milch", "kaese"],
-      "setting": { "heat": 85, "speed": 1, "reverse": true, "seconds": 120 } },
-    { "id": "s7", "phase": "Anrichten", "text": "Mit weißem Reis servieren." }
+      "setting": { "seconds": 120 } },
+    { "id": "s7", "phase": "Anrichten", "text": "Mit dem Reis servieren.",
+      "ingredientIDs": ["reis"] }
   ]
 }
