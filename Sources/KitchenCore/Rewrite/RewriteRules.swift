@@ -7,7 +7,7 @@ public typealias SwapRuleID = Identifier<SwapRule>
 ///
 /// JSON shape: `{"id": "brown-rice", "from": "white-rice", "to": "brown-rice", "toName": "Vollkornreis",
 /// "share": 1, "ratio": 1, "extraSeconds": 900, "stepNote": "…", "sourceID": "dge-2024", "quote": "…"}`.
-/// `share` and `ratio` default to 1, `extraSeconds` to 0.
+/// `share` and `ratio` default to 1, `extraSeconds` and `extraWaterPerGram` to 0.
 public struct SwapRule: Sendable, Hashable, Codable, Identifiable {
     public let id: SwapRuleID
     public var from: FoodID
@@ -20,6 +20,9 @@ public struct SwapRule: Sendable, Hashable, Codable, Identifiable {
     public var ratio: Double
     /// Extra cooking time for steps that cook the swapped food.
     public var extraTime: Duration
+    /// Grams of water to add per gram of the new food, to the water that cooks it, for example 0.5 for brown rice,
+    /// which soaks up more than white rice.
+    public var extraWaterPerGram: Double
     /// Note added to every step that uses the swapped food.
     public var stepNote: String?
     public var sourceID: SourceID
@@ -28,7 +31,8 @@ public struct SwapRule: Sendable, Hashable, Codable, Identifiable {
 
     public init(
         id: SwapRuleID, from: FoodID, to: FoodID, toName: String, share: Double = 1, ratio: Double = 1,
-        extraTime: Duration = .zero, stepNote: String? = nil, sourceID: SourceID, quote: String
+        extraTime: Duration = .zero, extraWaterPerGram: Double = 0, stepNote: String? = nil, sourceID: SourceID,
+        quote: String
     ) {
         self.id = id
         self.from = from
@@ -37,13 +41,14 @@ public struct SwapRule: Sendable, Hashable, Codable, Identifiable {
         self.share = share
         self.ratio = ratio
         self.extraTime = extraTime
+        self.extraWaterPerGram = extraWaterPerGram
         self.stepNote = stepNote
         self.sourceID = sourceID
         self.quote = quote
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, from, to, toName, share, ratio, extraSeconds, stepNote, sourceID, quote
+        case id, from, to, toName, share, ratio, extraSeconds, extraWaterPerGram, stepNote, sourceID, quote
     }
 
     public init(from decoder: any Decoder) throws {
@@ -55,6 +60,7 @@ public struct SwapRule: Sendable, Hashable, Codable, Identifiable {
         share = try container.decodeIfPresent(Double.self, forKey: .share) ?? 1
         ratio = try container.decodeIfPresent(Double.self, forKey: .ratio) ?? 1
         extraTime = .seconds(try container.decodeIfPresent(Int.self, forKey: .extraSeconds) ?? 0)
+        extraWaterPerGram = try container.decodeIfPresent(Double.self, forKey: .extraWaterPerGram) ?? 0
         stepNote = try container.decodeIfPresent(String.self, forKey: .stepNote)
         sourceID = try container.decode(SourceID.self, forKey: .sourceID)
         quote = try container.decode(String.self, forKey: .quote)
@@ -74,6 +80,9 @@ public struct SwapRule: Sendable, Hashable, Codable, Identifiable {
         }
         if extraTime != .zero {
             try container.encode(Int(extraTime.components.seconds), forKey: .extraSeconds)
+        }
+        if extraWaterPerGram != 0 {
+            try container.encode(extraWaterPerGram, forKey: .extraWaterPerGram)
         }
         try container.encodeIfPresent(stepNote, forKey: .stepNote)
         try container.encode(sourceID, forKey: .sourceID)
@@ -230,7 +239,7 @@ public enum RewriteRuleIssue: Sendable, Hashable {
     /// The goal's criterion compares nutrients, but one of the foods has none.
     case missingNutrients(rule: SwapRuleID, food: FoodID)
     case unknownSource(rule: SwapRuleID, source: SourceID)
-    /// Share outside (0, 1], ratio not positive, negative extra time, empty name or quote.
+    /// Share outside (0, 1], ratio not positive, negative extra time or water, empty name or quote.
     case invalidRule(SwapRuleID)
 }
 
@@ -285,6 +294,7 @@ extension RewriteRules {
         var issues: [RewriteRuleIssue] = []
         let isValid =
             rule.share > 0 && rule.share <= 1 && rule.ratio > 0 && rule.ratio.isFinite && rule.extraTime >= .zero
+            && rule.extraWaterPerGram >= 0 && rule.extraWaterPerGram.isFinite
             && !rule.toName.isEmpty && !rule.quote.isEmpty && rule.from != rule.to
         if !isValid {
             issues.append(.invalidRule(rule.id))

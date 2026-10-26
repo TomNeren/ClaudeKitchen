@@ -57,6 +57,20 @@ struct HealthAdvisorTests {
         #expect(variant.nutritionAfter == variant.nutritionBefore)
     }
 
+    @Test func balancedRewritesTheIndianRiceAndGhee() throws {
+        let advisor = try HealthAdvisor.bundled()
+        let recipes = try RecipeLibrary.bundled()
+        let rice = try #require(recipes.first { $0.id == "jeera-reis" })
+        let riceVariant = try #require(advisor.variant(of: rice, for: RewriteGoal.balanced))
+        #expect(riceVariant.recipe.ingredient("reis")?.food == "brown-rice")
+        #expect(riceVariant.recipe.steps.first { $0.id == "s3" }?.setting?.duration == .seconds(1980))
+        #expect(riceVariant.recipe.ingredient("wasser")?.amount == .measured(440, .gram))
+        let dal = try #require(recipes.first { $0.id == "dal-tadka" })
+        let dalVariant = try #require(advisor.variant(of: dal, for: RewriteGoal.balanced))
+        #expect(dalVariant.changes.map(\.rule.id) == ["half-ghee-to-olive-oil", "half-ghee-to-olive-oil"])
+        #expect(dalVariant.nutritionAfter.saturatedFat < dalVariant.nutritionBefore.saturatedFat)
+    }
+
     @Test func unknownGoalGivesNoVariant() throws {
         let advisor = try HealthAdvisor.bundled()
         let recipe = try #require(try RecipeLibrary.bundled().first)

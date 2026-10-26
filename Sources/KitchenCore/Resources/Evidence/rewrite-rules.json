@@ -10,9 +10,10 @@
           "to": "brown-rice",
           "toName": "Vollkornreis",
           "extraSeconds": 900,
-          "stepNote": "Vollkornreis gart etwa 15 Minuten länger und braucht etwas mehr Wasser.",
+          "stepNote": "Vollkornreis gart etwa 15 Minuten länger; die Wassermenge ist schon erhöht.",
           "sourceID": "dge-2024",
-          "quote": "Bei Getreideprodukten wie Brot, Nudeln, Reis und Mehl ist die Vollkornvariante die beste Wahl für die Gesundheit"
+          "quote": "Bei Getreideprodukten wie Brot, Nudeln, Reis und Mehl ist die Vollkornvariante die beste Wahl für die Gesundheit",
+          "extraWaterPerGram": 0.5
         },
         {
           "id": "whole-wheat-pasta",

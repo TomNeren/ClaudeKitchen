@@ -121,11 +121,35 @@ extension Recipe {
             steps[cookingStep].setting?.duration = duration + rule.extraTime
             totalMinutes += Int((Double(rule.extraTime.components.seconds) / 60).rounded(.up))
         }
+        if rule.extraWaterPerGram > 0, case .measured(let grams, .gram) = amount {
+            addWater(grams * rule.extraWaterPerGram, near: cookingStep ?? firstStep(adding: ingredient.id))
+        }
         let noteStep = cookingStep ?? steps.firstIndex { $0.ingredientIDs.contains(ingredient.id) }
         if let note = rule.stepNote, let noteStep {
             steps[noteStep].note = [steps[noteStep].note, note].compactMap { $0 }.joined(separator: " ")
         }
         return newID
+    }
+
+    private func firstStep(adding ingredient: IngredientID) -> Int? {
+        steps.firstIndex { $0.ingredientIDs.contains(ingredient) }
+    }
+
+    /// Adds `grams` to the water measured in grams that goes into the pot in `step` or the steps before it, up to the
+    /// last fresh pot. Does nothing when there is no such water; the rule's step note then tells the cook.
+    private mutating func addWater(_ grams: Double, near step: Int?) {
+        guard let step else { return }
+        var start = step
+        while start > 0 && !steps[start].freshPot { start -= 1 }
+        for index in (start...step).reversed() {
+            for id in steps[index].ingredientIDs {
+                guard let water = ingredients.firstIndex(where: { $0.id == id && $0.food == Food.water }),
+                    case .measured(let value, .gram) = ingredients[water].amount
+                else { continue }
+                ingredients[water].amount = .measured(value + grams, .gram)
+                return
+            }
+        }
     }
 
     private func uniqueIngredientID(_ base: String) -> IngredientID {
