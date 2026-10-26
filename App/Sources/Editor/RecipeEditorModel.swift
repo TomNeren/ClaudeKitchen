@@ -1,3 +1,4 @@
+import Foundation
 import KitchenCore
 import Observation
 
@@ -12,6 +13,10 @@ final class RecipeEditorModel {
     /// True for a recipe that is not stored yet: a new one or a copy of a bundled one.
     let isNew: Bool
     private let original: Recipe
+    /// `recipe` with foods assigned by name, computed once per change for the checks and the "Erkannt als" rows.
+    private var matched: Recipe
+    /// Every catalog food, for the picker; the catalog does not change while editing.
+    let foods: [Food]
 
     init(
         recipe: Recipe, isNew: Bool, profile: DeviceProfile = .omniCook, catalog: FoodCatalog? = FoodCatalog.shared
@@ -21,6 +26,8 @@ final class RecipeEditorModel {
         self.isNew = isNew
         self.profile = profile
         self.catalog = catalog
+        self.matched = recipe
+        self.foods = (catalog?.foods ?? []).sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
         revalidate()
     }
 
@@ -41,7 +48,8 @@ final class RecipeEditorModel {
 
     private func revalidate() {
         problems = recipe.editingProblems
-        issues = profile.validate(withFoods(recipe))
+        matched = withFoods(recipe)
+        issues = profile.validate(matched)
         let stepIssues = issues.compactMap { issue in issue.stepID.map { ($0, issue) } }
         issuesByStep = Dictionary(grouping: stepIssues, by: \.0).mapValues { $0.map(\.1) }
     }
@@ -52,6 +60,38 @@ final class RecipeEditorModel {
 
     func ingredientIndex(_ id: IngredientID) -> Int? {
         recipe.ingredients.firstIndex { $0.id == id }
+    }
+
+    /// The food an ingredient counts as: chosen by hand, or matched by its name as it will be saved.
+    func food(for id: IngredientID) -> Food? {
+        guard let food = matched.ingredient(id)?.food else { return nil }
+        return catalog?.food(food)
+    }
+
+    func isFoodChosenByHand(_ id: IngredientID) -> Bool {
+        recipe.ingredient(id)?.foodChosenByHand ?? false
+    }
+
+    /// Picks the food by hand; nil means the ingredient counts as no food.
+    func chooseFood(_ food: FoodID?, for id: IngredientID) {
+        guard let index = ingredientIndex(id) else { return }
+        recipe.ingredients[index].food = food
+        recipe.ingredients[index].foodChosenByHand = true
+    }
+
+    /// Back to matching by name. When the name matches nothing, the current food stays, so a boil check is not lost.
+    func matchFoodByName(for id: IngredientID) {
+        guard let index = ingredientIndex(id) else { return }
+        let name = recipe.ingredients[index].name
+        recipe.ingredients[index].foodChosenByHand = false
+        if let match = catalog?.food(named: name) {
+            recipe.ingredients[index].food = match
+        }
+    }
+
+    /// False for a food with a safety rule such as raw beans: dropping it would also drop the warning.
+    func canDropFood(for id: IngredientID) -> Bool {
+        food(for: id)?.mustBoil == nil
     }
 
     func addIngredient() -> IngredientID {

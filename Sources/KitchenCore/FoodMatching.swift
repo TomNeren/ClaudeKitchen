@@ -75,7 +75,8 @@ extension Recipe {
     /// Ingredients without a food get one when the name matches. With `original`, ingredients that are new or renamed
     /// since then are matched again, so a renamed ingredient does not keep the food of its old name; when the new name
     /// matches nothing, the old food stays, because losing it would also lose its boil check. Unchanged ingredients
-    /// keep their food, also one a bundled recipe sets by hand.
+    /// keep their food, also one a bundled recipe sets by hand. Ingredients with `foodChosenByHand` keep their food
+    /// (or none) whatever their name, because the cook chose it.
     public func assigningFoods(from catalog: FoodCatalog, comparedTo original: Recipe? = nil) -> Recipe {
         let matcher = catalog.matcher
         var recipe = self
@@ -83,6 +84,7 @@ extension Recipe {
             (original?.ingredients ?? []).map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
         for index in recipe.ingredients.indices {
             let ingredient = recipe.ingredients[index]
+            guard !ingredient.foodChosenByHand else { continue }
             let renamed = original != nil && originalNames[ingredient.id] != ingredient.name
             guard ingredient.food == nil || renamed else { continue }
             if let food = matcher.food(named: ingredient.name) {

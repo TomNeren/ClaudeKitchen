@@ -124,6 +124,11 @@ private struct IngredientSection: View {
                     } label: {
                         Text(ingredient.name.isEmpty ? "Ohne Namen" : ingredient.name)
                             .foregroundStyle(ingredient.name.isEmpty ? .secondary : .primary)
+                        if !ingredient.name.isEmpty && !ingredient.foodChosenByHand
+                            && model.food(for: ingredient.id) == nil
+                        {
+                            Text("Nicht erkannt").foregroundStyle(Palette.accent)
+                        }
                     }
                 }
             }

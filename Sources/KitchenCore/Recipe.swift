@@ -140,10 +140,12 @@ public struct Ingredient: Sendable, Hashable, Identifiable {
     /// towards nutrition.
     public var eaten: Bool
     public var substitutes: [Substitute]
+    /// True when the cook chose `food` (or no food) by hand; matching by name then leaves it alone.
+    public var foodChosenByHand: Bool
 
     public init(
         id: IngredientID, name: String, amount: Amount, food: FoodID? = nil, note: String? = nil,
-        scales: Bool = true, eaten: Bool = true, substitutes: [Substitute] = []
+        scales: Bool = true, eaten: Bool = true, substitutes: [Substitute] = [], foodChosenByHand: Bool = false
     ) {
         self.id = id
         self.name = name
@@ -153,6 +155,7 @@ public struct Ingredient: Sendable, Hashable, Identifiable {
         self.scales = scales
         self.eaten = eaten
         self.substitutes = substitutes
+        self.foodChosenByHand = foodChosenByHand
     }
 
     /// The amount for `servings`, given the recipe was written for `base` servings.
@@ -176,7 +179,7 @@ public struct Ingredient: Sendable, Hashable, Identifiable {
 
 extension Ingredient: Codable {
     private enum CodingKeys: String, CodingKey {
-        case id, name, quantity, unit, food, note, scales, eaten, substitutes
+        case id, name, quantity, unit, food, note, scales, eaten, substitutes, foodChosenByHand
     }
 
     public init(from decoder: any Decoder) throws {
@@ -193,6 +196,7 @@ extension Ingredient: Codable {
         scales = try container.decodeIfPresent(Bool.self, forKey: .scales) ?? true
         eaten = try container.decodeIfPresent(Bool.self, forKey: .eaten) ?? true
         substitutes = try container.decodeIfPresent([Substitute].self, forKey: .substitutes) ?? []
+        foodChosenByHand = try container.decodeIfPresent(Bool.self, forKey: .foodChosenByHand) ?? false
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -213,6 +217,9 @@ extension Ingredient: Codable {
         }
         if !substitutes.isEmpty {
             try container.encode(substitutes, forKey: .substitutes)
+        }
+        if foodChosenByHand {
+            try container.encode(true, forKey: .foodChosenByHand)
         }
     }
 }

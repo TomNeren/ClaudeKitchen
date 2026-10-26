@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 
 @testable import KitchenCore
@@ -81,6 +82,26 @@ struct FoodMatchingTests {
     ])
     func bundledCatalogTellsRawFromCannedBeans(name: String, food: FoodID?) throws {
         #expect(try #require(FoodCatalog.shared).food(named: name) == food)
+    }
+
+    @Test func ingredientsChosenByHandKeepTheCooksChoice() throws {
+        let original = Recipe(
+            id: "r", name: "R", tag: "", baseServings: 1, totalMinutes: 1,
+            ingredients: [Ingredient(id: "a", name: "Zwiebel", amount: .measured(1, .piece), food: "onion")],
+            steps: [])
+        var edited = original
+        edited.ingredients[0].name = "Lachs"
+        edited.ingredients[0].food = nil
+        edited.ingredients[0].foodChosenByHand = true
+        edited.ingredients.append(
+            Ingredient(
+                id: "b", name: "Zwiebel", amount: .measured(1, .piece), food: "salmon", foodChosenByHand: true))
+        #expect(
+            edited.assigningFoods(from: Self.catalog, comparedTo: original).ingredients.map(\.food) == [nil, "salmon"])
+        // Also without an original, as when stored recipes load.
+        #expect(edited.assigningFoods(from: Self.catalog).ingredients.map(\.food) == [nil, "salmon"])
+        let json = try JSONEncoder().encode(edited.ingredients[1])
+        #expect(try JSONDecoder().decode(Ingredient.self, from: json) == edited.ingredients[1])
     }
 
     /// Precision on real data: wherever the matcher finds a food for a bundled ingredient, it is the one the recipe

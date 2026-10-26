@@ -29,6 +29,7 @@ struct IngredientEditorView: View {
             } footer: {
                 Text("Aus bei Mengen, die gleich bleiben, zum Beispiel Wasser für den Dampf.")
             }
+            FoodSection(model: model, id: id)
             SubstituteSection(ingredient: ingredient, servings: model.recipe.baseServings)
         }
         .editorKeyboard()
@@ -36,6 +37,82 @@ struct IngredientEditorView: View {
         .toolbarTitleDisplayMode(.inline)
         .onAppear {
             if ingredient.wrappedValue.name.isEmpty { focusesName = true }
+        }
+    }
+}
+
+/// Which catalog food the ingredient counts as, recognised from its name or chosen by hand.
+private struct FoodSection: View {
+    @Bindable var model: RecipeEditorModel
+    let id: IngredientID
+
+    var body: some View {
+        let food = model.food(for: id)
+        let byHand = model.isFoodChosenByHand(id)
+        Section {
+            NavigationLink {
+                FoodChoiceList(model: model, id: id)
+            } label: {
+                LabeledContent(byHand ? "Gewählt" : "Erkannt als") {
+                    Text(food?.name ?? (byHand ? "Kein Lebensmittel" : "Nicht erkannt"))
+                        .foregroundStyle(food == nil && !byHand ? Palette.accent : .secondary)
+                }
+            }
+        } header: {
+            Text("Lebensmittel")
+        } footer: {
+            Text("Bestimmt Nährwerte, Einkaufsliste und Sicherheitshinweise wie die Kochzeit roher Bohnen.")
+        }
+    }
+}
+
+/// Searchable catalog foods, with "Automatisch" to go back to matching by name.
+private struct FoodChoiceList: View {
+    @Bindable var model: RecipeEditorModel
+    let id: IngredientID
+    @State private var query = ""
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        List {
+            Button("Automatisch nach dem Namen") {
+                model.matchFoodByName(for: id)
+                dismiss()
+            }
+            Button("Kein Lebensmittel") {
+                model.chooseFood(nil, for: id)
+                dismiss()
+            }
+            .disabled(!model.canDropFood(for: id))
+            let current = model.food(for: id)?.id
+            ForEach(filtered) { food in
+                Button {
+                    model.chooseFood(food.id, for: id)
+                    dismiss()
+                } label: {
+                    HStack {
+                        Text(food.name).foregroundStyle(.primary)
+                        Spacer()
+                        if current == food.id {
+                            Image(systemName: "checkmark").foregroundStyle(Palette.accent)
+                        }
+                    }
+                }
+            }
+        }
+        .searchable(text: $query, prompt: "Lebensmittel")
+        .navigationTitle("Lebensmittel")
+        .toolbarTitleDisplayMode(.inline)
+    }
+
+    private var filtered: [Food] {
+        let words = query.split(whereSeparator: \.isWhitespace)
+        guard !words.isEmpty else { return model.foods }
+        return model.foods.filter { food in
+            words.allSatisfy { word in
+                food.name.localizedStandardContains(word)
+                    || food.aliases.contains { $0.localizedStandardContains(word) }
+            }
         }
     }
 }
