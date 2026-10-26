@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "id": "mapo-tofu",
+  "name": "Mapo Tofu",
+  "tag": "Chinesisch · Sichuan",
+  "baseServings": 3,
+  "totalMinutes": 30,
+  "verified": false,
+  "origin": { "cuisine": "china", "region": "Sichuan" },
+  "references": [
+    { "title": "Land of Plenty", "author": "Fuchsia Dunlop", "year": 2001 }
+  ],
+  "authenticityChecks": [
+    "Doubanjiang (Pixian) und fermentierte schwarze Bohnen im Öl gebraten, bis das Öl rot wird",
+    "Seidentofu in Würfeln, behutsam bewegt, Sauce mit Stärke gebunden",
+    "Ma la: gemahlener Szechuanpfeffer zum Schluss, scharf und prickelnd"
+  ],
+  "ingredients": [
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 3, "unit": "Zehen" },
+    { "id": "ingwer", "name": "Ingwer, frisch", "food": "ginger", "quantity": 10, "unit": "g" },
+    { "id": "oel", "name": "Rapsöl", "food": "canola-oil", "quantity": 2, "unit": "EL" },
+    { "id": "hack", "name": "Schweinehack", "food": "pork-mince", "quantity": 100, "unit": "g",
+      "substitutes": [ { "name": "Rinderhack", "ratio": 1, "note": "so wird es in Sichuan oft gemacht" } ] },
+    { "id": "doubanjiang", "name": "Doubanjiang", "food": "doubanjiang", "quantity": 2, "unit": "EL" },
+    { "id": "douchi", "name": "Fermentierte schwarze Bohnen", "food": "douchi", "quantity": 1, "unit": "EL", "note": "grob gehackt" },
+    { "id": "chilipulver", "name": "Chilipulver", "food": "chili-powder", "quantity": 1, "unit": "TL" },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 200, "unit": "g",
+      "substitutes": [ { "name": "Hühnerbrühe", "ratio": 1, "note": "kräftiger" } ] },
+    { "id": "reiswein", "name": "Shaoxing-Reiswein", "food": "shaoxing-wine", "quantity": 1, "unit": "EL" },
+    { "id": "sojasauce", "name": "Sojasauce", "food": "soy-sauce", "quantity": 1, "unit": "TL" },
+    { "id": "zucker", "name": "Zucker", "food": "sugar", "quantity": 0.5, "unit": "TL" },
+    { "id": "tofu", "name": "Seidentofu", "food": "soft-tofu", "quantity": 400, "unit": "g", "note": "in 2 cm Würfeln" },
+    { "id": "staerke", "name": "Speisestärke", "food": "cornstarch", "quantity": 1, "unit": "EL" },
+    { "id": "staerke-wasser", "name": "Wasser", "food": "water", "quantity": 30, "unit": "g", "note": "für die Stärke" },
+    { "id": "szechuanpfeffer", "name": "Szechuanpfeffer, gemahlen", "food": "sichuan-pepper", "quantity": 1, "unit": "TL",
+      "note": "vorher trocken geröstet" },
+    { "id": "fruehlingszwiebel", "name": "Frühlingszwiebel", "food": "spring-onion", "quantity": 2, "unit": "Stk", "note": "in Ringen" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Hacken", "text": "Knoblauch und Ingwer in den Topf geben und fein hacken.",
+      "ingredientIDs": ["knoblauch", "ingwer"],
+      "setting": { "speed": 6, "seconds": 3 } },
+    { "id": "s2", "phase": "Hack braten", "text": "Öl und Hackfleisch zugeben und krümelig braten.",
+      "note": "Ohne Messbecher.",
+      "ingredientIDs": ["oel", "hack"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 300 } },
+    { "id": "s3", "phase": "Würze", "text": "Doubanjiang, schwarze Bohnen und Chilipulver zugeben und braten, bis das Öl rot wird.",
+      "ingredientIDs": ["doubanjiang", "douchi", "chilipulver"],
+      "setting": { "heat": 110, "speed": 1, "reverse": true, "seconds": 120 } },
+    { "id": "s4", "phase": "Tofu", "text": "Wasser, Reiswein, Sojasauce, Zucker und Tofu zugeben und ziehen lassen.",
+      "note": "Linkslauf auf kleinster Stufe, der Tofu zerbricht leicht. Messbecher einsetzen.",
+      "ingredientIDs": ["wasser", "reiswein", "sojasauce", "zucker", "tofu"],
+      "setting": { "heat": 95, "speed": 1, "reverse": true, "seconds": 360 } },
+    { "id": "s5", "phase": "Binden", "text": "Stärke mit Wasser glatt rühren, zugeben und kurz binden.",
+      "ingredientIDs": ["staerke", "staerke-wasser"],
+      "setting": { "heat": 95, "speed": 1, "reverse": true, "seconds": 120 } },
+    { "id": "s6", "phase": "Anrichten", "text": "Mit Szechuanpfeffer und Frühlingszwiebel bestreuen und mit Reis servieren.",
+      "ingredientIDs": ["szechuanpfeffer", "fruehlingszwiebel"] }
+  ]
+}

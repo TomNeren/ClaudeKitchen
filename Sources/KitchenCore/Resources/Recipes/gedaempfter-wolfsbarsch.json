@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "id": "gedaempfter-wolfsbarsch",
+  "name": "Gedämpfter Wolfsbarsch",
+  "tag": "Chinesisch · Kanton",
+  "baseServings": 2,
+  "totalMinutes": 30,
+  "verified": false,
+  "origin": { "cuisine": "china", "region": "Kanton" },
+  "references": [
+    { "title": "Every Grain of Rice", "author": "Fuchsia Dunlop", "year": 2012 }
+  ],
+  "authenticityChecks": [
+    "Fisch nur gedämpft, gerade gar, glasig an der dicksten Stelle",
+    "Ingwer und Frühlingszwiebel in feinen Streifen, mit rauchend heißem Öl übergossen",
+    "Sauce aus heller Sojasauce, etwas Zucker und Wasser, nicht dick"
+  ],
+  "ingredients": [
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 700, "unit": "g", "note": "in den Topf", "scales": false,
+      "eaten": false },
+    { "id": "fisch", "name": "Wolfsbarschfilet", "food": "sea-bass", "quantity": 2, "unit": "Stk", "note": "à 150 g, mit Haut",
+      "substitutes": [ { "name": "Doradenfilet", "ratio": 1 } ] },
+    { "id": "ingwer", "name": "Ingwer, frisch", "food": "ginger", "quantity": 20, "unit": "g", "note": "in feinen Streifen" },
+    { "id": "fruehlingszwiebel", "name": "Frühlingszwiebel", "food": "spring-onion", "quantity": 3, "unit": "Stk",
+      "note": "in feinen Streifen" },
+    { "id": "sojasauce", "name": "Sojasauce, hell", "food": "soy-sauce", "quantity": 2, "unit": "EL" },
+    { "id": "zucker", "name": "Zucker", "food": "sugar", "quantity": 0.5, "unit": "TL" },
+    { "id": "sauce-wasser", "name": "Wasser", "food": "water", "quantity": 30, "unit": "g", "note": "für die Sauce" },
+    { "id": "oel", "name": "Rapsöl", "food": "canola-oil", "quantity": 2, "unit": "EL" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Vorbereiten", "text": "Wasser in den Topf geben und den Dampfaufsatz vorbereiten.",
+      "ingredientIDs": ["wasser"] },
+    { "id": "s2", "phase": "Einlegen", "text": "Fischfilets mit der Haut nach unten in den Dampfaufsatz legen, die Hälfte des Ingwers darauf.",
+      "ingredientIDs": ["fisch", "ingwer"], "accessory": "steamer" },
+    { "id": "s3", "phase": "Dämpfen", "text": "Modus „Dampfgaren“ wählen und starten.",
+      "note": "Temperatur und Stufe sind im Dampfmodus fest. Deckel schließen. Der Fisch ist gar, wenn er sich an der dicksten Stelle gerade teilen lässt.",
+      "setting": { "program": "steam", "heat": "steam", "seconds": 600 }, "accessory": "steamer" },
+    { "id": "s4", "phase": "Sauce", "text": "Sojasauce, Zucker und Wasser in einem Schälchen verrühren. Fisch auf eine Platte legen, Sauce darübergießen, Frühlingszwiebel und restlichen Ingwer darauf verteilen.",
+      "ingredientIDs": ["sojasauce", "zucker", "sauce-wasser", "fruehlingszwiebel"] },
+    { "id": "s5", "phase": "Heißes Öl", "text": "Wasser aus dem Topf gießen und den Topf abtrocknen. Öl darin stark erhitzen und sofort über Ingwer und Frühlingszwiebel gießen.",
+      "note": "Ohne Messbecher. Vorsicht, das Öl zischt auf dem Fisch.",
+      "ingredientIDs": ["oel"],
+      "setting": { "heat": 160, "seconds": 180 }, "freshPot": true }
+  ]
+}
