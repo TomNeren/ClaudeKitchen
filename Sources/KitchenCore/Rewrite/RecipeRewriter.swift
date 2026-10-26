@@ -43,10 +43,8 @@ extension Recipe {
         for goal: RewriteGoal, catalog: FoodCatalog, profile: DeviceProfile = .omniCook
     ) -> RecipeRewrite {
         guard variantOf == nil else { return RecipeRewrite(recipe: self, changes: [], skipped: []) }
-        var variant = Recipe(
-            id: RecipeID("\(id.rawValue)-\(goal.id.rawValue)"), name: name, tag: tag, baseServings: baseServings,
-            totalMinutes: totalMinutes, ingredients: ingredients, steps: steps, verified: false, variantOf: id,
-            schemaVersion: schemaVersion)
+        var variant = copy(id: RecipeID("\(id.rawValue)-\(goal.id.rawValue)"), name: name)
+        variant.variantOf = id
         var changes: [RecipeChange] = []
         var skipped: [SkippedSwap] = []
         for ingredient in ingredients where ingredient.eaten {

@@ -53,6 +53,11 @@ struct RecipeLibraryView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Einstellungen", systemImage: "gearshape") { isShowingSettings = true }
                 }
+                if !model.cuisines.isEmpty {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        CuisineFilter(model: model)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu("Rezept hinzufügen", systemImage: "plus") {
                         Button("Neues Rezept", systemImage: "square.and.pencil") {
@@ -92,6 +97,16 @@ struct RecipeLibraryView: View {
             ContentUnavailableView(
                 "Rezepte nicht lesbar", systemImage: "exclamationmark.triangle",
                 description: Text("Die mitgelieferten Rezepte konnten nicht geladen werden."))
+        } else if isEmpty, let cuisine = model.cuisine {
+            ContentUnavailableView {
+                Label("Nichts aus \(cuisine.displayName)", systemImage: "line.3.horizontal.decrease.circle")
+            } description: {
+                Text(
+                    model.query.isEmpty
+                        ? "Für diese Küche gibt es noch kein Rezept." : "Keine Treffer für „\(model.query)“.")
+            } actions: {
+                Button("Filter zurücksetzen") { model.cuisine = nil }
+            }
         } else if isEmpty {
             ContentUnavailableView.search(text: model.query)
         }
@@ -116,6 +131,28 @@ struct RecipeLibraryView: View {
                 CookingView(recipe: variant ?? recipe, servings: servings) { path.removeAll() }
             }
         }
+    }
+}
+
+/// Toolbar menu that narrows the library to one cuisine. The filled icon shows that a filter is active.
+private struct CuisineFilter: View {
+    @Bindable var model: RecipeLibraryModel
+
+    var body: some View {
+        Menu {
+            Picker("Küche", selection: $model.cuisine) {
+                Text("Alle Küchen").tag(Cuisine?.none)
+                ForEach(model.cuisines, id: \.self) { cuisine in
+                    Text(cuisine.displayName).tag(Optional(cuisine))
+                }
+            }
+        } label: {
+            Label(
+                "Küche",
+                systemImage: model.cuisine == nil
+                    ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+        }
+        .accessibilityValue(model.cuisine?.displayName ?? "Alle Küchen")
     }
 }
 

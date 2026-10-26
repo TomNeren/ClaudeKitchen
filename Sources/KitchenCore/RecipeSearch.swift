@@ -1,17 +1,33 @@
 import Foundation
 
-/// Filters recipes by a free-text query.
+/// Filters recipes by a free-text query and a cuisine.
 public enum RecipeSearch {
-    /// Recipes whose name, tag or any ingredient contains every word of `query`, ignoring case and diacritics.
-    /// An empty query returns all recipes in their original order.
-    public static func filter(_ recipes: [Recipe], query: String) -> [Recipe] {
+    /// Recipes of `cuisine` (any cuisine when nil) whose name, tag, cuisine name, region or any ingredient contains
+    /// every word of `query`, ignoring case and diacritics. `cuisineName` lets the app search its own wording,
+    /// for example "Indien". An empty query and no cuisine return all recipes in their original order.
+    public static func filter(
+        _ recipes: [Recipe], query: String, cuisine: Cuisine? = nil,
+        cuisineName: (Cuisine) -> String = \.rawValue
+    ) -> [Recipe] {
         let words = query.split(whereSeparator: \.isWhitespace).map { normalized(String($0)) }
-        guard !words.isEmpty else { return recipes }
         return recipes.filter { recipe in
+            if let cuisine, recipe.origin?.cuisine != cuisine { return false }
+            guard !words.isEmpty else { return true }
             let haystack = normalized(
-                ([recipe.name, recipe.tag] + recipe.ingredients.map(\.name)).joined(separator: " "))
+                ([
+                    recipe.name, recipe.tag, recipe.origin.map { cuisineName($0.cuisine) } ?? "",
+                    recipe.origin?.region ?? "",
+                ]
+                    + recipe.ingredients.map(\.name))
+                    .joined(separator: " "))
             return words.allSatisfy { haystack.contains($0) }
         }
+    }
+
+    /// The cuisines that occur in `recipes`, in the order of `Cuisine.allCases`, for a filter menu.
+    public static func cuisines(in recipes: [Recipe]) -> [Cuisine] {
+        let present = Set(recipes.compactMap(\.origin?.cuisine))
+        return Cuisine.allCases.filter(present.contains)
     }
 
     private static func normalized(_ text: String) -> String {
