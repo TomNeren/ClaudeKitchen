@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "id": "pasta-e-ceci",
+  "name": "Pasta e ceci",
+  "tag": "Italienisch · Suppe",
+  "baseServings": 4,
+  "totalMinutes": 40,
+  "verified": false,
+  "origin": { "cuisine": "europe", "region": "Latium" },
+  "references": [
+    { "title": "Essentials of Classic Italian Cooking", "author": "Marcella Hazan", "year": 1992 }
+  ],
+  "authenticityChecks": [
+    "Knoblauch und Rosmarin in Olivenöl, wenig Tomate",
+    "Ein Teil der Kichererbsen zerdrückt, damit die Suppe sämig wird",
+    "Kleine Nudeln (Ditalini) direkt in der Suppe gegart, mit Olivenöl und Käse serviert"
+  ],
+  "ingredients": [
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 2, "unit": "Zehen" },
+    { "id": "rosmarin", "name": "Rosmarin, frisch", "food": "rosemary", "quantity": 2, "unit": "g", "note": "Nadeln von einem kleinen Zweig" },
+    { "id": "olivenoel", "name": "Olivenöl", "food": "olive-oil", "quantity": 3, "unit": "EL" },
+    { "id": "tomatenmark", "name": "Tomatenmark", "food": "tomato-paste", "quantity": 1, "unit": "EL" },
+    { "id": "kichererbsen", "name": "Kichererbsen, gegart", "food": "chickpeas", "quantity": 480, "unit": "g",
+      "note": "aus zwei Dosen, abgespült" },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 900, "unit": "g", "note": "heiß" },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    { "id": "nudeln", "name": "Ditalini", "food": "pasta", "quantity": 150, "unit": "g",
+      "substitutes": [ { "name": "Gebrochene Spaghetti", "ratio": 1, "note": "so in vielen römischen Familien" } ] },
+    { "id": "kaese", "name": "Pecorino Romano oder Parmesan", "food": "parmesan", "quantity": 30, "unit": "g", "note": "frisch gerieben" },
+    { "id": "pfeffer", "name": "Schwarzer Pfeffer", "food": "black-pepper" },
+    { "id": "olivenoel-servieren", "name": "Olivenöl zum Beträufeln", "food": "olive-oil", "quantity": 1, "unit": "EL" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Hacken", "text": "Knoblauch und Rosmarin in den Topf geben und fein hacken.",
+      "ingredientIDs": ["knoblauch", "rosmarin"],
+      "setting": { "speed": 6, "seconds": 3 } },
+    { "id": "s2", "phase": "Anschwitzen", "text": "Olivenöl zugeben und kurz andünsten.",
+      "note": "Ohne Messbecher. Der Knoblauch soll duften, nicht braun werden.",
+      "ingredientIDs": ["olivenoel"],
+      "setting": { "heat": 110, "speed": 1, "reverse": true, "seconds": 150 } },
+    { "id": "s3", "phase": "Tomate", "text": "Tomatenmark zugeben und kurz mitrösten.",
+      "ingredientIDs": ["tomatenmark"],
+      "setting": { "heat": 110, "speed": 1, "reverse": true, "seconds": 60 } },
+    { "id": "s4", "phase": "Kichererbsen", "text": "Kichererbsen, heißes Wasser und Salz zugeben und köcheln.",
+      "note": "Messbecher einsetzen.",
+      "ingredientIDs": ["kichererbsen", "wasser", "salz"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 900 } },
+    { "id": "s5", "phase": "Zerdrücken", "text": "Die Kichererbsen kurz grob zerkleinern, gut die Hälfte soll ganz bleiben.",
+      "note": "Messbecher fest einsetzen, die Suppe ist heiß. Nur kurz, sonst wird es ein Püree.",
+      "ingredientIDs": [],
+      "setting": { "speed": 5, "seconds": 4 } },
+    { "id": "s6", "phase": "Nudeln", "text": "Nudeln zugeben und in der Suppe bissfest garen.",
+      "note": "Messbecher einsetzen. Wird es zu dick, etwas heißes Wasser zugeben.",
+      "ingredientIDs": ["nudeln"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 600 } },
+    { "id": "s7", "phase": "Ruhen", "text": "Ohne Hitze ruhen lassen, die Suppe dickt noch etwas nach.",
+      "ingredientIDs": [],
+      "setting": { "seconds": 180 } },
+    { "id": "s8", "phase": "Anrichten", "text": "Mit Käse, Pfeffer und einem Faden Olivenöl servieren.",
+      "ingredientIDs": ["kaese", "pfeffer", "olivenoel-servieren"] }
+  ]
+}
