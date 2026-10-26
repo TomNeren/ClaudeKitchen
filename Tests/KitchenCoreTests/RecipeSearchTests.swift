@@ -20,9 +20,14 @@ struct RecipeSearchTests {
     }
 
     @Test func matchesNameTagAndIngredientsIgnoringCaseAndDiacritics() {
-        #expect(ids("LINSEN") == ["zitronen-linsen-eintopf"])
-        #expect(ids("dampf") == ["ingwer-lachs-pak-choi"])
-        #expect(ids("kokosmilch") == ["kichererbsen-spinat-curry"])
+        #expect(Set(ids("LINSEN")) == ["zitronen-linsen-eintopf", "mercimek-corbasi", "mujaddara"])
+        #expect(ids("mercimek corbasi") == ["mercimek-corbasi"])
+        #expect(ids("ÇORBASI") == ["mercimek-corbasi"])
+        #expect(Set(ids("dampf")) == ["ingwer-lachs-pak-choi", "gedaempfter-wolfsbarsch"])
+        #expect(
+            Set(ids("kokosmilch")) == [
+                "kichererbsen-spinat-curry", "gaeng-keow-wan-gai", "tom-kha-gai", "sayur-lodeh",
+            ])
         #expect(ids("gemusebruhe") == ["zitronen-linsen-eintopf"])
     }
 
@@ -55,6 +60,12 @@ struct RecipeOriginTests {
         #expect(RecipeSearch.filter(Self.recipes, query: "chana", cuisine: .india).map(\.id) == ["chana"])
         #expect(RecipeSearch.filter(Self.recipes, query: "lobio", cuisine: .india).isEmpty)
         #expect(RecipeSearch.filter(Self.recipes, query: "", cuisine: .china).isEmpty)
+    }
+
+    @Test func foldsLettersWithoutABaseLetter() {
+        let recipes = [Self.recipe("golabki", "Gołąbki", nil), Self.recipe("strudel", "Straßenstrudel", nil)]
+        #expect(RecipeSearch.filter(recipes, query: "golabki").map(\.id) == ["golabki"])
+        #expect(RecipeSearch.filter(recipes, query: "STRASSEN").map(\.id) == ["strudel"])
     }
 
     @Test func queryMatchesRegionAndCuisineName() {

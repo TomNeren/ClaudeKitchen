@@ -29,6 +29,9 @@ public struct FoodCatalog: Sendable, Hashable, Codable {
         self.targets = targets
     }
 
+    /// The bundled catalog, loaded once; nil if it cannot be read. Default weigher for `DeviceProfile`'s fill check.
+    public static let shared: FoodCatalog? = try? bundled()
+
     /// The catalog that ships with the app.
     public static func bundled() throws -> FoodCatalog {
         guard

@@ -87,7 +87,10 @@ public struct ValidationIssue: Sendable, Hashable {
 extension DeviceProfile {
     /// Checks `recipe` for `servings` against this device. Errors mean the recipe cannot be cooked as written;
     /// warnings are shown to the cook but do not block.
-    public func validate(_ recipe: Recipe, servings: Int? = nil) -> [ValidationIssue] {
+    /// `catalog` weighs ingredients given in pieces or spoons for the fill check; see `estimatedFillLiters`.
+    public func validate(
+        _ recipe: Recipe, servings: Int? = nil, catalog: FoodCatalog? = FoodCatalog.shared
+    ) -> [ValidationIssue] {
         var issues: [ValidationIssue] = []
 
         if recipe.steps.isEmpty {
@@ -113,7 +116,7 @@ extension DeviceProfile {
             issues += validate(step).map { ValidationIssue(kind: $0, stepID: step.id) }
         }
 
-        let liters = estimatedFillLiters(of: recipe, servings: servings ?? recipe.baseServings)
+        let liters = estimatedFillLiters(of: recipe, servings: servings ?? recipe.baseServings, catalog: catalog)
         if liters > maxFillLiters {
             issues.append(ValidationIssue(kind: .fillLevelExceeded(liters: liters)))
         }
@@ -158,13 +161,16 @@ extension DeviceProfile {
         return kinds
     }
 
-    /// Rough fill level of the fullest pot: every ingredient measured in grams counts as one millilitre.
+    /// Rough fill level of the fullest pot: every gram counts as one millilitre. Ingredients in pieces, cloves or
+    /// spoons count with their catalog weight when `catalog` knows their food; without one they are left out.
     ///
-    /// A step with `freshPot` starts a new pot. An ingredient counts in the pot of the first step that adds it outside
-    /// the steamer; ingredients that only go into the steamer are not in the pot, ingredients no step mentions count
-    /// in the first pot.
-    public func estimatedFillLiters(of recipe: Recipe, servings: Int) -> Double {
-        var potOfIngredient: [IngredientID: Int] = [:]
+    /// A step with `freshPot` starts a new pot. An ingredient counts in every pot a step adds it to outside the
+    /// steamer, so something taken out and put back into a fresh pot counts there too; ingredients that only go into
+    /// the steamer are not in the pot, ingredients no step mentions count in the first pot.
+    public func estimatedFillLiters(
+        of recipe: Recipe, servings: Int, catalog: FoodCatalog? = FoodCatalog.shared
+    ) -> Double {
+        var potsOfIngredient: [IngredientID: Set<Int>] = [:]
         var steamerOnly: Set<IngredientID> = []
         var pot = 0
         for step in recipe.steps {
@@ -173,11 +179,11 @@ extension DeviceProfile {
             }
             for id in step.ingredientIDs {
                 if step.accessory == .steamer {
-                    if potOfIngredient[id] == nil {
+                    if potsOfIngredient[id] == nil {
                         steamerOnly.insert(id)
                     }
-                } else if potOfIngredient[id] == nil {
-                    potOfIngredient[id] = pot
+                } else {
+                    potsOfIngredient[id, default: []].insert(pot)
                     steamerOnly.remove(id)
                 }
             }
@@ -185,8 +191,16 @@ extension DeviceProfile {
 
         var gramsPerPot = Array(repeating: 0.0, count: pot + 1)
         for ingredient in recipe.ingredients where !steamerOnly.contains(ingredient.id) {
-            if case .measured(let value, .gram) = ingredient.amount(from: recipe.baseServings, to: servings) {
-                gramsPerPot[potOfIngredient[ingredient.id] ?? 0] += value
+            let amount = ingredient.amount(from: recipe.baseServings, to: servings)
+            let grams: Double?
+            if case .measured(let value, .gram) = amount {
+                grams = value
+            } else {
+                grams = catalog?.food(for: ingredient)?.grams(of: amount)
+            }
+            guard let grams else { continue }
+            for index in potsOfIngredient[ingredient.id] ?? [0] {
+                gramsPerPot[index] += grams
             }
         }
         return (gramsPerPot.max() ?? 0) / 1000
@@ -194,16 +208,17 @@ extension DeviceProfile {
 
     /// Servings to offer for `recipe`: `CookingSession.defaultServingsRange`, capped so the pot stays below the fill
     /// mark, but never below the recipe's own base servings.
-    public func servingsRange(for recipe: Recipe) -> ClosedRange<Int> {
+    public func servingsRange(for recipe: Recipe, catalog: FoodCatalog? = FoodCatalog.shared) -> ClosedRange<Int> {
         let range = CookingSession.defaultServingsRange
-        let fitting = max(recipe.baseServings, maxServings(for: recipe, limit: range.upperBound))
+        let fitting = max(recipe.baseServings, maxServings(for: recipe, limit: range.upperBound, catalog: catalog))
         return range.lowerBound...max(range.lowerBound, min(fitting, range.upperBound))
     }
 
     /// The largest number of servings, up to `limit`, for which the recipe stays below the fill mark.
-    public func maxServings(for recipe: Recipe, limit: Int = 12) -> Int {
+    public func maxServings(for recipe: Recipe, limit: Int = 12, catalog: FoodCatalog? = FoodCatalog.shared) -> Int {
         var best = 1
-        for servings in 1...max(1, limit) where estimatedFillLiters(of: recipe, servings: servings) <= maxFillLiters {
+        for servings in 1...max(1, limit)
+        where estimatedFillLiters(of: recipe, servings: servings, catalog: catalog) <= maxFillLiters {
             best = servings
         }
         return best
