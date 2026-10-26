@@ -16,6 +16,9 @@ enum Motion {
     static let stepCrossFade: Animation = .easeInOut(duration: 0.4)
     /// Countdown digits rolling once a second: must settle well inside the second.
     static let timerTick: Animation = .spring(duration: 0.25, bounce: 0)
+    /// Switching between the original and a health variant: rows appear and move, tap-driven. The inserted
+    /// rows fade in, so the same token works with Reduce Motion.
+    static let variantChange: Animation = .spring(duration: 0.35, bounce: 0)
     /// The voice status pill: appears, changes text and disappears as a fade, so it never pulls the eye from the step.
     static let voiceStatus: Animation = .easeInOut(duration: 0.3)
 }
