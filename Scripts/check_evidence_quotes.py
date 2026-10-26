@@ -1,6 +1,6 @@
 """Checks every quote in food-catalog.json against the source text it cites.
 
-Also checks the quotes of the swap rules in rewrite-rules.json next to the catalog.
+Also checks the quotes of the swap rules and goal notes in rewrite-rules.json next to the catalog.
 Each quote must appear verbatim in its source; fragments separated by "…" must appear in order.
 Effect quotes must also carry the same relative risk and interval as the data fields.
 
@@ -30,7 +30,8 @@ items += [(t['id'], t['sourceID'], t['quote']) for t in c['targets']]
 rules_path = os.path.join(os.path.dirname(cat), 'rewrite-rules.json')
 if os.path.exists(rules_path):
     for goal in json.load(open(rules_path, encoding='utf-8'))['goals']:
-        items += [(goal['id'] + '/' + r['id'], r['sourceID'], r['quote']) for r in goal['rules']]
+        items += [(goal['id'] + '/' + r['id'], r['sourceID'], r['quote']) for r in goal.get('rules', [])]
+        items += [(goal['id'] + '/note', n['sourceID'], n['quote']) for n in goal.get('notes', [])]
 bad = 0
 for iid, sid, q in items:
     if sid not in texts:

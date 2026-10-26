@@ -152,6 +152,18 @@ sie als Fehler. **Offen:** Kokosmilch und Sahne. Die DGE-Seite begründet „Pfl
 wörtlich zu Kokos oder Sahne; ein Tausch dafür braucht eine eigene Quelle (z. B. DGE-Leitlinie Fett). Von den drei
 mitgelieferten Rezepten ändert Ausgewogen deshalb noch keines, die Regeln greifen bei den Rezepten aus M10.
 
+**Stand M9b:** Jedes Ziel hat ein Kriterium: Ausgewogen die Gruppenbewertung, Blutdruck Natrium, Abnehmen kcal und
+Low Carb Kohlenhydrate je 100 g. Eine Regel muss ihr Kriterium verbessern und darf die Gruppe nicht verschlechtern.
+Blutdruck und Abnehmen erben die Regeln von Ausgewogen (eigene Regeln gehen vor), Low Carb nicht, weil Vollkornreis
+dort keinen Sinn hat. Regeln und Hinweise:
+- Blutdruck: Sojasauce zu salzreduzierter Sojasauce, Gemüsebrühe zur Hälfte zu Wasser (Sacks 2001, DASH-Sodium);
+  Hinweis, dass Salz nach Geschmack nicht mitzählt und die DGE bis zu 6 g am Tag nennt.
+- Abnehmen: Kokosmilch zur Hälfte zu Wasser (Ello-Martin 2007); Hinweis auf kcal pro Portion.
+- Low Carb: Kartoffel zu Blumenkohl (Seidelmann 2018); Hinweis, dass Low Carb eine Vorliebe ist und Reis und Nudeln
+  nicht im selben Schritt getauscht werden, weil Blumenkohl darin zerkocht.
+Alle Zitate prüft `Scripts/check_evidence_quotes.py`. Damit ändern Blutdruck (Lachs, Linsen-Eintopf) und Abnehmen
+(Curry) schon mitgelieferte Rezepte.
+
 ### 3c. Rezeptbestand: authentisch und traditionell
 
 - Neun Küchenräume (Entscheidung 32): Indien, Thailand, Südostasien (Vietnam, Indonesien, Malaysia,
@@ -401,7 +413,7 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Erledigt (PR #10, 68 Tests): Import aus Text oder https-Link, Prüfung, Speichern, Löschen; Editor bei Bedarf; Test am Gerät braucht API-Schlüssel |
 | M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Erledigt (PR #11, 76 Tests): `VoiceCommand` in KitchenCore, Zuhören, Antworten und KI-Fragen in der App; Durchkochen per Sprache offen laut Geräte-Prüfliste |
 | M8 | M8a erledigt (PR #12), M8b erledigt (PR #14), M8c erledigt (PR #16). Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
-| M9 | M9a im Review. Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil, Ziele Ausgewogen, Blutdruck, Abnehmen, Low Carb; in der App Umschalter Original/Variante mit Zielwahl, Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
+| M9 | M9a erledigt (PR #18), M9b im Review. Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil, Ziele Ausgewogen, Blutdruck, Abnehmen, Low Carb; in der App Umschalter Original/Variante mit Zielwahl, Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
 | M10 | Rezeptbestand: `origin`, `references`, `variantOf`, 27 traditionelle Rezepte aus neun Küchenräumen; Bibliothek filtert nach Küche | Alle 27 bestehen `validate` und sind vollständig zugeordnet |
 | M11 | Einkauf und Vorrat: Bedarf minus Vorrat, Mindestbestand, Abbuchen nach dem Kochen, Export nach Erinnerungen und Teilen (Abschnitt 3d) | Logik-Tests in KitchenCore; Export am Gerät laut Prüfliste |
 | M12 | (v2) Sprachprotokoll, Ersatzlisten für alle Rezepte, Rezept-Editor (PR #13, unabhängig von M8 bis M11) | In Arbeit: Protokoll in den Einstellungen, Editor für eigene Rezepte und Kopien; Bedienung am Handy offen laut Geräte-Prüfliste |
@@ -452,6 +464,9 @@ Getroffen (2026-10-25):
 31. (umkehrbar) **Rezept-Editor für das Handy:** ein Formular mit Rezept, Zutaten und Schritten, Details eine Ebene tiefer, Sortieren über einen Knopf unten. Neue Zutaten und Schritte öffnen sich sofort zum Ausfüllen. Alle Gerätewerte (Temperatur in 5er-Schritten, Stufen, Laufzeit) kommen aus `DeviceProfile`, Dampf setzt Programm und Aufsatz mit. Sichern geht erst ohne Fehler (Name, Schritttext, Gerätegrenzen), Warnungen wie die Füllmarke bleiben sichtbar. Mitgelieferte Rezepte werden als eigene Kopie bearbeitet, das Original bleibt. Neue Rezepte über „+“ in der Bibliothek. Für die Bedienung mit einer Hand: Zutaten als Zeile tippen („200 g Rote Linsen“, Eingabe, nächste) oder eine ganze Liste einfügen, die App zerlegt Menge, Einheit und Name selbst (g, kg, ml, l, TL, EL, Stk, Zehen, Brüche wie ½). Temperatur, Stufe und Laufzeit per Schnellwahl mit einem Tipp, Feineinstellung per Stepper. Schritte nach rechts wischen dupliziert, nach links löscht. Über der Zahlentastatur steht „Fertig“, Scrollen schließt die Tastatur.
 32. **Küchen für M10** (deine Entscheidung): Indien, Thailand, Südostasien, China, Japan und Korea, Türkei und
     Levante, Georgien, Europa, Mexiko und Peru, je 3 Rezepte.
+33. (Loop, umkehrbar) **Blutdruck darf eine Würze gegen ihre salzarme Variante tauschen**, etwa Sojasauce gegen
+    salzreduzierte Sojasauce. Das lockert Entscheidung 26 nur für ausdrücklich im Katalog verknüpfte Paare
+    (`lowSodiumVersionOf`); Geschmack und Menge bleiben gleich.
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.

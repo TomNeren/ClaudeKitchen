@@ -81,17 +81,73 @@ public struct SwapRule: Sendable, Hashable, Codable, Identifiable {
     }
 }
 
-/// One goal for rewriting recipes, for example "balanced" or "blood pressure", with its own rules.
-public struct RewriteGoal: Sendable, Hashable, Codable, Identifiable {
-    public let id: RewriteGoalID
-    public var rules: [SwapRule]
+/// A hint the app shows with a goal's variant, for something rules cannot change, for example salt "to taste".
+public struct GoalNote: Sendable, Hashable, Codable {
+    public var text: String
+    public var sourceID: SourceID
+    /// The passage of the source that backs the note, verbatim.
+    public var quote: String
 
-    public init(id: RewriteGoalID, rules: [SwapRule]) {
+    public init(text: String, sourceID: SourceID, quote: String) {
+        self.text = text
+        self.sourceID = sourceID
+        self.quote = quote
+    }
+}
+
+/// One goal for rewriting recipes, for example "balanced" or "blood pressure", with its own rules.
+///
+/// JSON shape: `{"id": "blood-pressure", "criterion": "sodium", "extends": "balanced", "rules": [], "notes": []}`.
+/// `criterion` defaults to `groupRank`; `extends`, `rules` and `notes` are optional.
+public struct RewriteGoal: Sendable, Hashable, Codable, Identifiable {
+    /// What makes a swap better for this goal.
+    public enum Criterion: String, Sendable, Hashable, Codable {
+        /// The new food's group is assessed better (favorable over neutral over limit).
+        case groupRank
+        /// Less sodium per 100 g. Allows a seasoning to become its declared low-sodium version
+        /// (`Food.lowSodiumVersionOf`).
+        case sodium
+        /// Fewer kcal per 100 g.
+        case energyDensity
+        /// Less carbohydrate per 100 g.
+        case carbohydrate
+    }
+
+    public let id: RewriteGoalID
+    public var criterion: Criterion
+    /// A goal whose rules apply too, unless this goal has its own rule for the same food.
+    public var extends: RewriteGoalID?
+    public var rules: [SwapRule]
+    public var notes: [GoalNote]
+
+    public init(
+        id: RewriteGoalID, criterion: Criterion = .groupRank, extends: RewriteGoalID? = nil, rules: [SwapRule],
+        notes: [GoalNote] = []
+    ) {
         self.id = id
+        self.criterion = criterion
+        self.extends = extends
         self.rules = rules
+        self.notes = notes
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, criterion, extends, rules, notes
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(RewriteGoalID.self, forKey: .id)
+        criterion = try container.decodeIfPresent(Criterion.self, forKey: .criterion) ?? .groupRank
+        extends = try container.decodeIfPresent(RewriteGoalID.self, forKey: .extends)
+        rules = try container.decodeIfPresent([SwapRule].self, forKey: .rules) ?? []
+        notes = try container.decodeIfPresent([GoalNote].self, forKey: .notes) ?? []
     }
 
     public static let balanced: RewriteGoalID = "balanced"
+    public static let bloodPressure: RewriteGoalID = "blood-pressure"
+    public static let weightLoss: RewriteGoalID = "weight-loss"
+    public static let lowCarb: RewriteGoalID = "low-carb"
 }
 
 /// All rewrite goals that ship with the app, from `Resources/Evidence/rewrite-rules.json`.
@@ -133,17 +189,44 @@ public struct RewriteRules: Sendable, Hashable, Codable {
     public func goal(_ id: RewriteGoalID) -> RewriteGoal? {
         goals.first { $0.id == id }
     }
+
+    /// The goal with the rules and notes of the goals it extends folded in: its own rules first, then inherited
+    /// rules for foods it has no rule for. Nil for an unknown goal or a cycle of `extends`.
+    public func resolved(_ id: RewriteGoalID) -> RewriteGoal? {
+        var chain: [RewriteGoal] = []
+        var next: RewriteGoalID? = id
+        while let current = next {
+            guard let goal = goal(current), !chain.contains(where: { $0.id == current }) else { return nil }
+            chain.append(goal)
+            next = goal.extends
+        }
+        var result = chain[0]
+        result.extends = nil
+        for base in chain.dropFirst() {
+            let covered = Set(result.rules.map(\.from))
+            result.rules += base.rules.filter { !covered.contains($0.from) }
+            result.notes += base.notes
+        }
+        return result
+    }
 }
 
 /// Something `RewriteRules.issues(in:)` found.
 public enum RewriteRuleIssue: Sendable, Hashable {
     case duplicateGoal(RewriteGoalID)
+    /// The goal extends a goal that does not exist, or the `extends` chain loops.
+    case unresolvableGoal(RewriteGoalID)
+    case unknownNoteSource(goal: RewriteGoalID, source: SourceID)
+    case emptyNote(RewriteGoalID)
     case duplicateRule(goal: RewriteGoalID, rule: SwapRuleID)
     case unknownFood(rule: SwapRuleID, food: FoodID)
-    /// The rule would swap a seasoning or aromatic, which decision 26 forbids.
+    /// The rule would swap a seasoning or aromatic, which decision 26 forbids. Under the sodium criterion a
+    /// seasoning may become its declared low-sodium version (decision 33).
     case protectedFood(rule: SwapRuleID, food: FoodID)
-    /// The new food's group is not assessed better than the old one's, so the swap does not make the dish healthier.
+    /// The swap does not improve the goal's criterion, or it moves to a group assessed worse.
     case notImproving(SwapRuleID)
+    /// The goal's criterion compares nutrients, but one of the foods has none.
+    case missingNutrients(rule: SwapRuleID, food: FoodID)
     case unknownSource(rule: SwapRuleID, source: SourceID)
     /// Share outside (0, 1], ratio not positive, negative extra time, empty name or quote.
     case invalidRule(SwapRuleID)
@@ -158,18 +241,31 @@ extension RewriteRules {
             if !goalIDs.insert(goal.id).inserted {
                 issues.append(.duplicateGoal(goal.id))
             }
+            if goal.extends != nil, resolved(goal.id) == nil {
+                issues.append(.unresolvableGoal(goal.id))
+            }
+            for note in goal.notes {
+                if catalog.source(note.sourceID) == nil {
+                    issues.append(.unknownNoteSource(goal: goal.id, source: note.sourceID))
+                }
+                if note.text.isEmpty || note.quote.isEmpty {
+                    issues.append(.emptyNote(goal.id))
+                }
+            }
             var ruleIDs: Set<SwapRuleID> = []
             for rule in goal.rules {
                 if !ruleIDs.insert(rule.id).inserted {
                     issues.append(.duplicateRule(goal: goal.id, rule: rule.id))
                 }
-                issues += Self.issues(of: rule, in: catalog)
+                issues += Self.issues(of: rule, criterion: goal.criterion, in: catalog)
             }
         }
         return issues
     }
 
-    private static func issues(of rule: SwapRule, in catalog: FoodCatalog) -> [RewriteRuleIssue] {
+    private static func issues(
+        of rule: SwapRule, criterion: RewriteGoal.Criterion, in catalog: FoodCatalog
+    ) -> [RewriteRuleIssue] {
         var issues: [RewriteRuleIssue] = []
         let isValid =
             rule.share > 0 && rule.share <= 1 && rule.ratio > 0 && rule.ratio.isFinite && rule.extraTime >= .zero
@@ -180,23 +276,52 @@ extension RewriteRules {
         if catalog.source(rule.sourceID) == nil {
             issues.append(.unknownSource(rule: rule.id, source: rule.sourceID))
         }
-        let foods = [rule.from, rule.to].map { id in (id, catalog.food(id)) }
-        for (id, food) in foods {
-            guard let food else {
-                issues.append(.unknownFood(rule: rule.id, food: id))
-                continue
-            }
-            if food.role == .seasoning || food.role == .aromatic {
-                issues.append(.protectedFood(rule: rule.id, food: id))
+        let from = catalog.food(rule.from)
+        let to = catalog.food(rule.to)
+        for (id, food) in [(rule.from, from), (rule.to, to)] where food == nil {
+            issues.append(.unknownFood(rule: rule.id, food: id))
+        }
+        guard let from, let to else { return issues }
+        let lowSodiumVersion = criterion == .sodium && to.lowSodiumVersionOf == from.id
+        if !lowSodiumVersion {
+            for food in [from, to] where food.role == .seasoning || food.role == .aromatic {
+                issues.append(.protectedFood(rule: rule.id, food: food.id))
             }
         }
-        if let from = foods[0].1.flatMap({ catalog.group($0.group) }),
-            let to = foods[1].1.flatMap({ catalog.group($0.group) }),
-            to.direction.rank <= from.direction.rank
-        {
+        guard let fromRank = catalog.group(from.group)?.direction.rank,
+            let toRank = catalog.group(to.group)?.direction.rank
+        else { return issues }
+        guard let measure = criterion.measure else {
+            if toRank <= fromRank {
+                issues.append(.notImproving(rule.id))
+            }
+            return issues
+        }
+        guard let fromNutrients = from.nutrients, let toNutrients = to.nutrients else {
+            for food in [from, to] where food.nutrients == nil {
+                issues.append(.missingNutrients(rule: rule.id, food: food.id))
+            }
+            return issues
+        }
+        // Per 100 g of the original: the kept part, plus the swapped part as `ratio` grams of the new food each.
+        let before = measure(fromNutrients)
+        let after = (1 - rule.share) * before + rule.share * rule.ratio * measure(toNutrients)
+        if toRank < fromRank || after >= before {
             issues.append(.notImproving(rule.id))
         }
         return issues
+    }
+}
+
+extension RewriteGoal.Criterion {
+    /// The nutrient the criterion lowers, nil for `groupRank`.
+    fileprivate var measure: (@Sendable (Nutrients) -> Double)? {
+        switch self {
+        case .groupRank: return nil
+        case .sodium: return { $0.sodiumMilligrams }
+        case .energyDensity: return { $0.kcal }
+        case .carbohydrate: return { $0.carbohydrate }
+        }
     }
 }
 

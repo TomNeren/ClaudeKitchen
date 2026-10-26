@@ -31,7 +31,8 @@ public struct RecipeRewrite: Sendable, Hashable {
 }
 
 extension Recipe {
-    /// A variant of the recipe with `goal`'s swaps applied, under the ID `<recipe>-<goal>`. A recipe that already
+    /// A variant of the recipe with `goal`'s swaps applied, under the ID `<recipe>-<goal>`. Pass a goal from
+    /// `RewriteRules.resolved(_:)` so inherited rules apply too. A recipe that already
     /// is such a variant comes back unchanged. Seasonings and aromatics stay as they are, because rules may not
     /// target them (`RewriteRules.issues(in:)`). The swapped ingredient offers the original as its first substitute.
     ///
