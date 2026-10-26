@@ -103,10 +103,7 @@ public enum VoiceCommand: Sendable, Equatable {
 
     /// Lowercased, without diacritics and punctuation, umlauts folded ("nächster" -> "nachster").
     static func normalizedWords(_ text: String) -> [String] {
-        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
-            .replacingOccurrences(of: "ß", with: "ss")
-            .split { !($0.isLetter || $0.isNumber) }
-            .map { $0.lowercased() }
+        TextFold.words(text).map { $0.lowercased() }
     }
 
     private static func cleaned(_ transcript: String, droppingLeading count: Int) -> String {

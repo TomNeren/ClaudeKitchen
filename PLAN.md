@@ -541,11 +541,14 @@ Getroffen (2026-10-25):
     Bohnen zählt mit. Dosenbohnen sind eigene Lebensmittel ohne Kochpflicht. Nur eine Warnung, weil das Gerät nicht
     erkennen kann, ob der Topf in der Aufheizzeit schon sprudelt. Gilt für jedes Rezept, dessen Zutaten einem
     Lebensmittel zugeordnet sind; seit M11a0 ordnen Import und Editor neue Zutaten selbst zu (Entscheidung 35).
-35. (Loop, umkehrbar) **Zutaten werden über Namen und Aliase zugeordnet** (`FoodCatalog.food(named:)`): Name oder
-    Alias muss als ganze Wörter im Zutatennamen stehen, das letzte Wort darf eine Pluralendung tragen, der Zusatz
-    nach dem Komma darf fehlen. Der längste Treffer gewinnt, bei Gleichstand keiner. Import und Editor ordnen neue
-    und umbenannte Zutaten zu, unveränderte behalten ihr Lebensmittel. An den mitgelieferten Rezepten: 353 von 355
-    Zutaten erkannt, keine falsch (Test).
+35. (Loop, umkehrbar) **Zutaten werden über Namen und Aliase zugeordnet** (`FoodMatcher`): Name oder Alias muss
+    als ganze Wörter im Zutatennamen stehen, verglichen nach Wortstamm (Groß- und Kleinschreibung, Akzente und
+    übliche Endungen zählen nicht, „roten Linsen“ findet „Rote Linsen“). Ein Name mit Zusatz nach dem Komma passt nur
+    ganz, die Kurzform braucht einen Alias, damit „Paprika“ nicht zu „Paprika, rot“ wird. Der längste Treffer
+    gewinnt, bei Gleichstand keiner. Import, Editor und das Laden gespeicherter Rezepte ordnen neue und umbenannte
+    Zutaten zu; findet ein neuer Name nichts, bleibt das alte Lebensmittel. Rohe und Dosenbohnen haben eigene Aliase.
+    An den mitgelieferten Rezepten: 353 von 355 Zutaten erkannt, keine falsch; ein Test hält Trefferquote (mindestens
+    90 Prozent) und Fehlerfreiheit.
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.

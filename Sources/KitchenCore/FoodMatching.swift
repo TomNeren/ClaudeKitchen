@@ -1,72 +1,92 @@
 import Foundation
 
-extension FoodCatalog {
-    /// The food an ingredient name most likely means, by the food's name and aliases, or nil when none fits or two
-    /// foods fit equally well.
+/// Finds the catalog food an ingredient name means. Folds the catalog's names once, so one matcher can serve a whole
+/// recipe; build it with `FoodCatalog.matcher`.
+public struct FoodMatcher: Sendable {
+    private struct Key: Sendable {
+        var food: FoodID
+        var stems: [Substring]
+    }
+
+    private let keys: [Key]
+
+    init(_ catalog: FoodCatalog) {
+        keys = catalog.foods.flatMap { food in
+            ([food.name] + food.aliases).map { Key(food: food.id, stems: Self.stems($0)) }.filter { !$0.stems.isEmpty }
+        }
+    }
+
+    /// The food an ingredient name most likely means, by the foods' full names and aliases, or nil when none fits or
+    /// two foods fit equally well.
     ///
-    /// A name or alias matches when its words appear in a row in the ingredient name, ignoring case and diacritics,
-    /// so "Rote Linsen, gewaschen" finds "Rote Linsen". The last word may carry a German plural ending ("Zwiebeln"
-    /// finds "Zwiebel"). The part of a food name after a comma is a qualifier and may be left out ("Kichererbsen"
-    /// finds "Kichererbsen, gegart"). The match with the most words wins, so "Kokosmilch" never finds "Milch" and
-    /// "Rote Linsen" beats "Linsen"; at equal length a full name or alias beats a name without its qualifier, so
-    /// "Sojasauce" finds "Sojasauce" and not "Sojasauce, salzreduziert".
+    /// A name or alias matches when its words appear in a row in the ingredient name, compared by stem: case,
+    /// diacritics and common German endings do not count, so "200 g roten Linsen" finds "Rote Linsen" and
+    /// "Zwiebeln" finds "Zwiebel". The match with the most words wins, so "Rote Linsen" beats "Linsen", and
+    /// "Kokosmilch" never finds "Milch" because words are compared whole. A name with a qualifier after a comma
+    /// ("Kichererbsen, gegart") only matches in full; the short form needs an alias, so "Paprika" cannot turn into
+    /// "Paprika, rot".
     public func food(named name: String) -> FoodID? {
-        let words = TextFold.words(name)
+        let words = Self.stems(name)
         guard !words.isEmpty else { return nil }
-        var best: (score: Int, foods: Set<FoodID>) = (0, [])
-        for food in foods {
-            for (key, isFull) in Self.keys(of: food) where Self.contains(words, key) {
-                let score = key.count * 2 + (isFull ? 1 : 0)
-                if score > best.score {
-                    best = (score, [food.id])
-                } else if score == best.score {
-                    best.foods.insert(food.id)
-                }
+        var best: (length: Int, foods: Set<FoodID>) = (0, [])
+        for key in keys where key.stems.count >= best.length && Self.contains(words, key.stems) {
+            if key.stems.count > best.length {
+                best = (key.stems.count, [key.food])
+            } else {
+                best.foods.insert(key.food)
             }
         }
         return best.foods.count == 1 ? best.foods.first : nil
     }
 
-    /// The words of the food's name and aliases, each marked as full, and of its name without the qualifier after a
-    /// comma.
-    private static func keys(of food: Food) -> [(words: [Substring], isFull: Bool)] {
-        let full = ([food.name] + food.aliases).map { (TextFold.words($0), true) }
-        let short = food.name.contains(",") ? [(TextFold.words(String(food.name.prefix { $0 != "," })), false)] : []
-        return (full + short).filter { !$0.0.isEmpty }
+    private static let endings = ["en", "er", "es", "em", "e", "n", "s"]
+
+    /// Folded words with one common ending removed, as long as at least three letters stay; "ein" stays "ein" and
+    /// never meets "Ei".
+    private static func stems(_ text: String) -> [Substring] {
+        TextFold.words(text).map { word in
+            for ending in endings where word.count - ending.count >= 3 && word.hasSuffix(ending) {
+                return word.dropLast(ending.count)
+            }
+            return word
+        }
     }
 
-    private static let pluralEndings = ["", "n", "en", "e", "s", "er"]
-
-    /// True when `key` occurs as consecutive words in `words`; its last word may carry a plural ending.
     private static func contains(_ words: [Substring], _ key: [Substring]) -> Bool {
         guard key.count <= words.count else { return false }
-        for start in 0...(words.count - key.count) {
-            let window = words[start..<(start + key.count)]
-            let leading = zip(window.dropLast(), key.dropLast()).allSatisfy { $0 == $1 }
-            guard leading, let last = window.last, let keyLast = key.last else { continue }
-            if pluralEndings.contains(where: { last == keyLast + $0 }) {
-                return true
-            }
+        return (0...(words.count - key.count)).contains { start in
+            words[start..<(start + key.count)].elementsEqual(key)
         }
-        return false
+    }
+}
+
+extension FoodCatalog {
+    public var matcher: FoodMatcher { FoodMatcher(self) }
+
+    /// See `FoodMatcher.food(named:)`. Build `matcher` once when matching many names.
+    public func food(named name: String) -> FoodID? {
+        matcher.food(named: name)
     }
 }
 
 extension Recipe {
-    /// The recipe with catalog foods assigned by ingredient name (`FoodCatalog.food(named:)`).
+    /// The recipe with catalog foods assigned by ingredient name (`FoodMatcher.food(named:)`).
     ///
     /// Ingredients without a food get one when the name matches. With `original`, ingredients that are new or renamed
-    /// since then are matched again, so a renamed ingredient does not keep the food of its old name; unchanged
-    /// ingredients keep their food, also one a bundled recipe sets by hand.
+    /// since then are matched again, so a renamed ingredient does not keep the food of its old name; when the new name
+    /// matches nothing, the old food stays, because losing it would also lose its boil check. Unchanged ingredients
+    /// keep their food, also one a bundled recipe sets by hand.
     public func assigningFoods(from catalog: FoodCatalog, comparedTo original: Recipe? = nil) -> Recipe {
+        let matcher = catalog.matcher
         var recipe = self
         let originalNames = Dictionary(
             (original?.ingredients ?? []).map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
         for index in recipe.ingredients.indices {
             let ingredient = recipe.ingredients[index]
             let renamed = original != nil && originalNames[ingredient.id] != ingredient.name
-            if ingredient.food == nil || renamed {
-                recipe.ingredients[index].food = catalog.food(named: ingredient.name)
+            guard ingredient.food == nil || renamed else { continue }
+            if let food = matcher.food(named: ingredient.name) {
+                recipe.ingredients[index].food = food
             }
         }
         return recipe

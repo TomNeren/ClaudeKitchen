@@ -16,6 +16,8 @@ struct FoodMatchingTests {
             Food(id: "salmon", name: "Lachs", aliases: ["Lachsfilet"], group: "g", role: .base),
             Food(id: "cream", name: "Sahne", group: "g", role: .base),
             Food(id: "sour-cream", name: "Saure Sahne", aliases: ["Schmand"], group: "g", role: .base),
+            Food(id: "pepper", name: "Paprika, rot", group: "g", role: .base),
+            Food(id: "egg", name: "Ei", aliases: ["Eier"], group: "g", role: .base),
             Food(id: "a", name: "Pfeffer", group: "g", role: .seasoning),
             Food(id: "b", name: "Pfeffer", group: "g", role: .seasoning),
         ])
@@ -24,7 +26,13 @@ struct FoodMatchingTests {
         ("Zwiebeln, in Ringen", "onion" as FoodID?),
         ("rote LINSEN", "red-lentils"),
         ("Linsen", "lentils"),
-        ("Kichererbsen aus der Dose", "chickpeas"),
+        ("Kichererbsen, gegart", "chickpeas"),
+        ("Kichererbsen aus der Dose", nil),
+        ("1 TL Paprika, edelsüß", nil),
+        ("200 g roten Linsen", "red-lentils"),
+        ("saurer Sahne", "sour-cream"),
+        ("Ingwer, ein daumengroßes Stück", nil),
+        ("2 Eier", "egg"),
         ("Kokosmilch, cremig", "coconut-milk"),
         ("Vollmilch", nil),
         ("2 Lachsfilets", "salmon"),
@@ -63,17 +71,37 @@ struct FoodMatchingTests {
         #expect(assigned.ingredients.map(\.food) == ["salmon", "red-lentils", "coconut-milk"])
     }
 
+    @Test(arguments: [
+        ("Weiße Bohnen", "white-beans" as FoodID?),
+        ("getrocknete weiße Bohnen", "white-beans"),
+        ("Cannellini (Dose)", "white-beans-cooked"),
+        ("Kidneybohnen (Dose), abgetropft", "kidney-beans-cooked"),
+        ("Rote Kidneybohnen", "kidney-beans"),
+        ("Koriander", nil),
+    ])
+    func bundledCatalogTellsRawFromCannedBeans(name: String, food: FoodID?) throws {
+        #expect(try #require(FoodCatalog.shared).food(named: name) == food)
+    }
+
     /// Precision on real data: wherever the matcher finds a food for a bundled ingredient, it is the one the recipe
-    /// declares. Ingredients it cannot match are fine; wrong matches are not.
+    /// declares, and it finds one for at least nine in ten ingredients.
     @Test func neverContradictsTheFoodsOfBundledRecipes() throws {
         let catalog = try #require(FoodCatalog.shared)
+        let matcher = catalog.matcher
         var wrong: [String] = []
+        var matched = 0
+        var total = 0
         for recipe in try RecipeLibrary.bundled() {
             for ingredient in recipe.ingredients {
-                guard let matched = catalog.food(named: ingredient.name), matched != ingredient.food else { continue }
-                wrong.append("\(recipe.id)/\(ingredient.name): \(matched) statt \(ingredient.food?.rawValue ?? "-")")
+                total += 1
+                guard let food = matcher.food(named: ingredient.name) else { continue }
+                matched += 1
+                guard food != ingredient.food else { continue }
+                wrong.append("\(recipe.id)/\(ingredient.name): \(food) statt \(ingredient.food?.rawValue ?? "-")")
             }
         }
         #expect(wrong.isEmpty, "\(wrong.joined(separator: "\n"))")
+        // Recall: almost every bundled ingredient name finds its food; a drop means a matcher or catalog regression.
+        #expect(Double(matched) >= Double(total) * 0.9, "\(matched) von \(total)")
     }
 }
