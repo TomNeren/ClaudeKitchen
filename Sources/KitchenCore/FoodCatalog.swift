@@ -91,6 +91,10 @@ public enum CatalogIssue: Sendable, Hashable {
     case unknownGroup(food: FoodID, group: FoodGroupID)
     /// A weight per unit that is not a positive number, or a weight given for grams.
     case invalidWeight(food: FoodID, unit: MeasureUnit)
+    /// A food that is not a seasoning has no nutrients, so recipe totals would leave it out.
+    case missingNutrients(FoodID)
+    /// Negative values, more saturated fat than fat, or more than 100 g of macronutrients per 100 g.
+    case implausibleNutrients(FoodID)
     /// The effect's source is not among the sources its group cites.
     case uncitedEffectSource(group: FoodGroupID, source: SourceID)
     /// The relative risk is not positive, lies outside its interval, or the quote is missing.
@@ -157,6 +161,13 @@ extension FoodCatalog {
             for (unit, grams) in food.gramsPerUnit.sorted(by: { $0.key.rawValue < $1.key.rawValue })
             where unit == .gram || !grams.isFinite || grams <= 0 {
                 issues.append(.invalidWeight(food: food.id, unit: unit))
+            }
+            if let nutrients = food.nutrients {
+                if !nutrients.isPlausible {
+                    issues.append(.implausibleNutrients(food.id))
+                }
+            } else if food.role != .seasoning {
+                issues.append(.missingNutrients(food.id))
             }
         }
         return issues
