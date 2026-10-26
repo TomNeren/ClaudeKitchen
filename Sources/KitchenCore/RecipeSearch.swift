@@ -30,7 +30,8 @@ public enum RecipeSearch {
         return Cuisine.allCases.filter(present.contains)
     }
 
+    /// Folds case and diacritics. The Turkish dotless ı has no base letter to fold to, so it becomes i by hand.
     private static func normalized(_ text: String) -> String {
-        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
+        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil).replacing("ı", with: "i")
     }
 }

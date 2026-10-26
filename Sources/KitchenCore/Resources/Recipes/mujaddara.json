@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "mujaddara",
+  "name": "Mujaddara",
+  "tag": "Levantinisch · Linsen und Reis",
+  "baseServings": 4,
+  "totalMinutes": 70,
+  "verified": false,
+  "origin": { "cuisine": "turkeyLevant", "region": "Libanon" },
+  "references": [
+    { "title": "A New Book of Middle Eastern Food", "author": "Claudia Roden", "year": 1985 }
+  ],
+  "authenticityChecks": [
+    "Braune Linsen und Reis zusammen gegart, mit Kreuzkümmel",
+    "Reichlich Zwiebeln in Olivenöl tief goldbraun gebraten, ein Teil obenauf",
+    "Mit Joghurt oder Salat serviert"
+  ],
+  "ingredients": [
+    { "id": "zwiebeln", "name": "Zwiebeln", "food": "onion", "quantity": 3, "unit": "Stk", "note": "in dünnen Halbringen" },
+    { "id": "olivenoel", "name": "Olivenöl", "food": "olive-oil", "quantity": 4, "unit": "EL" },
+    { "id": "linsen", "name": "Braune Linsen", "food": "brown-lentils", "quantity": 200, "unit": "g", "note": "gewaschen" },
+    { "id": "linsen-wasser", "name": "Wasser", "food": "water", "quantity": 600, "unit": "g" },
+    { "id": "reis", "name": "Langkornreis", "food": "white-rice", "quantity": 150, "unit": "g", "note": "gewaschen" },
+    { "id": "reis-wasser", "name": "Wasser", "food": "water", "quantity": 200, "unit": "g" },
+    { "id": "kreuzkuemmel", "name": "Kreuzkümmel, gemahlen", "food": "cumin", "quantity": 1.5, "unit": "TL" },
+    { "id": "salz", "name": "Salz", "food": "salt" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Zwiebeln bräunen", "text": "Zwiebeln und Olivenöl in den Topf geben und tief goldbraun braten.",
+      "note": "Ohne Messbecher, damit das Wasser verdampft. Auf die Farbe achten, nicht auf den Timer.",
+      "ingredientIDs": ["zwiebeln", "olivenoel"],
+      "setting": { "heat": 130, "speed": 1, "reverse": true, "seconds": 1500 } },
+    { "id": "s2", "phase": "Zwiebeln teilen", "text": "Etwa ein Drittel der Zwiebeln herausnehmen und beiseitestellen." },
+    { "id": "s3", "phase": "Linsen vorgaren", "text": "Linsen und Wasser zugeben und vorgaren.",
+      "note": "Messbecher einsetzen. Die Linsen sollen noch Biss haben.",
+      "ingredientIDs": ["linsen", "linsen-wasser"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 900 } },
+    { "id": "s4", "phase": "Reis garen", "text": "Reis, Wasser, Kreuzkümmel und Salz zugeben und garen, bis der Reis weich ist.",
+      "note": "Messbecher einsetzen. Danach 5 Minuten geschlossen ruhen lassen.",
+      "ingredientIDs": ["reis", "reis-wasser", "kreuzkuemmel", "salz"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 1080 } },
+    { "id": "s5", "phase": "Anrichten", "text": "Auf einer Platte anrichten und die beiseitegestellten Zwiebeln darauf verteilen. Mit Joghurt oder Salat servieren." }
+  ]
+}
