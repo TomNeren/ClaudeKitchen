@@ -198,6 +198,70 @@ Alle Zitate prüft `Scripts/check_evidence_quotes.py`. Damit ändern Blutdruck (
 - Logik (Bedarf, Vorrat, Zusammenfassen, Runden) liegt in KitchenCore. Gespeichert wird wie bei eigenen
   Rezepten als JSON in Application Support (Entscheidung 18).
 
+### 3e. Parallele Timer
+
+**Ausgangslage:** Die Kochsitzung kennt genau einen Timer. Läuft er, bleibt er beim Schrittwechsel stehen
+(Entscheidung 10), und der Timer des neuen Schritts lässt sich erst nach Ablauf oder Zurücksetzen starten.
+
+**Was wirklich parallel läuft:** Der Omni Cook hat einen Topf, also läuft immer höchstens ein Gerätetimer.
+Parallel ist nur Arbeit neben dem Gerät: Reis auf dem Herd, etwas im Ofen, Einweichen, Marinieren, Ruhen
+lassen. Die drei ersten Rezepte brauchen das nicht (beim Curry kommt der Blumenkohl laut Schritt 5 erst nach
+dem Umfüllen in den sauberen Topf). Seit M10 ist der Bedarf belegt (Stand M10h, 24 Rezepte):
+- Wartezeiten neben dem Gerät ohne Timer: Dal Tadka (30 Min einweichen), Jeera-Reis (20 Min einweichen),
+  Chicken Adobo (30 Min marinieren). Kocht man Dal und Reis zusammen, laufen beide gleichzeitig.
+- Kurze Pfannenarbeit ohne nennenswerte Zeit: Mercimek Çorbası (Butter mit Pul Biber), Chicken Adobo
+  (anbraten). Braucht keinen Timer.
+- Einweichen über Nacht (Kuru Fasulye, Lobio) ist kein Timer, sondern eine Erinnerung am Vortag und gehört
+  nicht in M13.
+Dazu kommen importierte Rezepte aus M6, die oft Herd oder Ofen nutzen.
+
+**Regeln:**
+- Ein Schritt hat höchstens einen Timer: entweder den Gerätetimer (`setting.duration`) oder einen neuen
+  **Nebentimer** mit Ort (Herd, Ofen, Arbeitsfläche) und Dauer. Beides zugleich lehnt `validate` ab.
+- **Höchstens ein Gerätetimer** ist aktiv (laufend oder pausiert). Ein zweiter Start wird abgelehnt, die
+  Oberfläche sagt warum („Das Gerät läuft noch: Köcheln, 8 Minuten“).
+- **Nebentimer laufen unabhängig**, höchstens 4 gleichzeitig (Grenze im `DeviceProfile`, weil Sperrbildschirm
+  und Dynamic Island nicht mehr sinnvoll zeigen).
+- Entscheidung 10 bleibt: Jeder aktive Timer gehört zu seinem Schritt und läuft beim Schrittwechsel weiter.
+  Neu ist nur, dass der Timer des aktuellen Schritts trotzdem startbar ist.
+- Zurücksetzen und Pause wirken auf den Timer des aktuellen Schritts. Andere Timer bedient man über ihre
+  eigene Zeile in der Timer-Liste.
+
+**Datenmodell (KitchenCore), Skizze:**
+```swift
+public enum TimerPlace: String, Sendable, Hashable, Codable { case device, stove, oven, counter }
+public struct SideTimer: Sendable, Hashable, Codable {   // new optional field Step.sideTimer
+    public var place: TimerPlace                         // never .device, checked by validate
+    public var duration: Duration
+}
+public struct ActiveTimer: Sendable, Equatable {
+    public let stepID: StepID
+    public let place: TimerPlace
+    public var state: TimerState                         // existing enum, unchanged
+}
+// CookingSession: `timer` and `timerStepIndex` become `timers: [ActiveTimer]` (sorted by end instant).
+// `timer` stays as the current step's timer, so CookingStatus, Siri and the view keep working during the switch.
+// CookingAction.startTimer/pauseTimer/resetTimer get an optional StepID (nil = current step).
+// New: CookingSession.startRefusal(for:) -> .deviceBusy(ActiveTimer) | .tooManyTimers | nil
+```
+- `finishedTimerCount` zählt weiter jeden abgelaufenen Timer einzeln, auch wenn ein Tick mehrere beendet.
+- `TimerAlarm` bekommt die `StepID` als stabile Kennung; die Sitzung liefert `alarms: [TimerAlarm]`.
+- Rezept-JSON bekommt `schemaVersion` 2 mit `sideTimer`; ein Test dekodiert die alte Form unverändert.
+
+**App:**
+- `AlarmScheduler.apply(_ alarms: [TimerAlarm])` gleicht ab statt alles zu löschen: neue Alarme planen,
+  verschwundene abbrechen, laufende in Ruhe lassen. `SystemAlarmScheduler` führt dafür eine Zuordnung
+  `StepID` zu `Alarm.ID`. Heute löscht er bei jeder Änderung alle Alarme der App, das muss weg.
+- Kochmodus: Die Timer-Zeile in der Gerätekonsole wird eine Liste. Der Timer des aktuellen Schritts steht
+  oben, andere aktive Timer darunter als kompakte Zeilen mit Ort, Schrittname und Restzeit; Tippen springt
+  zum Schritt. Glas bleibt auf der Bedienebene (Projektregel).
+- Schritt-Live-Activity: zusätzlich „2 Timer“ und der nächste Ablauf. Die Countdowns selbst zeigt AlarmKit,
+  je Timer einer.
+- Siri und Sprachmodus: „Wie lange noch“ nennt alle aktiven Timer, der früheste zuerst, höchstens drei.
+  „Timer starten“ und „Timer pausieren“ meinen den aktuellen Schritt; hat er keinen, aber genau ein anderer
+  Timer läuft, diesen. Bei mehreren sagt die App, welche laufen, und bittet um den Knopf.
+- Editor (M12) und Import (M6): Feld „Nebentimer“ mit Ort und Dauer; das Import-Schema bekommt dasselbe Feld.
+
 ### Bewusst nicht im Plan
 - Direkte Gerätesteuerung über WLAN: in einer früheren Session untersucht, derzeit nicht machbar (Abschnitt 6.2).
 - Warenkorb-Übergabe an REWE oder andere Händler über inoffizielle Schnittstellen (Abschnitt 3d).
@@ -419,6 +483,7 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M10 | Erledigt: M10a (PR #21), M10b Indien (PR #22), M10c Thailand (PR #23), M10d Südostasien (PR #24), M10e China (PR #25), M10f Japan und Korea (PR #26), M10g Türkei und Levante (PR #27). M10h Georgien im Review. Rezeptbestand: `origin`, `references`, `variantOf`, Ziel 27 traditionelle Rezepte aus neun Küchenräumen, Stand 23 aus acht (ohne das eigene Lachsrezept); Bibliothek filtert nach Küche | Alle bestehen `validate` und sind vollständig zugeordnet |
 | M11 | Einkauf und Vorrat: Bedarf minus Vorrat, Mindestbestand, Abbuchen nach dem Kochen, Export nach Erinnerungen und Teilen (Abschnitt 3d) | Logik-Tests in KitchenCore; Export am Gerät laut Prüfliste |
 | M12 | (v2) Sprachprotokoll, Ersatzlisten für alle Rezepte, Rezept-Editor (PR #13, unabhängig von M8 bis M11) | In Arbeit: Protokoll in den Einstellungen, Editor für eigene Rezepte und Kopien; Bedienung am Handy offen laut Geräte-Prüfliste |
+| M13 | Parallele Timer (Abschnitt 3e): höchstens ein Gerätetimer, dazu bis zu 4 Nebentimer für Herd, Ofen und Arbeitsfläche. M13a KitchenCore, M13b App (Alarme abgleichen, Timer-Liste, Live Activity, Siri), M13c Editor und Import | Tests: zweiter Gerätetimer abgelehnt; Gerätetimer und Nebentimer laufen und enden unabhängig; ein Tick beendet mehrere und zählt jeden; Zurücksetzen trifft nur den aktuellen Schritt; Entscheidung 10 gilt weiter; altes Rezept-JSON dekodiert unverändert; `validate` lehnt Schritt mit beiden Timern ab. Am Gerät laut Prüfliste |
 
 ## 9. Entscheidungen
 
@@ -481,6 +546,12 @@ Offen (mit Empfehlung):
    Empfehlung: nur bei Bedarf an Nährwerten stellen, bis dahin USDA (CC0).
 5. **Authentizität prüfen:** Wer hakt die Rezept-Prüfliste ab? Empfehlung: du beim ersten Kochen, bei Zweifeln
    jemand aus der jeweiligen Küche.
+6. **Parallele Timer (M13): ob und wann.** Drei der 24 Rezepte haben Wartezeiten neben dem Gerät ohne
+   Timer (Abschnitt 3e). Der Umbau berührt Kochsitzung, AlarmKit, Live Activity, Siri, Editor und Import.
+   Möglichkeiten: (a) als Nächstes nach M10, vor M11, und die drei Wartezeiten (Dal Tadka, Jeera-Reis,
+   Chicken Adobo) als Nebentimer nachrüsten; (b) erst, wenn ein Rezept beim Kochen daran scheitert; (c) gar nicht, Nebenarbeit bleibt Text
+   im Schritt. Empfehlung: (a), aber nur M13a und M13b; M13c folgt, sobald du im Editor oder beim Import
+   einen Nebentimer vermisst.
 
 ## 10. Gauntlet-Loop: Umsetzung der restlichen Meilensteine
 
@@ -494,7 +565,8 @@ M11 Einkauf und Vorrat (Entscheidung 24).
 Scheiben für die neuen Meilensteine: M8a Datenmodell und Katalog, M8b geprüfte Einstufungen, M8c Nährwerte;
 M9a Umwandlung Ausgewogen in KitchenCore, M9b Ziele Blutdruck, Abnehmen, Low Carb, M9c Ansicht mit Zielwahl;
 M10a Felder, M10b bis M10j je 3 Rezepte (ein Küchenraum pro Scheibe); M11a Logik, M11b App
-mit Speicherung, Erinnerungen und Teilen.
+mit Speicherung, Erinnerungen und Teilen; M13a parallele Timer in KitchenCore, M13b App, M13c Editor und
+Import (Zeitpunkt: offene Entscheidung 6).
 Große Meilensteine werden in Scheiben geteilt (je ein PR), z. B. M4a Timer und Mitteilungen, M4b Live Activity.
 
 ### Ablauf pro Scheibe
@@ -562,6 +634,10 @@ Fehlerliste.
 - [ ] M10f: Dashi: Kombu bei 60 °C ohne Rühren gleichmäßig warm, Katsuobushi sinkt bei 90 °C ab; Oyakodon: Ei nach 90 s bei 90 °C ohne Rühren halb gestockt; Misosuppe und Kimchi-Jjigae: Tofu bleibt bei Linkslauf Stufe 1 ganz
 - [ ] M10g: Mercimek: heiße Suppe auf Stufe 9 pürieren ohne Spritzen; Kuru Fasulye: eingeweichte Bohnen nach 80 Min bei 100 °C weich, aber ganz; Mujaddara: Zwiebeln nach 25 Min bei 130 °C tief goldbraun, Reis und Linsen gar ohne Ansetzen
 - [ ] M10h: Lobio: kochen eingeweichte Kidneybohnen bei 110 °C ohne Messbecher sichtbar sprudelnd (roh giftig, mindestens 10 Min kochen), Schaum bleibt im Topf, nach weiteren 60 Min weich; Stufe 3 für 4 s zerdrückt grob; Chakhokhbili: Huhn nimmt bei 160 °C mit 1 EL Öl Farbe, Sauce dickt ohne Messbecher ein; Ajapsandali: Schmoren ohne Rühren brennt nicht an
+- [ ] M13: Gerätetimer und zwei Nebentimer gleichzeitig: drei AlarmKit-Countdowns auf dem Sperrbildschirm, jeder klingelt einzeln; Stoppen eines Alarms lässt die anderen laufen
+- [ ] M13: Pause eines Nebentimers nimmt nur dessen Countdown weg; Verlassen des Kochmodus entfernt alle nicht abgelaufenen
+- [ ] M13: Timer-Liste in der Gerätekonsole aus etwa 60 cm lesbar; Tippen auf eine Zeile springt zum Schritt
+- [ ] M13: „Wie lange noch in Omni Cook“ mit zwei laufenden Timern nennt beide, den früheren zuerst
 - [ ] M6: API-Schlüssel in den Einstellungen eintragen und wieder entfernen
 - [ ] M6: Import aus kopiertem Text und aus einem Link (https), Vorschau mit Prüfung, Speichern; eigenes Rezept erscheint oben in der Bibliothek, Löschen per langem Druck
 - [ ] M6: Werte eines importierten Rezepts einmal am Gerät gegenprüfen
