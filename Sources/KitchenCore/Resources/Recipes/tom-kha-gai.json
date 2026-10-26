@@ -30,7 +30,7 @@
     { "id": "pilze", "name": "Austernpilze", "food": "oyster-mushrooms", "quantity": 150, "unit": "g", "note": "gezupft" },
     { "id": "fischsauce", "name": "Fischsauce", "food": "fish-sauce", "quantity": 2.5, "unit": "EL" },
     { "id": "palmzucker", "name": "Palmzucker", "food": "palm-sugar", "quantity": 1, "unit": "TL" },
-    { "id": "chilis", "name": "Rote Chili", "food": "red-chili", "quantity": 3, "unit": "Stk", "note": "angedrückt" },
+    { "id": "chilis", "name": "Vogelaugenchili", "food": "birds-eye-chili", "quantity": 3, "unit": "Stk", "note": "angedrückt" },
     { "id": "limette", "name": "Limette", "food": "lime", "quantity": 2, "unit": "Stk", "note": "nur der Saft" },
     { "id": "koriander", "name": "Koriandergrün", "food": "coriander-leaves", "quantity": 10, "unit": "g" }
   ],

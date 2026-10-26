@@ -94,3 +94,28 @@ struct DeviceProfileTests {
         #expect(profile.servingsRange(for: self.recipe(steps: steps, ingredients: [], baseServings: 2)) == 1...8)
     }
 }
+
+@Suite("Fill level with catalog weights")
+struct FillLevelCatalogTests {
+    private static let catalog = FoodCatalog(
+        sources: [], groups: [FoodGroup(id: "g", name: "G", direction: .notAssessed)],
+        foods: [Food(id: "eggplant", name: "Aubergine", group: "g", role: .base, gramsPerUnit: [.piece: 250])])
+
+    private static let recipe = Recipe(
+        id: "r", name: "R", tag: "", baseServings: 1, totalMinutes: 10,
+        ingredients: [
+            Ingredient(id: "water", name: "Wasser", amount: .measured(500, .gram)),
+            Ingredient(id: "eggplant", name: "Aubergine", amount: .measured(2, .piece), food: "eggplant"),
+        ],
+        steps: [Step(id: "s1", phase: "", text: "", ingredientIDs: ["water", "eggplant"])])
+
+    @Test func piecesCountWithTheirCatalogWeight() {
+        #expect(DeviceProfile.omniCook.estimatedFillLiters(of: Self.recipe, servings: 1, catalog: Self.catalog) == 1)
+        #expect(DeviceProfile.omniCook.estimatedFillLiters(of: Self.recipe, servings: 1, catalog: nil) == 0.5)
+    }
+
+    @Test func servingsRangeShrinksWhenPiecesAreWeighed() {
+        #expect(DeviceProfile.omniCook.maxServings(for: Self.recipe, catalog: Self.catalog) == 2)
+        #expect(DeviceProfile.omniCook.maxServings(for: Self.recipe, catalog: nil) == 4)
+    }
+}
