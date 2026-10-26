@@ -9,14 +9,20 @@ struct RecipeDetailView: View {
     private let onStartCooking: (_ servings: Int, _ goal: RewriteGoalID?) -> Void
     private let isOwn: Bool
     private let onEdit: (() -> Void)?
+    private let onAddToShopping: ((_ servings: Int, _ goal: RewriteGoalID?) -> Void)?
+    /// True once the recipe is in the shopping plan, from the library or after tapping the button here.
+    @State private var isPlanned: Bool
 
     /// `recipe` seeds the screen model once; the screen does not follow later changes to it.
     init(
         recipe: Recipe, isOwn: Bool = false, onEdit: (() -> Void)? = nil,
+        isPlanned: Bool = false, onAddToShopping: ((_ servings: Int, _ goal: RewriteGoalID?) -> Void)? = nil,
         onStartCooking: @escaping (_ servings: Int, _ goal: RewriteGoalID?) -> Void
     ) {
         self.isOwn = isOwn
         self.onEdit = onEdit
+        self._isPlanned = State(initialValue: isPlanned)
+        self.onAddToShopping = onAddToShopping
         self.model = RecipeDetailModel(recipe: recipe)
         self.onStartCooking = onStartCooking
     }
@@ -44,6 +50,21 @@ struct RecipeDetailView: View {
         .navigationTitle(model.recipe.name)
         .toolbarTitleDisplayMode(.inline)
         .toolbar {
+            if let onAddToShopping {
+                ToolbarItem(placement: .topBarTrailing) {
+                    // One tap plans the recipe; more servings are set in the plan, so a second tap cannot double them.
+                    Button {
+                        onAddToShopping(model.servings, model.goal)
+                        isPlanned = true
+                    } label: {
+                        Label(
+                            isPlanned ? "Auf der Einkaufsliste" : "Auf die Einkaufsliste",
+                            systemImage: isPlanned ? "cart.fill" : "cart.badge.plus")
+                    }
+                    .disabled(isPlanned)
+                    .sensoryFeedback(.success, trigger: isPlanned)
+                }
+            }
             if let onEdit {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(

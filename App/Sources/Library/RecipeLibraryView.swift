@@ -4,6 +4,8 @@ import SwiftUI
 /// Start screen: all recipes over the warm background, with search in the glass navigation chrome.
 struct RecipeLibraryView: View {
     @State private var model = RecipeLibraryModel()
+    @State private var shopping = ShoppingModel()
+    @State private var isShopping = false
     @State private var path: [Route] = []
     @State private var isImporting = false
     @State private var isShowingSettings = false
@@ -53,6 +55,9 @@ struct RecipeLibraryView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Einstellungen", systemImage: "gearshape") { isShowingSettings = true }
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Einkauf", systemImage: "cart") { isShopping = true }
+                }
                 if !model.cuisines.isEmpty {
                     ToolbarItem(placement: .topBarTrailing) {
                         CuisineFilter(model: model)
@@ -73,12 +78,20 @@ struct RecipeLibraryView: View {
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
             }
+            .sheet(isPresented: $isShopping) {
+                ShoppingView(model: shopping)
+            }
             .sheet(item: $editing) { request in
                 RecipeEditorView(recipe: request.recipe, isNew: request.isNew) { recipe in
                     await save(recipe, copiedFrom: request.copiedFrom)
                 }
             }
-            .task { await model.loadOwn() }
+            .task {
+                await model.loadOwn()
+                await shopping.load()
+                shopping.update(recipes: model.recipes)
+            }
+            .onChange(of: model.recipes) { shopping.update(recipes: model.recipes) }
         }
     }
 
@@ -119,7 +132,9 @@ struct RecipeLibraryView: View {
             if let recipe = model.recipe(id) {
                 RecipeDetailView(
                     recipe: recipe, isOwn: model.isOwn(id),
-                    onEdit: { editing = model.editorRequest(for: id) }
+                    onEdit: { editing = model.editorRequest(for: id) },
+                    isPlanned: shopping.isPlanned(id),
+                    onAddToShopping: { shopping.add(recipe, servings: $0, goal: $1) }
                 ) { servings, goal in path.append(.cooking(id, servings: servings, goal: goal)) }
                 // A saved change gives the screen a fresh model.
                 .id(recipe)
@@ -128,7 +143,12 @@ struct RecipeLibraryView: View {
         case .cooking(let id, let servings, let goal):
             if let recipe = model.recipe(id) {
                 let variant = goal.flatMap { HealthGoals.advisor?.variantRecipe(of: recipe, for: $0) }
-                CookingView(recipe: variant ?? recipe, servings: servings) { path.removeAll() }
+                let cooked = variant ?? recipe
+                CookingView(recipe: cooked, servings: servings) {
+                    // Books what the recipe used out of the pantry; the shopping screen offers undo.
+                    shopping.cooked(cooked, servings: servings)
+                    path.removeAll()
+                }
             }
         }
     }

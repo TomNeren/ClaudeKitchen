@@ -2,7 +2,7 @@ import Foundation
 
 /// What to buy for a set of planned recipes, sorted by aisle.
 public struct ShoppingList: Sendable, Hashable {
-    public struct Item: Sendable, Hashable {
+    public struct Item: Sendable, Hashable, Identifiable {
         public enum Quantity: Sendable, Hashable {
             /// Grams to buy, rounded up to a shopping step, and the same in pieces when the food has a piece weight.
             case grams(Double, pieces: Int?)
@@ -31,9 +31,21 @@ public struct ShoppingList: Sendable, Hashable {
         public var reason: Reason
         /// The planned recipes that need it, empty for a pure restock.
         public var recipes: [RecipeID]
+
+        /// Stable across lists: the food, or the name for ingredients the catalog does not know.
+        public var id: String { food.map { "food:\($0.rawValue)" } ?? "name:\(name)" }
     }
 
     public var items: [Item]
+
+    public init(items: [Item]) {
+        self.items = items
+    }
+
+    /// The items whose `id` is in `ids`, in list order.
+    public func filtered(to ids: Set<String>) -> ShoppingList {
+        ShoppingList(items: items.filter { ids.contains($0.id) })
+    }
 
     /// The list for `plans` (recipe and servings) given what is in `pantry`.
     ///
