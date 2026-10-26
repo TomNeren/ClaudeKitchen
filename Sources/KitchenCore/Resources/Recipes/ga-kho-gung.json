@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "id": "ga-kho-gung",
+  "name": "Gà Kho Gừng",
+  "tag": "Vietnamesisch · Ingwer-Hähnchen",
+  "baseServings": 3,
+  "totalMinutes": 50,
+  "verified": false,
+  "origin": { "cuisine": "southeastAsia", "region": "Vietnam" },
+  "references": [
+    { "title": "Into the Vietnamese Kitchen", "author": "Andrea Nguyen", "year": 2006 }
+  ],
+  "authenticityChecks": [
+    "Karamell (nước màu) dunkel bernsteinfarben, nicht schwarz; er gibt Farbe und leichte Bitterkeit",
+    "Viel Ingwer in feinen Streifen, mit Fischsauce und schwarzem Pfeffer geschmort, Sauce sirupartig eingekocht",
+    "Dazu Reis und Gemüse oder eine klare Suppe"
+  ],
+  "ingredients": [
+    { "id": "zucker", "name": "Zucker", "food": "sugar", "quantity": 2, "unit": "EL" },
+    { "id": "oel", "name": "Rapsöl", "food": "canola-oil", "quantity": 1, "unit": "EL" },
+    { "id": "schalotten", "name": "Schalotte", "food": "shallot", "quantity": 3, "unit": "Stk", "note": "in Scheiben" },
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 3, "unit": "Zehen", "note": "gehackt" },
+    { "id": "ingwer", "name": "Ingwer, frisch", "food": "ginger", "quantity": 40, "unit": "g", "note": "in feinen Streifen" },
+    { "id": "huhn", "name": "Hähnchenschenkel, ohne Haut", "food": "chicken-thigh", "quantity": 500, "unit": "g",
+      "note": "in mundgerechten Stücken" },
+    { "id": "fischsauce", "name": "Fischsauce", "food": "fish-sauce", "quantity": 2.5, "unit": "EL" },
+    { "id": "pfeffer", "name": "Schwarzer Pfeffer, grob", "food": "black-pepper", "quantity": 1, "unit": "TL" },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 150, "unit": "g" },
+    { "id": "fruehlingszwiebel", "name": "Frühlingszwiebel", "food": "spring-onion", "quantity": 2, "unit": "Stk", "note": "in Ringen" },
+    { "id": "chili", "name": "Rote Chili", "food": "red-chili", "quantity": 1, "unit": "Stk", "note": "nach Belieben" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Karamell", "text": "Zucker und Öl in den Topf geben und zu einem bernsteinfarbenen Karamell schmelzen.",
+      "note": "Ohne Messbecher. Am Gerät beobachten: dunkel goldbraun, nicht schwarz. Beim ersten Kochen die Zeit notieren.",
+      "ingredientIDs": ["zucker", "oel"],
+      "setting": { "heat": 160, "speed": 1, "reverse": true, "seconds": 240 } },
+    { "id": "s2", "phase": "Aromen", "text": "Schalotten, Knoblauch und Ingwer zugeben und im Karamell anschwitzen.",
+      "note": "Vorsicht, es zischt.",
+      "ingredientIDs": ["schalotten", "knoblauch", "ingwer"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 120 } },
+    { "id": "s3", "phase": "Anbraten", "text": "Hähnchen, Fischsauce und Pfeffer zugeben und das Fleisch rundum färben.",
+      "ingredientIDs": ["huhn", "fischsauce", "pfeffer"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 300 } },
+    { "id": "s4", "phase": "Schmoren", "text": "Wasser zugeben und schmoren.",
+      "note": "Messbecher einsetzen.",
+      "ingredientIDs": ["wasser"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 1200 } },
+    { "id": "s5", "phase": "Einkochen", "text": "Ohne Messbecher einkochen, bis die Sauce sirupartig am Fleisch haftet.",
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 300 } },
+    { "id": "s6", "phase": "Anrichten", "text": "Mit Frühlingszwiebel und Chili bestreuen und mit Reis servieren.",
+      "ingredientIDs": ["fruehlingszwiebel", "chili"] }
+  ]
+}

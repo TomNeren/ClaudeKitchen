@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "chicken-adobo",
+  "name": "Chicken Adobo",
+  "tag": "Philippinisch · Schmorgericht",
+  "baseServings": 3,
+  "totalMinutes": 60,
+  "verified": false,
+  "origin": { "cuisine": "southeastAsia", "region": "Philippinen" },
+  "references": [
+    { "title": "Memories of Philippine Kitchens", "author": "Amy Besa, Romy Dorotan", "year": 2006 }
+  ],
+  "authenticityChecks": [
+    "Essig, Sojasauce, viel Knoblauch, Lorbeer und ganze Pfefferkörner sind der Kern",
+    "Essig zuerst aufkochen lassen, ohne zu rühren, damit die Schärfe verfliegt",
+    "Sauce zum Schluss eingekocht, säuerlich-salzig; mit Reis"
+  ],
+  "ingredients": [
+    { "id": "huhn", "name": "Hähnchenschenkel, ohne Haut", "food": "chicken-thigh", "quantity": 600, "unit": "g",
+      "note": "in großen Stücken" },
+    { "id": "essig", "name": "Zuckerrohressig", "food": "cane-vinegar", "quantity": 80, "unit": "g",
+      "substitutes": [ { "name": "Apfelessig", "ratio": 1, "note": "fruchtiger" } ] },
+    { "id": "sojasauce", "name": "Sojasauce", "food": "soy-sauce", "quantity": 60, "unit": "g" },
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 8, "unit": "Zehen", "note": "angedrückt" },
+    { "id": "lorbeer", "name": "Lorbeerblatt", "food": "bay-leaf", "quantity": 3, "unit": "Stk", "eaten": false },
+    { "id": "pfeffer", "name": "Schwarze Pfefferkörner", "food": "black-pepper", "quantity": 1, "unit": "TL", "note": "ganz" },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 120, "unit": "g" },
+    { "id": "zucker", "name": "Zucker", "food": "sugar", "quantity": 1, "unit": "TL" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Aufkochen", "text": "Hähnchen, Essig, Sojasauce, Knoblauch, Lorbeer, Pfeffer und Wasser in den Topf geben und aufkochen lassen, ohne zu rühren.",
+      "note": "Ohne Messbecher, damit die Essigschärfe entweicht. Wer Zeit hat, mariniert das Hähnchen vorher 30 Minuten in Essig, Sojasauce und Knoblauch.",
+      "ingredientIDs": ["huhn", "essig", "sojasauce", "knoblauch", "lorbeer", "pfeffer", "wasser"],
+      "setting": { "heat": 100, "seconds": 300 } },
+    { "id": "s2", "phase": "Schmoren", "text": "Zugedeckt schmoren, bis das Hähnchen weich ist.",
+      "note": "Messbecher einsetzen.",
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 1800 } },
+    { "id": "s3", "phase": "Einkochen", "text": "Zucker zugeben und ohne Messbecher einkochen, bis die Sauce leicht sämig ist.",
+      "ingredientIDs": ["zucker"],
+      "setting": { "heat": 110, "speed": 1, "reverse": true, "seconds": 600 } },
+    { "id": "s4", "phase": "Anrichten", "text": "Lorbeer entfernen und mit Reis servieren.",
+      "note": "Wer mag, brät das Hähnchen vorher kurz in einer Pfanne knusprig und gießt die Sauce darüber." }
+  ]
+}
