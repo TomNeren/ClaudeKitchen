@@ -7,10 +7,25 @@ import Testing
 struct RecipeLibraryTests {
     @Test func loadsAllBundledRecipes() throws {
         let recipes = try RecipeLibrary.bundled()
+        let directory = try #require(Bundle.module.url(forResource: "Recipes", withExtension: nil))
+        let files = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
+            .filter { $0.pathExtension == "json" }
+        #expect(Set(recipes.map(\.id.rawValue)).count == recipes.count, "duplicate recipe IDs")
         #expect(
-            recipes.map(\.id.rawValue).sorted() == [
-                "ingwer-lachs-pak-choi", "kichererbsen-spinat-curry", "zitronen-linsen-eintopf",
-            ])
+            Set(recipes.map(\.id.rawValue) + files.map { $0.deletingPathExtension().lastPathComponent }).count
+                == recipes.count, "file name and recipe ID differ")
+        for id in ["ingwer-lachs-pak-choi", "kichererbsen-spinat-curry", "zitronen-linsen-eintopf"] {
+            #expect(recipes.contains { $0.id.rawValue == id }, "\(id)")
+        }
+    }
+
+    @Test func everyIngredientIsUsedInSomeStep() throws {
+        for recipe in try RecipeLibrary.bundled() {
+            let used = Set(recipe.steps.flatMap(\.ingredientIDs))
+            for ingredient in recipe.ingredients {
+                #expect(used.contains(ingredient.id), "\(recipe.id): \(ingredient.id) is in no step")
+            }
+        }
     }
 
     @Test func everyBundledRecipePassesValidationWithoutErrors() throws {

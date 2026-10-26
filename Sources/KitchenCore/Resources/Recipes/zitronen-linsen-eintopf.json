@@ -6,6 +6,7 @@
   "baseServings": 3,
   "totalMinutes": 35,
   "verified": false,
+  "origin": { "cuisine": "europe", "region": "Ikaria" },
   "ingredients": [
     { "id": "zwiebel", "name": "Zwiebel", "food": "onion", "quantity": 1, "unit": "Stk",
       "substitutes": [ { "name": "Schalotten", "ratio": 2 } ] },
@@ -23,7 +24,7 @@
       "substitutes": [ { "name": "Wasser mit Brühpulver", "ratio": 1, "note": "1 TL Pulver auf 500 g Wasser" } ] },
     { "id": "oregano", "name": "Oregano, getrocknet", "food": "oregano-dried", "quantity": 2, "unit": "TL",
       "substitutes": [ { "name": "Thymian, getrocknet", "ratio": 1 } ] },
-    { "id": "lorbeer", "name": "Lorbeerblatt", "food": "bay-leaf", "quantity": 1, "unit": "Stk", "scales": false },
+    { "id": "lorbeer", "name": "Lorbeerblatt", "food": "bay-leaf", "quantity": 1, "unit": "Stk", "scales": false, "eaten": false },
     { "id": "zitrone", "name": "Zitrone", "food": "lemon", "quantity": 1, "unit": "Stk", "note": "Saft und Schale",
       "substitutes": [ { "name": "Limette", "ratio": 1, "note": "etwas herber" } ] },
     { "id": "feta", "name": "Feta", "food": "feta", "quantity": 120, "unit": "g",

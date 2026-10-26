@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "dal-tadka",
+  "name": "Dal Tadka",
+  "tag": "Indisch · Dal",
+  "baseServings": 3,
+  "totalMinutes": 90,
+  "verified": false,
+  "origin": { "cuisine": "india", "region": "Nordindien" },
+  "references": [
+    { "title": "An Invitation to Indian Cooking", "author": "Madhur Jaffrey", "year": 1973 },
+    { "title": "India: The Cookbook", "author": "Pushpesh Pant", "year": 2010 }
+  ],
+  "authenticityChecks": [
+    "Tadka: Ghee, ganzer Kreuzkümmel, eine Prise Asafoetida und Knoblauch, erst ganz am Ende heiß über das Dal",
+    "Toor Dal weich und sämig gekocht, nicht püriert",
+    "Würzung: Kurkuma beim Kochen, Garam Masala nur zum Schluss"
+  ],
+  "ingredients": [
+    { "id": "dal", "name": "Toor Dal", "food": "toor-dal", "quantity": 180, "unit": "g", "note": "gewaschen, 30 Min eingeweicht" },
+    { "id": "zwiebel", "name": "Zwiebel", "food": "onion", "quantity": 1, "unit": "Stk" },
+    { "id": "ingwer", "name": "Ingwer, frisch", "food": "ginger", "quantity": 15, "unit": "g" },
+    { "id": "chili", "name": "Grüne Chili", "food": "green-chili", "quantity": 1, "unit": "Stk" },
+    { "id": "ghee-masala", "name": "Ghee", "food": "ghee", "quantity": 10, "unit": "g", "note": "für das Masala" },
+    { "id": "tomate", "name": "Tomate", "food": "tomato", "quantity": 1, "unit": "Stk", "note": "fein gewürfelt" },
+    { "id": "chilipulver", "name": "Chilipulver, mild", "food": "chili-powder", "quantity": 1, "unit": "TL" },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 750, "unit": "g" },
+    { "id": "kurkuma", "name": "Kurkuma", "food": "turmeric", "quantity": 1, "unit": "TL" },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    { "id": "ghee-tadka", "name": "Ghee", "food": "ghee", "quantity": 15, "unit": "g", "note": "für das Tadka" },
+    { "id": "kreuzkuemmel", "name": "Kreuzkümmel, ganz", "food": "cumin", "quantity": 1, "unit": "TL" },
+    { "id": "hing", "name": "Asafoetida", "food": "asafoetida", "note": "eine Prise" },
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 4, "unit": "Zehen", "note": "in feinen Scheiben" },
+    { "id": "garam-masala", "name": "Garam Masala", "food": "garam-masala", "quantity": 0.5, "unit": "TL" },
+    { "id": "koriander", "name": "Koriandergrün", "food": "coriander-leaves", "quantity": 10, "unit": "g" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Einweichen", "text": "Toor Dal waschen, bis das Wasser klar bleibt, und 30 Minuten in kaltem Wasser einweichen. Abgießen.",
+      "note": "Ohne Einweichen braucht das Dal in Schritt 5 etwa 50 statt 35 Minuten." },
+    { "id": "s2", "phase": "Hacken", "text": "Zwiebel, Ingwer und Chili grob zerkleinert in den Topf geben und hacken.",
+      "note": "Danach mit dem Spatel nach unten schieben.",
+      "ingredientIDs": ["zwiebel", "ingwer", "chili"],
+      "setting": { "speed": 5, "seconds": 5 } },
+    { "id": "s3", "phase": "Masala", "text": "Ghee zugeben und die Zwiebeln goldgelb anbraten.",
+      "note": "Ohne Messbecher, damit Feuchtigkeit entweicht.",
+      "ingredientIDs": ["ghee-masala"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 360 } },
+    { "id": "s4", "phase": "Tomate", "text": "Tomate und Chilipulver zugeben und einkochen, bis sich das Fett absetzt.",
+      "ingredientIDs": ["tomate", "chilipulver"],
+      "setting": { "heat": 110, "speed": 1, "reverse": true, "seconds": 240 } },
+    { "id": "s5", "phase": "Dal kochen", "text": "Dal, Wasser, Kurkuma und Salz zugeben und weich kochen.",
+      "note": "Messbecher einsetzen. Das Dal ist fertig, wenn es zwischen den Fingern zerfällt.",
+      "ingredientIDs": ["dal", "wasser", "kurkuma", "salz"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 2100 } },
+    { "id": "s6", "phase": "Umfüllen", "text": "Dal in eine Servierschüssel füllen und warm halten. Topf ausspülen und abtrocknen." },
+    { "id": "s7", "phase": "Tadka", "text": "Ghee, Kreuzkümmel, Asafoetida und Knoblauch in den leeren Topf geben und braten, bis der Knoblauch goldgelb ist.",
+      "note": "Ohne Messbecher. Der Kreuzkümmel soll knistern, der Knoblauch nicht braun werden.",
+      "ingredientIDs": ["ghee-tadka", "kreuzkuemmel", "hing", "knoblauch"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 180 }, "freshPot": true },
+    { "id": "s8", "phase": "Anrichten", "text": "Das heiße Tadka über das Dal gießen, mit Garam Masala und Koriandergrün bestreuen.",
+      "note": "Dazu passt Jeera-Reis.", "ingredientIDs": ["garam-masala", "koriander"] }
+  ]
+}

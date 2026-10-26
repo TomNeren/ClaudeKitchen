@@ -114,7 +114,10 @@ stehen nebeneinander, die App zeigt, was sich geändert hat und warum.
 - **Nährwerte (M8c):** kcal, Kohlenhydrate, Ballaststoffe, Eiweiß, Fett, Natrium je 100 g für jedes Lebensmittel
   im Katalog, aus USDA FoodData Central (CC0, mit FDC-ID je Eintrag zum Nachprüfen). Gebraucht für die Ziele
   Abnehmen, Low Carb und Blutdruck. Der BLS 4.0 wäre für deutsche Lebensmittel genauer, seine Lizenz für die
-  Weitergabe ist aber ungeklärt.
+  Weitergabe ist aber ungeklärt. **Stand M8c:** 28 von 29 Lebensmitteln haben Nährwerte aus SR Legacy (April 2018);
+  Garam Masala fehlt dort und bleibt als Gewürzmischung ohne. Nährwerte pro Portion zählen „nach Geschmack“ nicht
+  mit (Salz!), die App muss das beim Ziel Blutdruck anzeigen. `Scripts/check_nutrients.py` vergleicht jeden Wert
+  mit dem USDA-Datensatz.
 
 **Umwandlung (KitchenCore, deterministisch):**
 - Tauschregeln als JSON: von Lebensmittel, zu Lebensmittel, Mengenverhältnis, Begründung mit Quellenverweis,
@@ -138,6 +141,30 @@ Die Invarianten (Würzen und Aromabasis bleiben, `validate` besteht) gelten für
 Weitere Ziele (z. B. Blutzucker, Darmgesundheit, viel Eiweiß) lassen sich als neue Regelsätze ergänzen.
 Widersprechen sich zwei Ziele (Vollkornreis gegen Blumenkohlreis), gewinnt das gewählte, und die App zeigt
 den Unterschied zu Ausgewogen.
+
+**Stand M9a:** Regeln stehen in `Resources/Evidence/rewrite-rules.json`, jede mit Wortlaut der DGE-Seite.
+Ausgewogen tauscht Weißreis gegen Vollkornreis (15 Min länger), Nudeln gegen Vollkornnudeln (2 Min länger), Mehl zur
+Hälfte gegen Vollkornmehl, Butter gegen 80 % Olivenöl und Ghee zur Hälfte gegen Olivenöl. Die Variante heißt
+`<rezept>-<ziel>`, behält das Original als ersten Ersatz („Original“), rechnet Mengen in TL und EL über das Gewicht um
+und überspringt einen Tausch, der die 99-Minuten-Grenze sprengen würde. Die Zusatzgarzeit kommt einmal auf den längsten
+beheizten Schritt ab dem Zugeben bis zum nächsten frischen Topf; eine Regel muss die Gruppe verbessern, sonst gilt
+sie als Fehler. **Offen:** Kokosmilch und Sahne. Die DGE-Seite begründet „Pflanzliche Öle bevorzugen“, sagt aber nichts
+wörtlich zu Kokos oder Sahne; ein Tausch dafür braucht eine eigene Quelle (z. B. DGE-Leitlinie Fett). Von den drei
+mitgelieferten Rezepten ändert Ausgewogen deshalb noch keines, die Regeln greifen bei den Rezepten aus M10.
+
+**Stand M9b:** Jedes Ziel hat ein Kriterium: Ausgewogen die Gruppenbewertung, Blutdruck Natrium, Abnehmen kcal und
+Low Carb Kohlenhydrate je 100 g. Eine Regel muss ihr Kriterium verbessern und darf die Gruppe nicht verschlechtern.
+Blutdruck erbt die Regeln von Ausgewogen (eigene Regeln gehen vor), weil die DASH-Kost Vollkorn einschließt; eine geerbte
+Regel darf das Kriterium des erbenden Ziels nicht verschlechtern. Abnehmen und Low Carb erben nicht: Vollkornreis hat
+gleich viel kcal, und Ghee halb gegen Öl spart keine. Mengen in Stk werden zu Gramm, wenn das neue Lebensmittel kein
+Stückgewicht hat (3 Kartoffeln werden 450 g Blumenkohl). Regeln und Hinweise:
+- Blutdruck: Sojasauce zu salzreduzierter Sojasauce, Gemüsebrühe zur Hälfte zu Wasser (Sacks 2001, DASH-Sodium);
+  Hinweis, dass Salz nach Geschmack nicht mitzählt und die DGE bis zu 6 g am Tag nennt.
+- Abnehmen: Kokosmilch zur Hälfte zu Wasser (Ello-Martin 2007); Hinweis auf kcal pro Portion.
+- Low Carb: Kartoffel zu Blumenkohl (Seidelmann 2018); Hinweis, dass Low Carb eine Vorliebe ist und Reis und Nudeln
+  nicht im selben Schritt getauscht werden, weil Blumenkohl darin zerkocht.
+Alle Zitate prüft `Scripts/check_evidence_quotes.py`. Damit ändern Blutdruck (Lachs, Linsen-Eintopf) und Abnehmen
+(Curry) schon mitgelieferte Rezepte.
 
 ### 3c. Rezeptbestand: authentisch und traditionell
 
@@ -178,10 +205,11 @@ den Unterschied zu Ausgewogen.
 
 **Was wirklich parallel läuft:** Der Omni Cook hat einen Topf, also läuft immer höchstens ein Gerätetimer.
 Parallel ist nur Arbeit neben dem Gerät: Reis auf dem Herd, etwas im Ofen, Einweichen, Marinieren, Ruhen
-lassen. Die drei mitgelieferten Rezepte brauchen das nicht (beim Curry kommt der Blumenkohl laut Schritt 5
-erst nach dem Umfüllen in den sauberen Topf). Der Bedarf entsteht mit den traditionellen Rezepten aus M10
-(Reis zum Dal, Tortillas in der Pfanne, Reis einweichen) und mit importierten Rezepten aus M6, die oft Herd
-oder Ofen nutzen.
+lassen. Die drei ersten Rezepte brauchen das nicht (beim Curry kommt der Blumenkohl laut Schritt 5 erst nach
+dem Umfüllen in den sauberen Topf). Mit M10b ist der Bedarf da: Dal Tadka (Schritt 1, 30 Minuten einweichen)
+und Jeera-Reis (Schritt 1, 20 Minuten einweichen) haben Wartezeiten neben dem Gerät ohne Timer; kocht man
+beides zusammen, laufen beide gleichzeitig. Weitere Fälle kommen mit den nächsten Küchenräumen (Tortillas in
+der Pfanne) und mit importierten Rezepten aus M6, die oft Herd oder Ofen nutzen.
 
 **Regeln:**
 - Ein Schritt hat höchstens einen Timer: entweder den Gerätetimer (`setting.duration`) oder einen neuen
@@ -446,9 +474,9 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion, App-Icon | Erledigt (PR #8); Gefühl und Lesbarkeit offen laut Geräte-Prüfliste |
 | M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Erledigt (PR #10, 68 Tests): Import aus Text oder https-Link, Prüfung, Speichern, Löschen; Editor bei Bedarf; Test am Gerät braucht API-Schlüssel |
 | M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Erledigt (PR #11, 76 Tests): `VoiceCommand` in KitchenCore, Zuhören, Antworten und KI-Fragen in der App; Durchkochen per Sprache offen laut Geräte-Prüfliste |
-| M8 | M8a erledigt (PR #12), M8b erledigt (PR #14), M8c offen. Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
-| M9 | Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil, Ziele Ausgewogen, Blutdruck, Abnehmen, Low Carb; in der App Umschalter Original/Variante mit Zielwahl, Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
-| M10 | Rezeptbestand: `origin`, `references`, `variantOf`, 27 traditionelle Rezepte aus neun Küchenräumen; Bibliothek filtert nach Küche | Alle 27 bestehen `validate` und sind vollständig zugeordnet |
+| M8 | M8a erledigt (PR #12), M8b erledigt (PR #14), M8c erledigt (PR #16). Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
+| M9 | Erledigt: M9a (PR #18), M9b (PR #19), M9c (PR #20). Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil, Ziele Ausgewogen, Blutdruck, Abnehmen, Low Carb; in der App Umschalter Original/Variante mit Zielwahl, Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
+| M10 | M10a erledigt (PR #21), M10b (Indien) im Review. Rezeptbestand: `origin`, `references`, `variantOf`, 27 traditionelle Rezepte aus neun Küchenräumen; Bibliothek filtert nach Küche | Alle 27 bestehen `validate` und sind vollständig zugeordnet |
 | M11 | Einkauf und Vorrat: Bedarf minus Vorrat, Mindestbestand, Abbuchen nach dem Kochen, Export nach Erinnerungen und Teilen (Abschnitt 3d) | Logik-Tests in KitchenCore; Export am Gerät laut Prüfliste |
 | M12 | (v2) Sprachprotokoll, Ersatzlisten für alle Rezepte, Rezept-Editor (PR #13, unabhängig von M8 bis M11) | In Arbeit: Protokoll in den Einstellungen, Editor für eigene Rezepte und Kopien; Bedienung am Handy offen laut Geräte-Prüfliste |
 | M13 | Parallele Timer (Abschnitt 3e): höchstens ein Gerätetimer, dazu bis zu 4 Nebentimer für Herd, Ofen und Arbeitsfläche. M13a KitchenCore, M13b App (Alarme abgleichen, Timer-Liste, Live Activity, Siri), M13c Editor und Import | Tests: zweiter Gerätetimer abgelehnt; Gerätetimer und Nebentimer laufen und enden unabhängig; ein Tick beendet mehrere und zählt jeden; Zurücksetzen trifft nur den aktuellen Schritt; Entscheidung 10 gilt weiter; altes Rezept-JSON dekodiert unverändert; `validate` lehnt Schritt mit beiden Timern ab. Am Gerät laut Prüfliste |
@@ -499,6 +527,9 @@ Getroffen (2026-10-25):
 31. (umkehrbar) **Rezept-Editor für das Handy:** ein Formular mit Rezept, Zutaten und Schritten, Details eine Ebene tiefer, Sortieren über einen Knopf unten. Neue Zutaten und Schritte öffnen sich sofort zum Ausfüllen. Alle Gerätewerte (Temperatur in 5er-Schritten, Stufen, Laufzeit) kommen aus `DeviceProfile`, Dampf setzt Programm und Aufsatz mit. Sichern geht erst ohne Fehler (Name, Schritttext, Gerätegrenzen), Warnungen wie die Füllmarke bleiben sichtbar. Mitgelieferte Rezepte werden als eigene Kopie bearbeitet, das Original bleibt. Neue Rezepte über „+“ in der Bibliothek. Für die Bedienung mit einer Hand: Zutaten als Zeile tippen („200 g Rote Linsen“, Eingabe, nächste) oder eine ganze Liste einfügen, die App zerlegt Menge, Einheit und Name selbst (g, kg, ml, l, TL, EL, Stk, Zehen, Brüche wie ½). Temperatur, Stufe und Laufzeit per Schnellwahl mit einem Tipp, Feineinstellung per Stepper. Schritte nach rechts wischen dupliziert, nach links löscht. Über der Zahlentastatur steht „Fertig“, Scrollen schließt die Tastatur.
 32. **Küchen für M10** (deine Entscheidung): Indien, Thailand, Südostasien, China, Japan und Korea, Türkei und
     Levante, Georgien, Europa, Mexiko und Peru, je 3 Rezepte.
+33. (Loop, umkehrbar) **Blutdruck darf eine Würze gegen ihre salzarme Variante tauschen**, etwa Sojasauce gegen
+    salzreduzierte Sojasauce. Das lockert Entscheidung 26 nur für ausdrücklich im Katalog verknüpfte Paare
+    (`lowSodiumVersionOf`); Geschmack und Menge bleiben gleich.
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
@@ -511,11 +542,12 @@ Offen (mit Empfehlung):
    Empfehlung: nur bei Bedarf an Nährwerten stellen, bis dahin USDA (CC0).
 5. **Authentizität prüfen:** Wer hakt die Rezept-Prüfliste ab? Empfehlung: du beim ersten Kochen, bei Zweifeln
    jemand aus der jeweiligen Küche.
-6. **Parallele Timer (M13): ob und wann.** Heute braucht kein Rezept sie, der Umbau berührt Kochsitzung,
-   AlarmKit, Live Activity, Siri, Editor und Import. Möglichkeiten: (a) nach M10a, vor den ersten
-   traditionellen Rezepten (M10b), damit diese Nebentimer gleich nutzen; (b) erst, wenn ein Rezept beim
-   Kochen daran scheitert; (c) gar nicht, Nebenarbeit bleibt Text im Schritt. Empfehlung: (a), aber nur
-   M13a und M13b; M13c folgt, sobald du im Editor oder beim Import einen Nebentimer vermisst.
+6. **Parallele Timer (M13): ob und wann.** Seit M10b haben Dal Tadka und Jeera-Reis Einweichzeiten ohne
+   Timer (Abschnitt 3e). Der Umbau berührt Kochsitzung, AlarmKit, Live Activity, Siri, Editor und Import.
+   Möglichkeiten: (a) jetzt, vor M10c, und die Einweichschritte von Dal Tadka und Jeera-Reis als Nebentimer
+   nachrüsten; (b) erst, wenn ein Rezept beim Kochen daran scheitert; (c) gar nicht, Nebenarbeit bleibt Text
+   im Schritt. Empfehlung: (a), aber nur M13a und M13b; M13c folgt, sobald du im Editor oder beim Import
+   einen Nebentimer vermisst.
 
 ## 10. Gauntlet-Loop: Umsetzung der restlichen Meilensteine
 
@@ -584,6 +616,14 @@ Fehlerliste.
 - [ ] M5: iPad quer und hoch, auch im Split View: Kochmodus mit Leiste rechts; Größenwechsel bricht den Timer nicht ab
 - [ ] M5: Dynamic Type in Bedienungshilfen-Größen: Rezeptkopf wächst mit, Konsolen-Kacheln stehen untereinander
 - [ ] M5: VoiceOver durch Bibliothek, Rezeptansicht und Kochmodus
+- [ ] M9c: Rezeptansicht: Menü „Original“ über dem Farbverlauf wirkt als Glas neben dem Portionsregler; Ziel wählen zeigt „Was sich ändert“ ohne Ruckeln
+- [ ] M9c: Änderungsliste lesbar, Quelle aufklappbar, Nährwerte pro Portion stimmen mit der Zutatenliste überein; VoiceOver liest „X wird zu Y“
+- [ ] M9c: „Kochen starten“ mit gewähltem Ziel kocht die Variante (Zutaten, Schrittzeiten, Hinweise)
+- [ ] M10a: Bibliothek: Filter „Küche“ in der Leiste zeigt nur vorhandene Küchen, das Symbol ist gefüllt, solange ein Filter aktiv ist
+- [ ] M10a: Rezeptansicht: Abschnitt „Herkunft“ mit Küche, Region, Quellen und Prüfpunkten, nur bei Rezepten mit diesen Angaben
+- [ ] M10b: Dal Tadka, Jeera-Reis und Chana Masala einmal am Gerät kochen: Zeiten, Stufen und Wassermengen stimmen; Gewürze und Technik laut Prüfpunkten
+- [ ] M10b: Jeera-Reis gart ohne Rühren: heizt der Omni Cook bei 100 °C ohne Drehung gleichmäßig, oder braucht es Linkslauf Stufe 1?
+- [ ] M10b: Vollkornreis-Variante (Ausgewogen) mit 440 g Wasser und 33 Min: Reis gar, nichts angesetzt
 - [ ] M13: Gerätetimer und zwei Nebentimer gleichzeitig: drei AlarmKit-Countdowns auf dem Sperrbildschirm, jeder klingelt einzeln; Stoppen eines Alarms lässt die anderen laufen
 - [ ] M13: Pause eines Nebentimers nimmt nur dessen Countdown weg; Verlassen des Kochmodus entfernt alle nicht abgelaufenen
 - [ ] M13: Timer-Liste in der Gerätekonsole aus etwa 60 cm lesbar; Tippen auf eine Zeile springt zum Schritt

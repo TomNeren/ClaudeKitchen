@@ -8,7 +8,9 @@ public enum Accessory: String, Sendable, Hashable, Codable, CaseIterable {
 }
 
 /// A guided recipe for the multicooker.
-public struct Recipe: Sendable, Hashable, Codable, Identifiable {
+///
+/// `origin`, `references`, `authenticityChecks` and `variantOf` are optional in JSON; the other keys are required.
+public struct Recipe: Sendable, Hashable, Identifiable {
     /// The JSON schema version this type reads and writes.
     public static let currentSchemaVersion = 1
 
@@ -23,11 +25,20 @@ public struct Recipe: Sendable, Hashable, Codable, Identifiable {
     public var steps: [Step]
     /// True once the recipe has been cooked on the real device and its settings were confirmed.
     public var verified: Bool
+    /// The recipe this one was rewritten from for a health goal, nil for an original.
+    public var variantOf: RecipeID?
+    /// Cuisine and region of a traditional recipe, nil for the cook's own creations.
+    public var origin: RecipeOrigin?
+    public var references: [RecipeReference]
+    /// What someone who knows the cuisine should confirm before the recipe counts as authentic, for example
+    /// "Gewürze: Kreuzkümmel, Koriandersaat, Bockshornklee". Claude cannot vouch for authenticity (PLAN.md, 3c).
+    public var authenticityChecks: [String]
     public var schemaVersion: Int
 
     public init(
         id: RecipeID, name: String, tag: String, baseServings: Int, totalMinutes: Int,
-        ingredients: [Ingredient], steps: [Step], verified: Bool = false,
+        ingredients: [Ingredient], steps: [Step], verified: Bool = false, variantOf: RecipeID? = nil,
+        origin: RecipeOrigin? = nil, references: [RecipeReference] = [], authenticityChecks: [String] = [],
         schemaVersion: Int = Recipe.currentSchemaVersion
     ) {
         self.id = id
@@ -38,11 +49,60 @@ public struct Recipe: Sendable, Hashable, Codable, Identifiable {
         self.ingredients = ingredients
         self.steps = steps
         self.verified = verified
+        self.variantOf = variantOf
+        self.origin = origin
+        self.references = references
+        self.authenticityChecks = authenticityChecks
         self.schemaVersion = schemaVersion
     }
 
     public func ingredient(_ id: IngredientID) -> Ingredient? {
         ingredients.first { $0.id == id }
+    }
+}
+
+extension Recipe: Codable {
+    private enum CodingKeys: String, CodingKey {
+        case id, name, tag, baseServings, totalMinutes, ingredients, steps, verified, variantOf, origin, references
+        case authenticityChecks, schemaVersion
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(RecipeID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        tag = try container.decode(String.self, forKey: .tag)
+        baseServings = try container.decode(Int.self, forKey: .baseServings)
+        totalMinutes = try container.decode(Int.self, forKey: .totalMinutes)
+        ingredients = try container.decode([Ingredient].self, forKey: .ingredients)
+        steps = try container.decode([Step].self, forKey: .steps)
+        verified = try container.decode(Bool.self, forKey: .verified)
+        variantOf = try container.decodeIfPresent(RecipeID.self, forKey: .variantOf)
+        origin = try container.decodeIfPresent(RecipeOrigin.self, forKey: .origin)
+        references = try container.decodeIfPresent([RecipeReference].self, forKey: .references) ?? []
+        authenticityChecks = try container.decodeIfPresent([String].self, forKey: .authenticityChecks) ?? []
+        schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(schemaVersion, forKey: .schemaVersion)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(tag, forKey: .tag)
+        try container.encode(baseServings, forKey: .baseServings)
+        try container.encode(totalMinutes, forKey: .totalMinutes)
+        try container.encode(verified, forKey: .verified)
+        try container.encodeIfPresent(variantOf, forKey: .variantOf)
+        try container.encodeIfPresent(origin, forKey: .origin)
+        if !references.isEmpty {
+            try container.encode(references, forKey: .references)
+        }
+        if !authenticityChecks.isEmpty {
+            try container.encode(authenticityChecks, forKey: .authenticityChecks)
+        }
+        try container.encode(ingredients, forKey: .ingredients)
+        try container.encode(steps, forKey: .steps)
     }
 }
 
@@ -64,7 +124,7 @@ public struct Substitute: Sendable, Hashable, Codable {
 /// One ingredient with its amount for the recipe's base servings.
 ///
 /// JSON shape: `{"id": "linsen", "name": "Rote Linsen", "quantity": 200, "unit": "g"}`.
-/// Without `quantity` the amount is "to taste". `scales` defaults to true, `substitutes` to none.
+/// Without `quantity` the amount is "to taste". `scales` and `eaten` default to true, `substitutes` to none.
 /// `food` points at the `FoodCatalog` entry, for example `"food": "red-lentils"`.
 public struct Ingredient: Sendable, Hashable, Identifiable {
     public let id: IngredientID
@@ -76,11 +136,14 @@ public struct Ingredient: Sendable, Hashable, Identifiable {
     public var note: String?
     /// False for things like a bay leaf, where the amount stays the same for more servings.
     public var scales: Bool
+    /// False for things that leave the dish before eating, like steaming water or a bay leaf; they do not count
+    /// towards nutrition.
+    public var eaten: Bool
     public var substitutes: [Substitute]
 
     public init(
         id: IngredientID, name: String, amount: Amount, food: FoodID? = nil, note: String? = nil,
-        scales: Bool = true, substitutes: [Substitute] = []
+        scales: Bool = true, eaten: Bool = true, substitutes: [Substitute] = []
     ) {
         self.id = id
         self.name = name
@@ -88,6 +151,7 @@ public struct Ingredient: Sendable, Hashable, Identifiable {
         self.food = food
         self.note = note
         self.scales = scales
+        self.eaten = eaten
         self.substitutes = substitutes
     }
 
@@ -112,7 +176,7 @@ public struct Ingredient: Sendable, Hashable, Identifiable {
 
 extension Ingredient: Codable {
     private enum CodingKeys: String, CodingKey {
-        case id, name, quantity, unit, food, note, scales, substitutes
+        case id, name, quantity, unit, food, note, scales, eaten, substitutes
     }
 
     public init(from decoder: any Decoder) throws {
@@ -127,6 +191,7 @@ extension Ingredient: Codable {
         food = try container.decodeIfPresent(FoodID.self, forKey: .food)
         note = try container.decodeIfPresent(String.self, forKey: .note)
         scales = try container.decodeIfPresent(Bool.self, forKey: .scales) ?? true
+        eaten = try container.decodeIfPresent(Bool.self, forKey: .eaten) ?? true
         substitutes = try container.decodeIfPresent([Substitute].self, forKey: .substitutes) ?? []
     }
 
@@ -142,6 +207,9 @@ extension Ingredient: Codable {
         try container.encodeIfPresent(note, forKey: .note)
         if !scales {
             try container.encode(false, forKey: .scales)
+        }
+        if !eaten {
+            try container.encode(false, forKey: .eaten)
         }
         if !substitutes.isEmpty {
             try container.encode(substitutes, forKey: .substitutes)
