@@ -261,6 +261,14 @@ extension RewriteRules {
                 }
                 issues += Self.issues(of: rule, criterion: goal.criterion, in: catalog)
             }
+            // Inherited rules must not reuse an ID of this goal or of each other; duplicates within one goal are
+            // reported above for that goal.
+            if goal.extends != nil, let resolved = resolved(goal.id) {
+                var seen = Set(goal.rules.map(\.id))
+                for rule in resolved.rules.dropFirst(goal.rules.count) where !seen.insert(rule.id).inserted {
+                    issues.append(.duplicateRule(goal: goal.id, rule: rule.id))
+                }
+            }
             if let resolved = resolved(goal.id), let measure = goal.criterion.measure {
                 let own = Set(goal.rules.map(\.id))
                 for rule in resolved.rules where !own.contains(rule.id) && rule.worsens(measure, in: catalog) {

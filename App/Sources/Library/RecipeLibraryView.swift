@@ -112,8 +112,8 @@ struct RecipeLibraryView: View {
             }
         case .cooking(let id, let servings, let goal):
             if let recipe = model.recipe(id) {
-                let variant = goal.flatMap { HealthGoals.advisor?.variant(of: recipe, for: $0) }
-                CookingView(recipe: variant?.recipe ?? recipe, servings: servings) { path.removeAll() }
+                let variant = goal.flatMap { HealthGoals.advisor?.variantRecipe(of: recipe, for: $0) }
+                CookingView(recipe: variant ?? recipe, servings: servings) { path.removeAll() }
             }
         }
     }

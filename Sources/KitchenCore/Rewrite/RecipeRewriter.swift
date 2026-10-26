@@ -32,8 +32,8 @@ public struct RecipeRewrite: Sendable, Hashable {
 
 extension Recipe {
     /// A variant of the recipe with `goal`'s swaps applied, under the ID `<recipe>-<goal>`. Pass a goal from
-    /// `RewriteRules.resolved(_:)` so inherited rules apply too. A recipe that already is such a variant comes back
-    /// unchanged. Seasonings and aromatics stay as they are, because rules may not target them
+    /// `RewriteRules.resolved(_:)` so inherited rules apply too. A recipe that already is a variant (`variantOf`)
+    /// comes back unchanged. Seasonings and aromatics stay as they are, because rules may not target them
     /// (`RewriteRules.issues(in:)`); the one exception is a seasoning's declared low-sodium version under the sodium
     /// criterion (decision 33). The swapped ingredient offers the original as its first substitute.
     ///
@@ -42,11 +42,10 @@ extension Recipe {
     public func rewritten(
         for goal: RewriteGoal, catalog: FoodCatalog, profile: DeviceProfile = .omniCook
     ) -> RecipeRewrite {
-        let suffix = "-\(goal.id.rawValue)"
-        guard !id.rawValue.hasSuffix(suffix) else { return RecipeRewrite(recipe: self, changes: [], skipped: []) }
+        guard variantOf == nil else { return RecipeRewrite(recipe: self, changes: [], skipped: []) }
         var variant = Recipe(
-            id: RecipeID(id.rawValue + suffix), name: name, tag: tag, baseServings: baseServings,
-            totalMinutes: totalMinutes, ingredients: ingredients, steps: steps, verified: false,
+            id: RecipeID("\(id.rawValue)-\(goal.id.rawValue)"), name: name, tag: tag, baseServings: baseServings,
+            totalMinutes: totalMinutes, ingredients: ingredients, steps: steps, verified: false, variantOf: id,
             schemaVersion: schemaVersion)
         var changes: [RecipeChange] = []
         var skipped: [SkippedSwap] = []

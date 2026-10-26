@@ -5,6 +5,7 @@ import SwiftUI
 /// Glass sits only on controls floating above content: the goal menu, the servings stepper and the start button.
 struct RecipeDetailView: View {
     @State private var model: RecipeDetailModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     private let onStartCooking: (_ servings: Int, _ goal: RewriteGoalID?) -> Void
     private let isOwn: Bool
     private let onEdit: (() -> Void)?
@@ -26,7 +27,7 @@ struct RecipeDetailView: View {
             VStack(alignment: .leading, spacing: 28) {
                 hero
                 if let variant = model.variant {
-                    VariantSection(variant: variant, original: model.recipe)
+                    VariantSection(variant: variant, original: model.recipe, profile: model.profile)
                 }
                 IngredientList(ingredients: model.ingredients, servings: model.servings)
                 if !warnings.isEmpty {
@@ -35,7 +36,8 @@ struct RecipeDetailView: View {
                 StepOverview(steps: model.displayed.steps)
             }
             .padding(.bottom, 96)
-            .animation(Motion.variantChange, value: model.goal)
+            // With Reduce Motion the content switches in place instead of sliding the lists below.
+            .animation(reduceMotion ? nil : Motion.variantChange, value: model.goal)
         }
         .background { WarmBackground(tint: Palette.accent(for: model.recipe.id)) }
         .navigationTitle(model.recipe.name)
@@ -77,31 +79,32 @@ struct RecipeDetailView: View {
                 .font(.largeTitle.weight(.semibold))
                 .fontDesign(.serif)
                 .foregroundStyle(Palette.ink)
-            ViewThatFits(in: .horizontal) {
-                HStack {
-                    heroMeta
-                    Spacer()
-                    heroControls
-                }
-                VStack(alignment: .leading, spacing: 12) {
-                    heroMeta
-                    heroControls
-                }
-            }
+            heroControls
         }
         .padding(20)
         .frame(maxWidth: .infinity, minHeight: 260, alignment: .bottomLeading)
         .background { WarmBackground(tint: Palette.accent(for: model.recipe.id)) }
     }
 
-    /// The two glass controls over the hero share one container, so they sample the gradient together.
+    /// The two glass controls over the hero share one container, so they sample the gradient together. The goal
+    /// menu has its own row, so a longer goal name never reflows the time and the stepper.
     private var heroControls: some View {
-        GlassEffectContainer(spacing: 8) {
-            HStack(spacing: 8) {
+        GlassEffectContainer(spacing: 12) {
+            VStack(alignment: .leading, spacing: 12) {
+                ViewThatFits(in: .horizontal) {
+                    HStack {
+                        heroMeta
+                        Spacer()
+                        ServingsStepper(model: model)
+                    }
+                    VStack(alignment: .leading, spacing: 12) {
+                        heroMeta
+                        ServingsStepper(model: model)
+                    }
+                }
                 if !model.goals.isEmpty {
                     GoalMenu(model: model)
                 }
-                ServingsStepper(model: model)
             }
         }
     }
@@ -179,6 +182,7 @@ private struct ServingsStepper: View {
 private struct VariantSection: View {
     let variant: RecipeVariant
     let original: Recipe
+    let profile: DeviceProfile
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -192,7 +196,7 @@ private struct VariantSection: View {
                     ChangeRow(detail: detail)
                 }
                 ForEach(variant.rewrite.skipped, id: \.self) { skipped in
-                    Label(HealthGoals.text(for: skipped, in: original), systemImage: "info.circle")
+                    Label(HealthGoals.text(for: skipped, in: original, profile: profile), systemImage: "info.circle")
                         .font(.subheadline)
                         .foregroundStyle(Palette.muted)
                 }
@@ -204,13 +208,26 @@ private struct VariantSection: View {
                         SourceDisclosure(quote: note.note.quote, source: note.source)
                     }
                 }
-                NutritionComparison(before: variant.nutritionBefore, after: variant.nutritionAfter)
+                NutritionComparison(
+                    before: variant.nutritionBefore, after: variant.nutritionAfter,
+                    uncounted: uncountedNames)
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Palette.surface, in: .rect(cornerRadius: 16))
         }
         .padding(.horizontal, 16)
+    }
+
+    /// Names of the ingredients left out of either side of the comparison, in recipe order.
+    private var uncountedNames: [String] {
+        let ids = Set(variant.nutritionBefore.uncounted + variant.nutritionAfter.uncounted)
+        return (original.ingredients + variant.recipe.ingredients)
+            .filter { ids.contains($0.id) }
+            .map(\.name)
+            .reduce(into: [String]()) { names, name in
+                if !names.contains(name) { names.append(name) }
+            }
     }
 }
 
@@ -224,12 +241,13 @@ private struct ChangeRow: View {
                 Image(systemName: "arrow.right").foregroundStyle(Palette.herb).accessibilityHidden(true)
                 Text(detail.newName).foregroundStyle(Palette.ink).fontWeight(.semibold)
                 if detail.rule.share < 1 {
-                    Text("zur Hälfte").font(.footnote).foregroundStyle(Palette.muted)
+                    Text(HealthGoals.shareText(detail.rule.share)).font(.footnote).foregroundStyle(Palette.muted)
                 }
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(
-                "\(detail.originalName) wird \(detail.rule.share < 1 ? "zur Hälfte " : "")zu \(detail.newName)")
+                "\(detail.originalName) wird \(detail.rule.share < 1 ? HealthGoals.shareText(detail.rule.share) + " " : "")zu \(detail.newName)"
+            )
             if let note = detail.rule.stepNote {
                 Text(note).font(.footnote).foregroundStyle(Palette.muted)
             }
@@ -263,6 +281,8 @@ private struct SourceDisclosure: View {
 private struct NutritionComparison: View {
     let before: NutritionFacts
     let after: NutritionFacts
+    /// Ingredients missing from either column, named so a "better" number is not mistaken for a real change.
+    let uncounted: [String]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -276,8 +296,8 @@ private struct NutritionComparison: View {
                 row("Natrium", before.sodiumMilligrams, after.sodiumMilligrams, unit: "mg")
             }
             .font(.subheadline)
-            if !after.uncounted.isEmpty {
-                Text("Ohne Zutaten nach Geschmack, etwa Salz.")
+            if !uncounted.isEmpty {
+                Text("Nicht mitgezählt: \(uncounted.formatted(.list(type: .and))).")
                     .font(.footnote)
                     .foregroundStyle(Palette.muted)
             }

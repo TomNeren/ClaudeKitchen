@@ -55,6 +55,7 @@ struct RecipeRewriteTests {
         #expect(step.note == "Deckel zu. Länger garen.")
         #expect(rewrite.recipe.totalMinutes == 45)
         #expect(rewrite.recipe.id == "pilaw-balanced" && !rewrite.recipe.verified)
+        #expect(rewrite.recipe.variantOf == "pilaw")
     }
 
     @Test func partialSwapSplitsTheAmountAndJoinsTheSameSteps() throws {

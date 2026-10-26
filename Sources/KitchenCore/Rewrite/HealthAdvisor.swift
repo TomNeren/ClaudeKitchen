@@ -48,13 +48,19 @@ public struct HealthAdvisor: Sendable {
     /// Goal IDs in the order of the rules file, for a picker.
     public var goals: [RewriteGoalID] { rules.goals.map(\.id) }
 
-    /// `recipe` rewritten for `goalID`, nil for an unknown goal.
+    /// Just the rewritten recipe for `goalID`, without the comparison numbers, for cooking it. Nil for an unknown goal.
+    public func variantRecipe(of recipe: Recipe, for goalID: RewriteGoalID) -> Recipe? {
+        rules.resolved(goalID).map { recipe.rewritten(for: $0, catalog: catalog).recipe }
+    }
+
+    /// `recipe` rewritten for `goalID`, nil for an unknown goal. Every change of the rewrite has a detail; rule IDs
+    /// are unique within a resolved goal (`RewriteRules.issues(in:)`).
     public func variant(of recipe: Recipe, for goalID: RewriteGoalID) -> RecipeVariant? {
         guard let goal = rules.resolved(goalID) else { return nil }
         let rewrite = recipe.rewritten(for: goal, catalog: catalog)
         let changes = rewrite.changes.compactMap { change -> ChangeDetail? in
-            guard let rule = goal.rules.first(where: { $0.id == change.rule }),
-                let original = recipe.ingredient(change.ingredient),
+            guard let original = recipe.ingredient(change.ingredient),
+                let rule = goal.rules.first(where: { $0.id == change.rule && $0.from == original.food }),
                 let new = rewrite.recipe.ingredient(change.newIngredient)
             else { return nil }
             return ChangeDetail(

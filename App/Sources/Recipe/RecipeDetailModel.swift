@@ -8,12 +8,17 @@ final class RecipeDetailModel {
     let recipe: Recipe
     let profile: DeviceProfile
     let advisor: HealthAdvisor?
-    /// Range of the servings stepper: the app default, capped so the pot stays below the fill mark.
-    let servingsRange: ClosedRange<Int>
+    /// Range of the servings stepper for the shown recipe: the app default, capped so the pot stays below the fill
+    /// mark. A goal can change it, because a variant can hold more or less volume.
+    private(set) var servingsRange: ClosedRange<Int>
     private(set) var servings: Int
     /// Nil shows the original recipe.
     var goal: RewriteGoalID? {
-        didSet { variant = goal.flatMap { advisor?.variant(of: recipe, for: $0) } }
+        didSet {
+            variant = goal.flatMap { advisor?.variant(of: recipe, for: $0) }
+            servingsRange = profile.servingsRange(for: displayed)
+            servings = min(max(servings, servingsRange.lowerBound), servingsRange.upperBound)
+        }
     }
     private(set) var variant: RecipeVariant?
 
