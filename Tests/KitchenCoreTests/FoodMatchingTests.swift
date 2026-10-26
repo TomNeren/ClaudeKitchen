@@ -83,6 +83,19 @@ struct FoodMatchingTests {
         #expect(try #require(FoodCatalog.shared).food(named: name) == food)
     }
 
+    @Test func pinnedIngredientsKeepTheCooksChoice() {
+        let original = Recipe(
+            id: "r", name: "R", tag: "", baseServings: 1, totalMinutes: 1,
+            ingredients: [Ingredient(id: "a", name: "Zwiebel", amount: .measured(1, .piece), food: "onion")],
+            steps: [])
+        var edited = original
+        edited.ingredients[0].name = "Lachs"
+        edited.ingredients[0].food = nil
+        edited.ingredients.append(Ingredient(id: "b", name: "Zwiebel", amount: .measured(1, .piece), food: "salmon"))
+        let assigned = edited.assigningFoods(from: Self.catalog, comparedTo: original, keeping: ["a", "b"])
+        #expect(assigned.ingredients.map(\.food) == [nil, "salmon"])
+    }
+
     /// Precision on real data: wherever the matcher finds a food for a bundled ingredient, it is the one the recipe
     /// declares, and it finds one for at least nine in ten ingredients.
     @Test func neverContradictsTheFoodsOfBundledRecipes() throws {

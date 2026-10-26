@@ -1,3 +1,4 @@
+import Foundation
 import KitchenCore
 import Observation
 
@@ -12,6 +13,8 @@ final class RecipeEditorModel {
     /// True for a recipe that is not stored yet: a new one or a copy of a bundled one.
     let isNew: Bool
     private let original: Recipe
+    /// Ingredients whose food the cook chose by hand; matching by name leaves them alone.
+    private var pinnedFoods: Set<IngredientID> = []
 
     init(
         recipe: Recipe, isNew: Bool, profile: DeviceProfile = .omniCook, catalog: FoodCatalog? = FoodCatalog.shared
@@ -54,6 +57,35 @@ final class RecipeEditorModel {
         recipe.ingredients.firstIndex { $0.id == id }
     }
 
+    /// The food an ingredient counts as: chosen by hand, or matched by its name as it will be saved.
+    func food(for id: IngredientID) -> Food? {
+        guard let catalog, let ingredient = withFoods(recipe).ingredient(id), let food = ingredient.food else {
+            return nil
+        }
+        return catalog.food(food)
+    }
+
+    func isFoodChosenByHand(_ id: IngredientID) -> Bool {
+        pinnedFoods.contains(id)
+    }
+
+    /// Picks the food by hand; nil with `byHand` false goes back to matching by name.
+    func setFood(_ food: FoodID?, for id: IngredientID, byHand: Bool = true) {
+        guard let index = ingredientIndex(id) else { return }
+        if byHand {
+            pinnedFoods.insert(id)
+        } else {
+            pinnedFoods.remove(id)
+        }
+        recipe.ingredients[index].food = food
+    }
+
+    /// Every catalog food but water, for the picker.
+    var foods: [Food] {
+        (catalog?.foods ?? []).filter { $0.id != Food.water }
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
     func addIngredient() -> IngredientID {
         recipe.addIngredient(named: "", amount: .measured(100, .gram))
     }
@@ -73,7 +105,7 @@ final class RecipeEditorModel {
 
     /// `recipe` with catalog foods for new and renamed ingredients, so the checks see what will be saved.
     private func withFoods(_ recipe: Recipe) -> Recipe {
-        catalog.map { recipe.assigningFoods(from: $0, comparedTo: original) } ?? recipe
+        catalog.map { recipe.assigningFoods(from: $0, comparedTo: original, keeping: pinnedFoods) } ?? recipe
     }
 
     /// The recipe as it will be saved: names trimmed, foods assigned by name.
