@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "kuru-fasulye",
   "name": "Kuru Fasulye",
-  "tag": "Türkisch · Bohneneintopf",
+  "tag": "Türkisch · Bohneneintopf · über Nacht einweichen",
   "baseServings": 4,
   "totalMinutes": 100,
   "verified": false,
@@ -16,8 +16,8 @@
     "Mit Reis (Pilav) und eingelegtem Gemüse (Turşu) serviert"
   ],
   "ingredients": [
-    { "id": "bohnen", "name": "Weiße Bohnen, getrocknet", "food": "white-beans", "quantity": 250, "unit": "g",
-      "note": "über Nacht in reichlich Wasser eingeweicht, abgegossen" },
+    { "id": "bohnen", "name": "Weiße Bohnen, eingeweicht", "food": "white-beans", "quantity": 550, "unit": "g",
+      "note": "aus etwa 250 g getrockneten Bohnen, abgegossen" },
     { "id": "zwiebel", "name": "Zwiebel", "food": "onion", "quantity": 1, "unit": "Stk", "note": "halbiert" },
     { "id": "olivenoel", "name": "Olivenöl", "food": "olive-oil", "quantity": 3, "unit": "EL" },
     { "id": "tomatenmark", "name": "Tomatenmark", "food": "tomato-paste", "quantity": 1.5, "unit": "EL" },
@@ -28,6 +28,8 @@
     { "id": "salz", "name": "Salz", "food": "salt" }
   ],
   "steps": [
+    { "id": "s0", "phase": "Einweichen", "text": "Am Vortag etwa 250 g getrocknete Bohnen in reichlich kaltem Wasser über Nacht einweichen. Vor dem Kochen abgießen.",
+      "note": "Die Bohnen nehmen gut das Doppelte ihres Gewichts an Wasser auf." },
     { "id": "s1", "phase": "Hacken", "text": "Zwiebel in den Topf geben und zerkleinern.",
       "ingredientIDs": ["zwiebel"],
       "setting": { "speed": 5, "seconds": 5 } },

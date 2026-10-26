@@ -30,7 +30,7 @@
     { "id": "butter", "name": "Butter", "food": "butter", "quantity": 15, "unit": "g" },
     { "id": "pul-biber", "name": "Pul Biber", "food": "pul-biber", "quantity": 1, "unit": "TL" },
     { "id": "minze", "name": "Minze, getrocknet", "food": "dried-mint", "quantity": 1, "unit": "TL" },
-    { "id": "zitrone", "name": "Zitrone", "food": "lemon", "quantity": 1, "unit": "Stk", "note": "in Spalten", "scales": false }
+    { "id": "zitrone", "name": "Zitrone", "food": "lemon", "quantity": 1, "unit": "Stk", "note": "in Spalten" }
   ],
   "steps": [
     { "id": "s1", "phase": "Hacken", "text": "Zwiebel und Karotte in den Topf geben und zerkleinern.",
@@ -48,7 +48,7 @@
       "ingredientIDs": ["linsen", "wasser", "kreuzkuemmel", "salz"],
       "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 1200 } },
     { "id": "s5", "phase": "Pürieren", "text": "Die Suppe fein pürieren.",
-      "note": "Messbecher fest einsetzen und mit einem Tuch abdecken, die Suppe ist heiß. Ist sie zu dick, etwas heißes Wasser zugeben.",
+      "note": "Messbecher fest einsetzen und mit einem Tuch abdecken, die Suppe ist heiß. Die Stufe langsam von 1 auf 9 steigern. Ist sie zu dick, etwas heißes Wasser zugeben.",
       "ingredientIDs": [],
       "setting": { "speed": 9, "seconds": 40 } },
     { "id": "s6", "phase": "Anrichten", "text": "Butter in einer kleinen Pfanne schmelzen, Pul Biber und Minze darin kurz aufschäumen lassen und über die Suppe träufeln. Mit Zitrone servieren.",

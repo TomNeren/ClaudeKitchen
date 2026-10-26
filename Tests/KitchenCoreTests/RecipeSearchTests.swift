@@ -62,6 +62,12 @@ struct RecipeOriginTests {
         #expect(RecipeSearch.filter(Self.recipes, query: "", cuisine: .china).isEmpty)
     }
 
+    @Test func foldsLettersWithoutABaseLetter() {
+        let recipes = [Self.recipe("golabki", "Gołąbki", nil), Self.recipe("strudel", "Straßenstrudel", nil)]
+        #expect(RecipeSearch.filter(recipes, query: "golabki").map(\.id) == ["golabki"])
+        #expect(RecipeSearch.filter(recipes, query: "STRASSEN").map(\.id) == ["strudel"])
+    }
+
     @Test func queryMatchesRegionAndCuisineName() {
         #expect(RecipeSearch.filter(Self.recipes, query: "punjab").map(\.id) == ["dal"])
         #expect(RecipeSearch.filter(Self.recipes, query: "georgia").map(\.id) == ["lobio"])

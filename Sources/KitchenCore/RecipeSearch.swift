@@ -30,8 +30,15 @@ public enum RecipeSearch {
         return Cuisine.allCases.filter(present.contains)
     }
 
-    /// Folds case and diacritics. The Turkish dotless ı has no base letter to fold to, so it becomes i by hand.
+    /// Letters that diacritic folding leaves alone because they have no base letter to decompose into.
+    private static let extraFolds: [(String, String)] = [
+        ("ı", "i"), ("ł", "l"), ("đ", "d"), ("ø", "o"), ("æ", "ae"), ("œ", "oe"), ("ß", "ss"),
+    ]
+
+    /// Folds case and diacritics, plus the letters in `extraFolds`.
     private static func normalized(_ text: String) -> String {
-        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil).replacing("ı", with: "i")
+        extraFolds.reduce(text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)) {
+            $0.replacing($1.0, with: $1.1)
+        }
     }
 }

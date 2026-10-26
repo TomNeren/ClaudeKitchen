@@ -34,7 +34,7 @@
     { "id": "s3", "phase": "Linsen vorgaren", "text": "Linsen und Wasser zugeben und vorgaren.",
       "note": "Messbecher einsetzen. Die Linsen sollen noch Biss haben.",
       "ingredientIDs": ["linsen", "linsen-wasser"],
-      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 900 } },
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 600 } },
     { "id": "s4", "phase": "Reis garen", "text": "Reis, Wasser, Kreuzkümmel und Salz zugeben und garen, bis der Reis weich ist.",
       "note": "Messbecher einsetzen. Danach 5 Minuten geschlossen ruhen lassen.",
       "ingredientIDs": ["reis", "reis-wasser", "kreuzkuemmel", "salz"],

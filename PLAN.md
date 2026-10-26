@@ -560,7 +560,7 @@ Fehlerliste.
 - [ ] M10d: Gà Kho Gừng: Karamell bei 160 °C bernsteinfarben, wie lange wirklich (Timer 7 Min ist Obergrenze); Chicken Adobo: Essig ohne Rühren aufkochen (Gerät heizt ohne Drehung?); Sayur Lodeh: Paste ohne Fasern, Kokosmilch flockt bei 90 °C nicht, Gemüse bissfest
 - [ ] M10e: Mapo Tofu: Tofu bleibt bei Linkslauf Stufe 1 ganz; Tomaten-Rührei: Ei weich nach 3 Min bei 100 °C; Wolfsbarsch: 10 Min Dampf für 150-g-Filets, Öl bei 160 °C heiß genug zum Zischen
 - [ ] M10f: Dashi: Kombu bei 60 °C ohne Rühren gleichmäßig warm, Katsuobushi sinkt bei 90 °C ab; Oyakodon: Ei nach 90 s bei 90 °C ohne Rühren halb gestockt; Misosuppe und Kimchi-Jjigae: Tofu bleibt bei Linkslauf Stufe 1 ganz
-- [ ] M10g: Mercimek: heiße Suppe auf Stufe 9 pürieren ohne Spritzen; Kuru Fasulye: Bohnen nach 80 Min bei 100 °C weich, aber ganz; Mujaddara: Zwiebeln nach 25 Min bei 130 °C tief goldbraun, Reis und Linsen gar ohne Ansetzen
+- [ ] M10g: Mercimek: heiße Suppe auf Stufe 9 pürieren ohne Spritzen; Kuru Fasulye: eingeweichte Bohnen nach 80 Min bei 100 °C weich, aber ganz; Mujaddara: Zwiebeln nach 25 Min bei 130 °C tief goldbraun, Reis und Linsen gar ohne Ansetzen
 - [ ] M6: API-Schlüssel in den Einstellungen eintragen und wieder entfernen
 - [ ] M6: Import aus kopiertem Text und aus einem Link (https), Vorschau mit Prüfung, Speichern; eigenes Rezept erscheint oben in der Bibliothek, Löschen per langem Druck
 - [ ] M6: Werte eines importierten Rezepts einmal am Gerät gegenprüfen
