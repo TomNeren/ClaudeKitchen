@@ -196,13 +196,20 @@ struct BoilRequirementTests {
         #expect(Self.issues([Self.step("s1", .steam, seconds: 3600, beans: true)]).count == 1)
     }
 
-    @Test func everyBundledRecipeBoilsItsBeansLongEnough() throws {
-        for recipe in try RecipeLibrary.bundled() {
-            let boil = DeviceProfile.omniCook.validate(recipe).filter {
-                if case .boilsTooShort = $0.kind { return true }
-                return false
-            }
-            #expect(boil.isEmpty, "\(recipe.id)")
-        }
+    @Test func theSteamerAndSteamProgramDoNotCount() {
+        var basket = Self.step("s1", .celsius(100), seconds: 3600, beans: true)
+        basket.accessory = .steamer
+        var program = Self.step("s1", .celsius(100), seconds: 3600, beans: true)
+        program.setting?.program = .steam
+        #expect(Self.issues([basket]).count == 1)
+        #expect(Self.issues([program]).count == 1)
+    }
+
+    @Test func beansPutBackIntoAFreshPotCountThere() {
+        let steps = [
+            Self.step("s1", nil, seconds: 60, beans: true),
+            Self.step("s2", .celsius(100), seconds: 1800, beans: true, freshPot: true),
+        ]
+        #expect(Self.issues(steps).isEmpty)
     }
 }

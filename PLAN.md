@@ -537,8 +537,10 @@ Getroffen (2026-10-25):
 34. (Loop, umkehrbar) **Kochpflicht für rohe Bohnen:** Lebensmittel können im Katalog eine Mindestkochzeit mit
     Quelle tragen (`mustBoil`). Kidneybohnen und weiße Bohnen: 30 Minuten in frischem Wasser nach dem Einweichen
     (BfR-Stellungnahme 03/2024). `validate` warnt, wenn die Schritte ab der Zugabe bis zum nächsten frischen Topf
-    zusammen kürzer bei mindestens 100 °C kochen; Dampf zählt nicht. Nur eine Warnung, weil Dosenbohnen schon
-    gegart sind und auf dasselbe Lebensmittel zeigen. Gilt auch für kopierte, bearbeitete und importierte Rezepte.
+    zusammen kürzer bei mindestens 100 °C kochen; Dampf und Dampfaufsatz zählen nicht, ein frischer Topf mit den
+    Bohnen zählt mit. Dosenbohnen sind eigene Lebensmittel ohne Kochpflicht. Nur eine Warnung, weil das Gerät nicht
+    erkennen kann, ob der Topf in der Aufheizzeit schon sprudelt. Gilt für jedes Rezept, dessen Zutaten einem
+    Lebensmittel zugeordnet sind; importierte und im Editor neu angelegte Zutaten sind das noch nicht (offener Punkt).
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
