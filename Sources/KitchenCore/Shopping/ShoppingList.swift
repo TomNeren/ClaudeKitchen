@@ -37,10 +37,12 @@ public struct ShoppingList: Sendable, Hashable {
 
     /// The list for `plans` (recipe and servings) given what is in `pantry`.
     ///
-    /// Gram foods: what the plans need minus the stock, topped up to the minimum if one is set; empty stock counts
-    /// as zero. Seasonings: listed when `empty` or not in the pantry, and when `low` if a plan needs them. Pantry
-    /// foods below their minimum or empty are listed even when no plan needs them. Water is never listed.
-    /// Ingredients without a food are listed by name with their quantity unknown.
+    /// Foods kept in grams: what the plans need minus the stock, topped up to the minimum if one is set; uses that
+    /// cannot be weighed only list the food when none is left after the weighable ones. Foods kept by level: listed
+    /// when `empty` or not in the pantry, and when `low` if a plan needs them. Without a plan, pantry items below
+    /// their minimum and empty levels are listed too. A pantry item keeps the kind it was stored with; the catalog
+    /// decides for foods the pantry does not list. Water is never listed. Ingredients without a food are listed by
+    /// name with their quantity unknown.
     public init(plans: [(recipe: Recipe, servings: Int)], pantry: Pantry, catalog: FoodCatalog) {
         var demand = Demand()
         for plan in plans {
@@ -65,7 +67,7 @@ public struct ShoppingList: Sendable, Hashable {
             items.append(
                 Item(food: nil, name: name, aisle: .other, quantity: .unknown, reason: .needed, recipes: recipes))
         }
-        self.items = items.sorted { ($0.aisle, $0.name) < ($1.aisle, $1.name) }
+        self.items = items.sorted { ($0.aisle, TextFold.fold($0.name)) < ($1.aisle, TextFold.fold($1.name)) }
     }
 
     private static func item(for food: Food, need: Demand.Need, pantry: PantryItem?, catalog: FoodCatalog) -> Item? {
@@ -74,27 +76,24 @@ public struct ShoppingList: Sendable, Hashable {
             Item(
                 food: food.id, name: food.name, aisle: aisle, quantity: quantity, reason: reason, recipes: need.recipes)
         }
-        if catalog.tracksLevel(food) {
-            switch pantry?.stock {
-            case .level(.available)?: return nil
-            case .level(.low)?: return item(.level, .runningLow)
-            case .level(.empty)?: return item(.level, .needed)
-            case .grams(let grams)? where grams > 0: return nil
-            default: return item(.level, pantry == nil ? .unknownStock : .needed)
-            }
-        }
-        guard need.weighable else { return item(.unknown, .needed) }
         let stock: Double
-        if case .grams(let grams)? = pantry?.stock {
-            stock = grams
-        } else {
+        switch pantry?.stock {
+        case .level(.available)?: return nil
+        case .level(.low)?: return item(.level, .runningLow)
+        case .level(.empty)?: return item(.level, .needed)
+        case .grams(let grams)?: stock = grams
+        case nil:
+            guard !catalog.tracksLevel(food) else { return item(.level, .unknownStock) }
             stock = 0
         }
         let missing = max(0, need.grams - stock)
         let minimum = pantry?.minimumGrams ?? 0
         let topUp = max(missing, minimum - (stock - need.grams))
-        guard topUp > 0 else { return nil }
-        return item(quantity(grams: topUp, of: food), missing > 0 ? .needed : .belowMinimum)
+        if topUp > 0 {
+            return item(quantity(grams: topUp, of: food), missing > 0 ? .needed : .belowMinimum)
+        }
+        // Only "to taste" or unweighable uses are left: worth listing when nothing remains at home.
+        return need.weighable || stock - need.grams > 0 ? nil : item(.unknown, .needed)
     }
 
     private static func restock(_ food: Food, stock: PantryItem, catalog: FoodCatalog) -> Item? {
@@ -113,12 +112,15 @@ public struct ShoppingList: Sendable, Hashable {
             recipes: [])
     }
 
-    /// Rounds up to 10 g below 100 g, to 50 g below 1 kg, else to 100 g; pieces round up on their own.
+    /// Whole pieces when the food has a piece weight, with their grams; otherwise grams rounded up to 10 g below
+    /// 100 g, to 50 g below 1 kg, else to 100 g.
     static func quantity(grams: Double, of food: Food) -> Item.Quantity {
+        if let piece = food.gramsPerUnit[.piece], piece > 0 {
+            let pieces = Int((grams / piece).rounded(.up))
+            return .grams(Double(pieces) * piece, pieces: pieces)
+        }
         let step: Double = grams <= 100 ? 10 : grams <= 1000 ? 50 : 100
-        let rounded = (grams / step).rounded(.up) * step
-        let pieces = food.gramsPerUnit[.piece].map { Int((grams / $0).rounded(.up)) }
-        return .grams(rounded, pieces: pieces)
+        return .grams((grams / step).rounded(.up) * step, pieces: nil)
     }
 }
 

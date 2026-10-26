@@ -552,8 +552,9 @@ Getroffen (2026-10-25):
 36. (Loop, umkehrbar) **Einkauf und Vorrat in KitchenCore** (M11a): Der Marktbereich steht an der Gruppe, mit
     Ausnahmen am Lebensmittel (frische Kräuter bei Obst und Gemüse, Tofu und Kimchi in der Kühlung, Erbsen und Mais
     tiefgekühlt). Würzen und Saucen außerhalb von Obst und Gemüse zählen als „da, fast leer, leer“, alles andere in
-    Gramm mit optionalem Mindestbestand. Die Liste rundet auf 10 g (bis 100 g), 50 g (bis 1 kg), sonst 100 g und
-    nennt Stück, wo das Lebensmittel ein Stückgewicht hat. Würzen ohne Vorratseintrag stehen als „prüfen“ auf der
+    Gramm mit optionalem Mindestbestand; ein Vorratseintrag behält die Art, mit der er angelegt wurde. Die Liste rundet auf ganze Stück, wo das Lebensmittel ein Stückgewicht hat, sonst auf 10 g (bis
+    100 g), 50 g (bis 1 kg) und 100 g. Mengen „nach Geschmack“ setzen eine Zutat nur auf die Liste, wenn nichts
+    mehr da ist. Würzen ohne Vorratseintrag stehen als „prüfen“ auf der
     Liste. Kochen bucht Gramm ab, Füllstände nicht; Einkaufen bucht Gramm zu und setzt Würzen auf „da“.
 
 Offen (mit Empfehlung):

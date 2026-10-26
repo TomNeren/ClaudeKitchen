@@ -175,4 +175,55 @@ struct ShoppingListTests {
         #expect(!list.items.isEmpty)
         #expect(!list.items.contains { $0.food == Food.water })
     }
+
+    @Test func toTasteUsesDoNotOutweighTheStock() {
+        let soup = Self.recipe("soup", [Self.ingredient("onion", .toTaste)])
+        let stocked = Pantry(items: [PantryItem(food: "onion", stock: .grams(1000))])
+        #expect(Self.item(Self.list([(soup, 2)], stocked), "onion") == nil)
+        #expect(Self.item(Self.list([(soup, 2)]), "onion")?.quantity == .unknown)
+        let little = Pantry(items: [PantryItem(food: "onion", stock: .grams(50))])
+        #expect(Self.item(Self.list([(Self.dal, 2), (soup, 2)], little), "onion")?.quantity == .grams(100, pieces: 1))
+    }
+
+    @Test func aPantryItemKeepsTheKindItWasStoredWith() {
+        let tzatziki = Self.recipe("t", [Self.ingredient("dill", .measured(10, .gram))])
+        let pantry = Pantry(items: [PantryItem(food: "dill", stock: .level(.available))])
+        #expect(Self.item(Self.list([(tzatziki, 2)], pantry), "dill") == nil)
+        let bought = Pantry(items: [PantryItem(food: "dill", stock: .level(.empty))])
+        let after = bought.buying(Self.list([(tzatziki, 2)], bought))
+        #expect(after["dill"]?.stock == .level(.available))
+    }
+
+    @Test func piecesRoundUpWholeAndCarryTheirGrams() {
+        let food = Food(id: "onion", name: "Zwiebel", group: "veg", role: .aromatic, gramsPerUnit: [.piece: 100])
+        #expect(ShoppingList.quantity(grams: 120, of: food) == .grams(200, pieces: 2))
+    }
+
+    @Test func decodingKeepsTheLastEntryPerFoodAndEqualityIgnoresOrder() throws {
+        let json =
+            #"[{"food":"rice","stock":{"grams":1}},{"food":"rice","stock":{"grams":2}},{"food":"salt","stock":{"level":"low"}}]"#
+        let decoded = try JSONDecoder().decode(Pantry.self, from: Data(json.utf8))
+        #expect(
+            decoded.items == [
+                PantryItem(food: "rice", stock: .grams(2)), PantryItem(food: "salt", stock: .level(.low)),
+            ])
+        let a = Pantry(items: [
+            PantryItem(food: "rice", stock: .grams(1)), PantryItem(food: "salt", stock: .level(.low)),
+        ])
+        var b = Pantry(items: [
+            PantryItem(food: "salt", stock: .level(.low)), PantryItem(food: "rice", stock: .grams(1)),
+        ])
+        b["rice"]?.stock = .grams(1)
+        #expect(a == b)
+    }
+
+    @Test func namesSortLikeAGermanReadsThem() {
+        let fruit = Self.recipe(
+            "f",
+            [
+                Ingredient(id: "z", name: "Zitrusfrucht", amount: .measured(1, .piece)),
+                Ingredient(id: "a", name: "Äpfel", amount: .measured(1, .piece)),
+            ])
+        #expect(Self.list([(fruit, 2)]).items.map(\.name) == ["Äpfel", "Zitrusfrucht"])
+    }
 }
