@@ -105,14 +105,15 @@ struct RecipeLibraryView: View {
                 RecipeDetailView(
                     recipe: recipe, isOwn: model.isOwn(id),
                     onEdit: { editing = model.editorRequest(for: id) }
-                ) { servings in path.append(.cooking(id, servings: servings)) }
+                ) { servings, goal in path.append(.cooking(id, servings: servings, goal: goal)) }
                 // A saved change gives the screen a fresh model.
                 .id(recipe)
                 .navigationTransition(.zoom(sourceID: id, in: transition))
             }
-        case .cooking(let id, let servings):
+        case .cooking(let id, let servings, let goal):
             if let recipe = model.recipe(id) {
-                CookingView(recipe: recipe, servings: servings) { path.removeAll() }
+                let variant = goal.flatMap { HealthGoals.advisor?.variantRecipe(of: recipe, for: $0) }
+                CookingView(recipe: variant ?? recipe, servings: servings) { path.removeAll() }
             }
         }
     }

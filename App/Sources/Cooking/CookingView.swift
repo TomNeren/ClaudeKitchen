@@ -99,7 +99,7 @@ struct CookingView: View {
                     fromStep: session.isTimerFromOtherStep ? session.timerStepIndex + 1 : nil)
             },
             isFirstStep: session.isFirstStep, isLastStep: session.isLastStep,
-            accent: Palette.accent(for: session.recipe.id),
+            accent: Palette.accent(for: session.recipe.variantOf ?? session.recipe.id),
             onPrevious: { withAnimation(Motion.stepAdvance) { model.previous() } },
             onNext: {
                 if session.isLastStep {
@@ -136,7 +136,7 @@ private struct CookingChrome: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .background { WarmBackground(tint: Palette.accent(for: session.recipe.id)) }
+            .background { WarmBackground(tint: Palette.accent(for: session.recipe.variantOf ?? session.recipe.id)) }
             .navigationTitle(session.recipe.name)
             .toolbarTitleDisplayMode(.inline)
             .toolbar {

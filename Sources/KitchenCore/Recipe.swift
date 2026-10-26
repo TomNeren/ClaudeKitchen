@@ -23,11 +23,13 @@ public struct Recipe: Sendable, Hashable, Codable, Identifiable {
     public var steps: [Step]
     /// True once the recipe has been cooked on the real device and its settings were confirmed.
     public var verified: Bool
+    /// The recipe this one was rewritten from for a health goal, nil for an original.
+    public var variantOf: RecipeID?
     public var schemaVersion: Int
 
     public init(
         id: RecipeID, name: String, tag: String, baseServings: Int, totalMinutes: Int,
-        ingredients: [Ingredient], steps: [Step], verified: Bool = false,
+        ingredients: [Ingredient], steps: [Step], verified: Bool = false, variantOf: RecipeID? = nil,
         schemaVersion: Int = Recipe.currentSchemaVersion
     ) {
         self.id = id
@@ -38,6 +40,7 @@ public struct Recipe: Sendable, Hashable, Codable, Identifiable {
         self.ingredients = ingredients
         self.steps = steps
         self.verified = verified
+        self.variantOf = variantOf
         self.schemaVersion = schemaVersion
     }
 
