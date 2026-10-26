@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "id": "lobio",
+  "name": "Lobio",
+  "tag": "Georgisch · Bohneneintopf · über Nacht einweichen",
+  "baseServings": 4,
+  "totalMinutes": 100,
+  "verified": false,
+  "origin": { "cuisine": "georgia", "region": "Imeretien" },
+  "references": [
+    { "title": "The Georgian Feast", "author": "Darra Goldstein", "year": 1993 }
+  ],
+  "authenticityChecks": [
+    "Rote Bohnen weich gekocht und zum Teil zerdrückt, nicht püriert",
+    "Gewürze: Utskho Suneli, Koriandergrün, Knoblauch, getrocknete Chili",
+    "Gemahlene Walnüsse und ein Schuss Weinessig, dazu Mchadi und eingelegtes Gemüse"
+  ],
+  "ingredients": [
+    { "id": "bohnen", "name": "Rote Kidneybohnen, eingeweicht", "food": "kidney-beans", "quantity": 550, "unit": "g",
+      "note": "aus etwa 250 g getrockneten Bohnen, abgegossen" },
+    { "id": "zwiebel", "name": "Zwiebel", "food": "onion", "quantity": 1, "unit": "Stk", "note": "halbiert" },
+    { "id": "oel", "name": "Sonnenblumenöl", "food": "sunflower-oil", "quantity": 2, "unit": "EL" },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 900, "unit": "g" },
+    { "id": "walnuesse", "name": "Walnüsse", "food": "walnuts", "quantity": 50, "unit": "g", "note": "fein gemahlen" },
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 3, "unit": "Zehen", "note": "zerdrückt" },
+    { "id": "utskho-suneli", "name": "Utskho Suneli", "food": "utskho-suneli", "quantity": 1, "unit": "TL",
+      "substitutes": [ { "name": "Bockshornkleesamen, gemahlen", "ratio": 0.5, "note": "bitterer, sparsam" } ] },
+    { "id": "chili", "name": "Chiliflocken", "food": "pul-biber", "quantity": 0.5, "unit": "TL" },
+    { "id": "essig", "name": "Rotweinessig", "food": "red-wine-vinegar", "quantity": 1, "unit": "EL" },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    { "id": "koriander", "name": "Koriandergrün", "food": "coriander-leaves", "quantity": 20, "unit": "g", "note": "gehackt" }
+  ],
+  "steps": [
+    { "id": "s0", "phase": "Einweichen", "text": "Am Vortag etwa 250 g getrocknete Kidneybohnen in reichlich kaltem Wasser über Nacht einweichen. Vor dem Kochen abgießen.",
+      "note": "Kidneybohnen müssen vollständig durchgegart werden, roh sind sie giftig." },
+    { "id": "s1", "phase": "Hacken", "text": "Zwiebel in den Topf geben und zerkleinern.",
+      "ingredientIDs": ["zwiebel"],
+      "setting": { "speed": 5, "seconds": 5 } },
+    { "id": "s2", "phase": "Anschwitzen", "text": "Öl zugeben und die Zwiebel glasig dünsten.",
+      "note": "Ohne Messbecher.",
+      "ingredientIDs": ["oel"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 300 } },
+    { "id": "s3", "phase": "Kochen", "text": "Bohnen und Wasser zugeben und kochen, bis die Bohnen ganz weich sind.",
+      "note": "Messbecher einsetzen. Die ersten 10 Minuten sprudelnd kochen lassen. Eine Bohne zwischen den Fingern drücken, sie soll ganz weich sein.",
+      "ingredientIDs": ["bohnen", "wasser"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 4500 } },
+    { "id": "s4", "phase": "Würzen", "text": "Walnüsse, Knoblauch, Utskho Suneli, Chili, Essig und Salz zugeben und ziehen lassen.",
+      "ingredientIDs": ["walnuesse", "knoblauch", "utskho-suneli", "chili", "essig", "salz"],
+      "setting": { "heat": 90, "speed": 1, "reverse": true, "seconds": 300 } },
+    { "id": "s5", "phase": "Zerdrücken", "text": "Die Bohnen grob zerdrücken, ein Teil soll ganz bleiben.",
+      "note": "Nur kurz, sonst wird es ein Püree.",
+      "ingredientIDs": [],
+      "setting": { "speed": 3, "seconds": 4 } },
+    { "id": "s6", "phase": "Anrichten", "text": "Koriander unterheben und im Tontopf oder in Schalen servieren.",
+      "ingredientIDs": ["koriander"] }
+  ]
+}
