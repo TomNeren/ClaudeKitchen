@@ -32,9 +32,10 @@ public struct RecipeRewrite: Sendable, Hashable {
 
 extension Recipe {
     /// A variant of the recipe with `goal`'s swaps applied, under the ID `<recipe>-<goal>`. Pass a goal from
-    /// `RewriteRules.resolved(_:)` so inherited rules apply too. A recipe that already
-    /// is such a variant comes back unchanged. Seasonings and aromatics stay as they are, because rules may not
-    /// target them (`RewriteRules.issues(in:)`). The swapped ingredient offers the original as its first substitute.
+    /// `RewriteRules.resolved(_:)` so inherited rules apply too. A recipe that already is such a variant comes back
+    /// unchanged. Seasonings and aromatics stay as they are, because rules may not target them
+    /// (`RewriteRules.issues(in:)`); the one exception is a seasoning's declared low-sodium version under the sodium
+    /// criterion (decision 33). The swapped ingredient offers the original as its first substitute.
     ///
     /// Extra cooking time goes once onto the step that cooks the swapped food: the longest heated, timed step from
     /// the step that adds it up to the next fresh pot. The total time grows by the same amount.
@@ -95,23 +96,22 @@ extension Recipe {
         _ rule: SwapRule, to ingredient: Ingredient, cookingStep: Int?, catalog: FoodCatalog
     ) -> IngredientID {
         guard let index = ingredients.firstIndex(where: { $0.id == ingredient.id }) else { return ingredient.id }
-        // Ratio is by weight, so amounts in TL, EL or Stk are converted through the two foods' unit weights.
-        let unitFactor = ingredient.amount.weightFactor(from: catalog.food(rule.from), to: catalog.food(rule.to))
-        let factor = rule.ratio * unitFactor
-        let original = Substitute(name: ingredient.name, ratio: 1 / factor, note: "Original")
+        let (amount, back) = ingredient.amount.swapped(
+            share: rule.share, ratio: rule.ratio, from: catalog.food(rule.from), to: catalog.food(rule.to))
+        let original = Substitute(name: ingredient.name, ratio: back, note: "Original")
         let newID: IngredientID
         if rule.share >= 1 {
             newID = ingredient.id
             ingredients[index].name = rule.toName
             ingredients[index].food = rule.to
-            ingredients[index].amount = ingredient.amount.multiplied(by: factor)
+            ingredients[index].amount = amount
             ingredients[index].substitutes = [original] + ingredient.substitutes
         } else {
             newID = uniqueIngredientID("\(ingredient.id.rawValue)-\(rule.id.rawValue)")
             ingredients[index].amount = ingredient.amount.multiplied(by: 1 - rule.share)
             let added = Ingredient(
-                id: newID, name: rule.toName, amount: ingredient.amount.multiplied(by: rule.share * factor),
-                food: rule.to, scales: ingredient.scales, substitutes: [original])
+                id: newID, name: rule.toName, amount: amount, food: rule.to, scales: ingredient.scales,
+                substitutes: [original])
             ingredients.insert(added, at: index + 1)
         }
         if newID != ingredient.id {
@@ -151,12 +151,23 @@ extension Amount {
         }
     }
 
-    /// How many units of `to` weigh as much as one unit of `from`, for this amount's unit. 1 for grams, for
-    /// amounts to taste, and when either food has no weight for the unit.
-    fileprivate func weightFactor(from: Food?, to: Food?) -> Double {
-        guard case .measured(_, let unit) = self, unit != .gram, let fromWeight = from?.gramsPerUnit[unit],
-            let toWeight = to?.gramsPerUnit[unit]
-        else { return 1 }
-        return fromWeight / toWeight
+    /// The amount of `to` that replaces `share` of this amount of `from`, with `ratio` grams of `to` per gram of
+    /// `from`, and the substitute ratio that leads from the new amount back to the replaced part.
+    ///
+    /// Grams stay grams. Other units stay as they are when both foods have a weight for them; when only `from`
+    /// has one, the new amount is given in grams (3 Stk potatoes become 450 g cauliflower, not 3 heads).
+    fileprivate func swapped(share: Double, ratio: Double, from: Food?, to: Food?) -> (Amount, Double) {
+        guard case .measured(let value, let unit) = self else { return (.toTaste, 1 / ratio) }
+        let part = value * share
+        guard unit != .gram, let fromWeight = from?.gramsPerUnit[unit] else {
+            return (.measured(part * ratio, unit), 1 / ratio)
+        }
+        guard let toWeight = to?.gramsPerUnit[unit] else {
+            let grams = part * fromWeight * ratio
+            // The substitute stays in grams too, so the way back is plain grams of the original.
+            return (.measured(grams, .gram), 1 / ratio)
+        }
+        let factor = ratio * fromWeight / toWeight
+        return (.measured(part * factor, unit), 1 / factor)
     }
 }

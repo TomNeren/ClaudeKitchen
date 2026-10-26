@@ -154,8 +154,10 @@ mitgelieferten Rezepten ändert Ausgewogen deshalb noch keines, die Regeln greif
 
 **Stand M9b:** Jedes Ziel hat ein Kriterium: Ausgewogen die Gruppenbewertung, Blutdruck Natrium, Abnehmen kcal und
 Low Carb Kohlenhydrate je 100 g. Eine Regel muss ihr Kriterium verbessern und darf die Gruppe nicht verschlechtern.
-Blutdruck und Abnehmen erben die Regeln von Ausgewogen (eigene Regeln gehen vor), Low Carb nicht, weil Vollkornreis
-dort keinen Sinn hat. Regeln und Hinweise:
+Blutdruck erbt die Regeln von Ausgewogen (eigene Regeln gehen vor), weil die DASH-Kost Vollkorn einschließt; eine geerbte
+Regel darf das Kriterium des erbenden Ziels nicht verschlechtern. Abnehmen und Low Carb erben nicht: Vollkornreis hat
+gleich viel kcal, und Ghee halb gegen Öl spart keine. Mengen in Stk werden zu Gramm, wenn das neue Lebensmittel kein
+Stückgewicht hat (3 Kartoffeln werden 450 g Blumenkohl). Regeln und Hinweise:
 - Blutdruck: Sojasauce zu salzreduzierter Sojasauce, Gemüsebrühe zur Hälfte zu Wasser (Sacks 2001, DASH-Sodium);
   Hinweis, dass Salz nach Geschmack nicht mitzählt und die DGE bis zu 6 g am Tag nennt.
 - Abnehmen: Kokosmilch zur Hälfte zu Wasser (Ello-Martin 2007); Hinweis auf kcal pro Portion.

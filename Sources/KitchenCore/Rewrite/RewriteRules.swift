@@ -225,6 +225,8 @@ public enum RewriteRuleIssue: Sendable, Hashable {
     case protectedFood(rule: SwapRuleID, food: FoodID)
     /// The swap does not improve the goal's criterion, or it moves to a group assessed worse.
     case notImproving(SwapRuleID)
+    /// A rule the goal inherits through `extends` raises the nutrient the goal's criterion lowers.
+    case inheritedRuleWorsens(goal: RewriteGoalID, rule: SwapRuleID)
     /// The goal's criterion compares nutrients, but one of the foods has none.
     case missingNutrients(rule: SwapRuleID, food: FoodID)
     case unknownSource(rule: SwapRuleID, source: SourceID)
@@ -259,6 +261,12 @@ extension RewriteRules {
                 }
                 issues += Self.issues(of: rule, criterion: goal.criterion, in: catalog)
             }
+            if let resolved = resolved(goal.id), let measure = goal.criterion.measure {
+                let own = Set(goal.rules.map(\.id))
+                for rule in resolved.rules where !own.contains(rule.id) && rule.worsens(measure, in: catalog) {
+                    issues.append(.inheritedRuleWorsens(goal: goal.id, rule: rule.id))
+                }
+            }
         }
         return issues
     }
@@ -282,7 +290,9 @@ extension RewriteRules {
             issues.append(.unknownFood(rule: rule.id, food: id))
         }
         guard let from, let to else { return issues }
-        let lowSodiumVersion = criterion == .sodium && to.lowSodiumVersionOf == from.id
+        let lowSodiumVersion =
+            criterion == .sodium && from.role == .seasoning && to.role == .seasoning
+            && to.lowSodiumVersionOf == from.id
         if !lowSodiumVersion {
             for food in [from, to] where food.role == .seasoning || food.role == .aromatic {
                 issues.append(.protectedFood(rule: rule.id, food: food.id))
@@ -303,13 +313,32 @@ extension RewriteRules {
             }
             return issues
         }
-        // Per 100 g of the original: the kept part, plus the swapped part as `ratio` grams of the new food each.
-        let before = measure(fromNutrients)
-        let after = (1 - rule.share) * before + rule.share * rule.ratio * measure(toNutrients)
+        let (before, after) = rule.measured(measure, from: fromNutrients, to: toNutrients)
         if toRank < fromRank || after >= before {
             issues.append(.notImproving(rule.id))
         }
         return issues
+    }
+}
+
+extension SwapRule {
+    /// The nutrient per 100 g of the original before and after the swap: the kept part, plus the swapped part as
+    /// `ratio` grams of the new food each.
+    fileprivate func measured(
+        _ measure: (Nutrients) -> Double, from: Nutrients, to: Nutrients
+    ) -> (before: Double, after: Double) {
+        let before = measure(from)
+        return (before, (1 - share) * before + share * ratio * measure(to))
+    }
+
+    /// True when the swap raises the measured nutrient. Unknown foods or missing nutrients count as not worse;
+    /// the rule's own goal reports those.
+    fileprivate func worsens(_ measure: (Nutrients) -> Double, in catalog: FoodCatalog) -> Bool {
+        guard let from = catalog.food(self.from)?.nutrients, let to = catalog.food(self.to)?.nutrients else {
+            return false
+        }
+        let (before, after) = measured(measure, from: from, to: to)
+        return after > before
     }
 }
 

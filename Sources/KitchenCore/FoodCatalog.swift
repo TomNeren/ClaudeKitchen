@@ -95,7 +95,8 @@ public enum CatalogIssue: Sendable, Hashable {
     case missingNutrients(FoodID)
     /// Negative values, more saturated fat than fat, or more than 100 g of macronutrients per 100 g.
     case implausibleNutrients(FoodID)
-    /// `lowSodiumVersionOf` names an unknown food, one of another group or role, or one without more sodium.
+    /// `lowSodiumVersionOf` names an unknown food, one of another group, role or unit weights, or one without more
+    /// sodium.
     case invalidLowSodiumVersion(FoodID)
     /// The effect's source is not among the sources its group cites.
     case uncitedEffectSource(group: FoodGroupID, source: SourceID)
@@ -176,6 +177,7 @@ extension FoodCatalog {
                 let isValid =
                     original.map { original in
                         original.group == food.group && original.role == food.role
+                            && original.gramsPerUnit == food.gramsPerUnit
                             && (food.nutrients?.sodiumMilligrams ?? .infinity)
                                 < (original.nutrients?.sodiumMilligrams ?? 0)
                     } ?? false

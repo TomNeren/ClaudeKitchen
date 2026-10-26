@@ -114,18 +114,23 @@ struct RecipeRewriteTests {
         #expect(recipe.rewritten(for: Self.goal, catalog: Self.catalog).changes.map(\.rule) == ["half-ghee"])
     }
 
-    @Test(arguments: ["balanced", "blood-pressure", "weight-loss", "low-carb"] as [RewriteGoalID])
-    func everyVariantPassesDeviceValidationAndKeepsSeasonings(goalID: RewriteGoalID) throws {
+    @Test func everyVariantPassesDeviceValidationAndKeepsSeasonings() throws {
         let rules = try RewriteRules.bundled()
-        let goal = try #require(rules.resolved(goalID))
+        #expect(rules.goals.count == 4)
+        for goal in try rules.goals.map({ try #require(rules.resolved($0.id)) }) {
+            try checkVariants(for: goal)
+        }
+    }
+
+    private func checkVariants(for goal: RewriteGoal) throws {
         for recipe in try RecipeLibrary.bundled() + [Self.recipe] {
             let variant = recipe.rewritten(for: goal, catalog: Self.catalog).recipe
             let errors = DeviceProfile.omniCook.validate(variant).filter { $0.severity == .error }
             #expect(errors.isEmpty, "\(recipe.id) \(goal.id): \(errors)")
             for ingredient in recipe.ingredients {
-                guard let food = Self.catalog.food(for: ingredient), food.role == .seasoning || food.role == .aromatic,
-                    let after = variant.ingredient(ingredient.id)
+                guard let food = Self.catalog.food(for: ingredient), food.role == .seasoning || food.role == .aromatic
                 else { continue }
+                let after = try #require(variant.ingredient(ingredient.id), "\(recipe.id) lost \(ingredient.id)")
                 // Only the sodium criterion may turn a seasoning into its declared low-sodium version.
                 let lowSodium =
                     goal.criterion == .sodium
@@ -156,6 +161,7 @@ struct RecipeRewriteTests {
         #expect(
             Self.catalog.nutritionPerServing(of: variant).kcal < Self.catalog.nutritionPerServing(of: recipe).kcal)
         #expect(goal.notes.count == 1)
+        #expect(!goal.rules.contains { $0.id == "brown-rice" })
     }
 
     @Test func resolvedGoalPutsItsOwnRulesFirstAndInheritsTheRest() throws {
@@ -167,6 +173,25 @@ struct RecipeRewriteTests {
         let lowCarb = try #require(rules.resolved(RewriteGoal.lowCarb))
         #expect(!lowCarb.rules.contains { $0.id == "brown-rice" })
         #expect(lowCarb.notes.count == 1)
+    }
+
+    @Test func piecesOfAFoodWithoutPieceWeightBecomeGrams() throws {
+        var recipe = Self.recipe
+        recipe.ingredients[2] = Ingredient(
+            id: "reis", name: "Kartoffeln", amount: .measured(3, .piece), food: "potato")
+        let goal = RewriteGoal(id: "g", rules: [Self.rule("p", from: "potato", to: "cauliflower")])
+        let swapped = try #require(recipe.rewritten(for: goal, catalog: Self.catalog).recipe.ingredient("reis"))
+        #expect(swapped.amount == .measured(450, .gram))
+        #expect(swapped.substitutions(from: 2, to: 2).first?.amount == .measured(450, .gram))
+    }
+
+    @Test func inheritedRulesMayNotWorsenTheInheritingGoal() {
+        let rules = RewriteRules(goals: [
+            RewriteGoal(id: "base", rules: [Self.rule("rice", from: "white-rice", to: "brown-rice")]),
+            RewriteGoal(id: "lean", criterion: .energyDensity, extends: "base", rules: []),
+            RewriteGoal(id: "salt", criterion: .sodium, extends: "base", rules: []),
+        ])
+        #expect(rules.issues(in: Self.catalog) == [.inheritedRuleWorsens(goal: "lean", rule: "rice")])
     }
 
     @Test func resolvingAnUnknownBaseOrACycleFails() {

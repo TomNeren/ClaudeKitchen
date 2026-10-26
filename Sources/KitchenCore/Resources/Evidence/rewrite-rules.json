@@ -91,7 +91,6 @@
     {
       "id": "weight-loss",
       "criterion": "energyDensity",
-      "extends": "balanced",
       "rules": [
         {
           "id": "half-coconut-milk-water",
