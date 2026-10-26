@@ -142,6 +142,16 @@ Weitere Ziele (z. B. Blutzucker, Darmgesundheit, viel Eiweiß) lassen sich als n
 Widersprechen sich zwei Ziele (Vollkornreis gegen Blumenkohlreis), gewinnt das gewählte, und die App zeigt
 den Unterschied zu Ausgewogen.
 
+**Stand M9a:** Regeln stehen in `Resources/Evidence/rewrite-rules.json`, jede mit Wortlaut der DGE-Seite.
+Ausgewogen tauscht Weißreis gegen Vollkornreis (15 Min länger), Nudeln gegen Vollkornnudeln (2 Min länger), Mehl zur
+Hälfte gegen Vollkornmehl, Butter gegen 80 % Olivenöl und Ghee zur Hälfte gegen Olivenöl. Die Variante heißt
+`<rezept>-<ziel>`, behält das Original als ersten Ersatz („Original“), rechnet Mengen in TL und EL über das Gewicht um
+und überspringt einen Tausch, der die 99-Minuten-Grenze sprengen würde. Die Zusatzgarzeit kommt einmal auf den längsten
+beheizten Schritt ab dem Zugeben bis zum nächsten frischen Topf; eine Regel muss die Gruppe verbessern, sonst gilt
+sie als Fehler. **Offen:** Kokosmilch und Sahne. Die DGE-Seite begründet „Pflanzliche Öle bevorzugen“, sagt aber nichts
+wörtlich zu Kokos oder Sahne; ein Tausch dafür braucht eine eigene Quelle (z. B. DGE-Leitlinie Fett). Von den drei
+mitgelieferten Rezepten ändert Ausgewogen deshalb noch keines, die Regeln greifen bei den Rezepten aus M10.
+
 ### 3c. Rezeptbestand: authentisch und traditionell
 
 - Neun Küchenräume (Entscheidung 32): Indien, Thailand, Südostasien (Vietnam, Indonesien, Malaysia,
@@ -390,8 +400,8 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion, App-Icon | Erledigt (PR #8); Gefühl und Lesbarkeit offen laut Geräte-Prüfliste |
 | M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Erledigt (PR #10, 68 Tests): Import aus Text oder https-Link, Prüfung, Speichern, Löschen; Editor bei Bedarf; Test am Gerät braucht API-Schlüssel |
 | M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Erledigt (PR #11, 76 Tests): `VoiceCommand` in KitchenCore, Zuhören, Antworten und KI-Fragen in der App; Durchkochen per Sprache offen laut Geräte-Prüfliste |
-| M8 | M8a erledigt (PR #12), M8b erledigt (PR #14), M8c im Review. Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
-| M9 | Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil, Ziele Ausgewogen, Blutdruck, Abnehmen, Low Carb; in der App Umschalter Original/Variante mit Zielwahl, Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
+| M8 | M8a erledigt (PR #12), M8b erledigt (PR #14), M8c erledigt (PR #16). Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
+| M9 | M9a im Review. Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil, Ziele Ausgewogen, Blutdruck, Abnehmen, Low Carb; in der App Umschalter Original/Variante mit Zielwahl, Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
 | M10 | Rezeptbestand: `origin`, `references`, `variantOf`, 27 traditionelle Rezepte aus neun Küchenräumen; Bibliothek filtert nach Küche | Alle 27 bestehen `validate` und sind vollständig zugeordnet |
 | M11 | Einkauf und Vorrat: Bedarf minus Vorrat, Mindestbestand, Abbuchen nach dem Kochen, Export nach Erinnerungen und Teilen (Abschnitt 3d) | Logik-Tests in KitchenCore; Export am Gerät laut Prüfliste |
 | M12 | (v2) Sprachprotokoll, Ersatzlisten für alle Rezepte, Rezept-Editor (PR #13, unabhängig von M8 bis M11) | In Arbeit: Protokoll in den Einstellungen, Editor für eigene Rezepte und Kopien; Bedienung am Handy offen laut Geräte-Prüfliste |

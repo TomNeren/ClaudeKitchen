@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "goals": [
+    {
+      "id": "balanced",
+      "rules": [
+        { "id": "brown-rice", "from": "white-rice", "to": "brown-rice", "toName": "Vollkornreis",
+          "extraSeconds": 900, "stepNote": "Vollkornreis gart etwa 15 Minuten länger und braucht etwas mehr Wasser.",
+          "sourceID": "dge-2024",
+          "quote": "Bei Getreideprodukten wie Brot, Nudeln, Reis und Mehl ist die Vollkornvariante die beste Wahl für die Gesundheit" },
+        { "id": "whole-wheat-pasta", "from": "pasta", "to": "whole-wheat-pasta", "toName": "Vollkornnudeln",
+          "extraSeconds": 120, "stepNote": "Vollkornnudeln brauchen etwa 2 Minuten länger.",
+          "sourceID": "dge-2024",
+          "quote": "Bei Getreideprodukten wie Brot, Nudeln, Reis und Mehl ist die Vollkornvariante die beste Wahl für die Gesundheit" },
+        { "id": "half-whole-wheat-flour", "from": "wheat-flour", "to": "whole-wheat-flour", "toName": "Weizenvollkornmehl",
+          "share": 0.5, "stepNote": "Halb Vollkornmehl: Teig darf etwas mehr Flüssigkeit aufnehmen.",
+          "sourceID": "dge-2024",
+          "quote": "Bei Getreideprodukten wie Brot, Nudeln, Reis und Mehl ist die Vollkornvariante die beste Wahl für die Gesundheit" },
+        { "id": "butter-to-olive-oil", "from": "butter", "to": "olive-oil", "toName": "Olivenöl", "ratio": 0.8,
+          "stepNote": "Olivenöl statt Butter: 80 % der Menge reichen, weil Butter Wasser enthält.",
+          "sourceID": "dge-2024", "quote": "Pflanzliche Öle bevorzugen" },
+        { "id": "half-ghee-to-olive-oil", "from": "ghee", "to": "olive-oil", "toName": "Olivenöl", "share": 0.5,
+          "stepNote": "Halb Ghee, halb Olivenöl: das Ghee trägt weiter das Aroma.",
+          "sourceID": "dge-2024", "quote": "Pflanzliche Öle bevorzugen" }
+      ]
+    }
+  ]
+}
