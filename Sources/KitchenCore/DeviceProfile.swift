@@ -63,6 +63,9 @@ public struct ValidationIssue: Sendable, Hashable {
         case steamWithRotation
         case accessoryNotOwned(Accessory)
         case fillLevelExceeded(liters: Double)
+        /// The ingredient's food must boil for `required` (`Food.mustBoil`), but the steps from the one that adds it
+        /// up to the next fresh pot boil it for less.
+        case boilsTooShort(IngredientID, required: Duration)
     }
 
     public var kind: Kind
@@ -76,7 +79,7 @@ public struct ValidationIssue: Sendable, Hashable {
 
     public var severity: Severity {
         switch kind {
-        case .fillLevelExceeded, .accessoryNotOwned:
+        case .fillLevelExceeded, .accessoryNotOwned, .boilsTooShort:
             return .warning
         default:
             return .error
@@ -120,7 +123,38 @@ extension DeviceProfile {
         if liters > maxFillLiters {
             issues.append(ValidationIssue(kind: .fillLevelExceeded(liters: liters)))
         }
+        if let catalog {
+            issues += boilIssues(in: recipe, catalog: catalog)
+        }
         return issues
+    }
+
+    /// The lowest setting that counts as boiling for `Food.mustBoil`.
+    public static let boilingCelsius = 100
+
+    /// Adds up the time the ingredient spends in the pot at `boilingCelsius` or more: from each step that adds it up
+    /// to the next fresh pot that does not add it again. Steam and the steamer basket do not count. A warning, not an
+    /// error, because the device cannot tell whether the pot boils during heat-up.
+    private func boilIssues(in recipe: Recipe, catalog: FoodCatalog) -> [ValidationIssue] {
+        recipe.ingredients.compactMap { ingredient in
+            guard let rule = catalog.food(for: ingredient)?.mustBoil,
+                let first = recipe.steps.first(where: { $0.ingredientIDs.contains(ingredient.id) })
+            else { return nil }
+            var boiled = Duration.zero
+            var inPot = false
+            for step in recipe.steps {
+                let adds = step.ingredientIDs.contains(ingredient.id)
+                if step.freshPot { inPot = false }
+                if adds && step.accessory != .steamer { inPot = true }
+                guard inPot, step.accessory != .steamer, let setting = step.setting, setting.program != .steam,
+                    case .celsius(let celsius) = setting.heat, celsius >= Self.boilingCelsius,
+                    let duration = setting.duration
+                else { continue }
+                boiled += duration
+            }
+            guard boiled < rule.duration else { return nil }
+            return ValidationIssue(kind: .boilsTooShort(ingredient.id, required: rule.duration), stepID: first.id)
+        }
     }
 
     private func validate(_ step: Step) -> [ValidationIssue.Kind] {

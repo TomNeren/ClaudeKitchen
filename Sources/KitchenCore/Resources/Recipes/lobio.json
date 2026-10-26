@@ -44,7 +44,7 @@
       "ingredientIDs": ["oel"],
       "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 300 } },
     { "id": "s4", "phase": "Sprudelnd kochen", "text": "Bohnen und heißes Wasser zugeben und kräftig sprudelnd kochen.",
-      "note": "Ohne Messbecher, Schaum mit einem Löffel abnehmen. Die Bohnen müssen mindestens 10 Minuten sichtbar sprudelnd kochen, sonst bleiben sie giftig.",
+      "note": "Ohne Messbecher, Schaum mit einem Löffel abnehmen. Die Bohnen müssen sichtbar sprudelnd kochen, zusammen mit dem nächsten Schritt mindestens 30 Minuten (BfR 2024), sonst bleiben sie giftig.",
       "ingredientIDs": ["bohnen", "wasser"],
       "setting": { "heat": 110, "speed": 1, "reverse": true, "seconds": 900 } },
     { "id": "s5", "phase": "Weich kochen", "text": "Köcheln, bis die Bohnen ganz weich sind.",

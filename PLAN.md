@@ -534,6 +534,13 @@ Getroffen (2026-10-25):
 33. (Loop, umkehrbar) **Blutdruck darf eine Würze gegen ihre salzarme Variante tauschen**, etwa Sojasauce gegen
     salzreduzierte Sojasauce. Das lockert Entscheidung 26 nur für ausdrücklich im Katalog verknüpfte Paare
     (`lowSodiumVersionOf`); Geschmack und Menge bleiben gleich.
+34. (Loop, umkehrbar) **Kochpflicht für rohe Bohnen:** Lebensmittel können im Katalog eine Mindestkochzeit mit
+    Quelle tragen (`mustBoil`). Kidneybohnen und weiße Bohnen: 30 Minuten in frischem Wasser nach dem Einweichen
+    (BfR-Stellungnahme 03/2024). `validate` warnt, wenn die Schritte ab der Zugabe bis zum nächsten frischen Topf
+    zusammen kürzer bei mindestens 100 °C kochen; Dampf und Dampfaufsatz zählen nicht, ein frischer Topf mit den
+    Bohnen zählt mit. Dosenbohnen sind eigene Lebensmittel ohne Kochpflicht. Nur eine Warnung, weil das Gerät nicht
+    erkennen kann, ob der Topf in der Aufheizzeit schon sprudelt. Gilt für jedes Rezept, dessen Zutaten einem
+    Lebensmittel zugeordnet sind; importierte und im Editor neu angelegte Zutaten sind das noch nicht (offener Punkt).
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
@@ -633,7 +640,7 @@ Fehlerliste.
 - [ ] M10e: Mapo Tofu: Tofu bleibt bei Linkslauf Stufe 1 ganz; Tomaten-Rührei: Ei weich nach 3 Min bei 100 °C; Wolfsbarsch: 10 Min Dampf für 150-g-Filets, Öl bei 160 °C heiß genug zum Zischen
 - [ ] M10f: Dashi: Kombu bei 60 °C ohne Rühren gleichmäßig warm, Katsuobushi sinkt bei 90 °C ab; Oyakodon: Ei nach 90 s bei 90 °C ohne Rühren halb gestockt; Misosuppe und Kimchi-Jjigae: Tofu bleibt bei Linkslauf Stufe 1 ganz
 - [ ] M10g: Mercimek: heiße Suppe auf Stufe 9 pürieren ohne Spritzen; Kuru Fasulye: eingeweichte Bohnen nach 80 Min bei 100 °C weich, aber ganz; Mujaddara: Zwiebeln nach 25 Min bei 130 °C tief goldbraun, Reis und Linsen gar ohne Ansetzen
-- [ ] M10h: Lobio: kochen eingeweichte Kidneybohnen bei 110 °C ohne Messbecher sichtbar sprudelnd (roh giftig, mindestens 10 Min kochen), Schaum bleibt im Topf, nach weiteren 60 Min weich; Stufe 3 für 4 s zerdrückt grob; Chakhokhbili: Huhn nimmt bei 160 °C mit 1 EL Öl Farbe, Sauce dickt ohne Messbecher ein; Ajapsandali: Schmoren ohne Rühren brennt nicht an
+- [ ] M10h: Lobio: kochen eingeweichte Kidneybohnen bei 110 °C ohne Messbecher sichtbar sprudelnd (roh giftig, laut BfR 2024 mindestens 30 Min kochen), Schaum bleibt im Topf, nach weiteren 60 Min weich; Stufe 3 für 4 s zerdrückt grob; Chakhokhbili: Huhn nimmt bei 160 °C mit 1 EL Öl Farbe, Sauce dickt ohne Messbecher ein; Ajapsandali: Schmoren ohne Rühren brennt nicht an
 - [ ] M10i: Pasta e ceci: Stufe 5 für 4 s lässt gut die Hälfte der Kichererbsen ganz, Ditalini kleben bei Linkslauf nicht an; Borschtsch: Rote Bete nach 8 Min bei 120 °C weich genug; Spanakorizo: Reis nach 18 Min saftig gar, Spinat brennt nicht an
 - [ ] M10j: Tinga: Linkslauf Stufe 4 für 6 s zerzupft das Huhn faserig; Arroz rojo: Reis röstet bei 120 °C hell golden ohne anzusetzen, gart ohne Rühren gleichmäßig; Locro: Kürbis zerfällt nach 20 Min teilweise, Queso fresco wird in der heißen Suppe weich, ohne zu schmelzen; Arroz rojo mit 250 g Wasser plus Püree körnig
 - [ ] M13: Gerätetimer und zwei Nebentimer gleichzeitig: drei AlarmKit-Countdowns auf dem Sperrbildschirm, jeder klingelt einzeln; Stoppen eines Alarms lässt die anderen laufen

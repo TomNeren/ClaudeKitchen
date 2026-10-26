@@ -79,6 +79,18 @@ struct FoodCatalogTests {
         #expect(try JSONDecoder().decode(Food.self, from: Data(json.utf8)) == food)
     }
 
+    @Test func boilRequirementRoundTripsInSecondsAndNeedsAKnownSource() throws {
+        let rule = BoilRequirement(duration: .seconds(1800), sourceID: "bfr", quote: "30 Minuten kochen")
+        let beans = Food(
+            id: "beans", name: "Bohnen", group: "g", role: .base, nutrientsUnavailable: true, mustBoil: rule)
+        let json = try #require(String(data: JSONEncoder().encode(beans), encoding: .utf8))
+        #expect(json.contains("\"seconds\":1800"))
+        #expect(try JSONDecoder().decode(Food.self, from: Data(json.utf8)) == beans)
+        let catalog = FoodCatalog(
+            sources: [], groups: [FoodGroup(id: "g", name: "G", direction: .notAssessed)], foods: [beans])
+        #expect(catalog.issues() == [.invalidBoilRequirement("beans")])
+    }
+
     @Test func catalogWithoutTargetsDecodes() throws {
         let json = #"{"schemaVersion": 1, "sources": [], "groups": [], "foods": []}"#
         #expect(try FoodCatalog.decode(Data(json.utf8)).targets.isEmpty)

@@ -101,6 +101,8 @@ public enum CatalogIssue: Sendable, Hashable {
     /// `lowSodiumVersionOf` names an unknown food, one of another group, role or unit weights, or one without more
     /// sodium.
     case invalidLowSodiumVersion(FoodID)
+    /// `mustBoil` cites an unknown source, has no quote or no positive duration.
+    case invalidBoilRequirement(FoodID)
     /// The effect's source is not among the sources its group cites.
     case uncitedEffectSource(group: FoodGroupID, source: SourceID)
     /// The relative risk is not positive, lies outside its interval, or the quote is missing.
@@ -187,6 +189,11 @@ extension FoodCatalog {
                 if !isValid {
                     issues.append(.invalidLowSodiumVersion(food.id))
                 }
+            }
+            if let rule = food.mustBoil,
+                !sourceIDs.contains(rule.sourceID) || rule.quote.isEmpty || rule.duration <= .zero
+            {
+                issues.append(.invalidBoilRequirement(food.id))
             }
         }
         return issues
