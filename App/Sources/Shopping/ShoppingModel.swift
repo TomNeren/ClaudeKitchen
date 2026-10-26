@@ -96,6 +96,25 @@ final class ShoppingModel {
         }
     }
 
+    /// Items not ticked off yet.
+    var openItems: [ShoppingList.Item] {
+        list.items.filter { !state.checked.contains($0.id) }
+    }
+
+    /// Writes the open items to Apple Reminders and returns the message for the cook.
+    func exportToReminders() async -> String {
+        do {
+            return ShoppingText.exported(try await RemindersExport.shared.export(openItems.map(ShoppingText.line)))
+        } catch RemindersExport.Failure.denied {
+            return "Kein Zugriff auf Erinnerungen. Du kannst ihn in den Einstellungen unter Omni Cook erlauben."
+        } catch RemindersExport.Failure.noWritableAccount {
+            return
+                "Kein Konto in Erinnerungen erlaubt eine neue Liste. Lege eine Liste „\(RemindersExport.listTitle)“ an, dann füllt die App sie."
+        } catch {
+            return "Die Liste ließ sich nicht in Erinnerungen anlegen."
+        }
+    }
+
     var hasChecked: Bool {
         list.items.contains { state.checked.contains($0.id) }
     }

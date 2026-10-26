@@ -43,17 +43,29 @@ enum ShoppingText {
         }
     }
 
+    /// One line per item, "2 Stk (200 g) Zwiebel", for the share text and Reminders.
+    static func line(_ item: ShoppingList.Item) -> String {
+        "\(quantity(item.quantity)) \(item.name)"
+    }
+
     /// The open items as plain text for the share sheet, grouped by aisle.
-    static func plainText(_ list: ShoppingList, checked: Set<String>) -> String {
-        let open = list.items.filter { !checked.contains($0.id) }
+    static func plainText(_ open: [ShoppingList.Item]) -> String {
         var lines = ["Einkaufsliste"]
         for aisle in Aisle.allCases {
             let items = open.filter { $0.aisle == aisle }
             guard !items.isEmpty else { continue }
             lines.append("")
             lines.append(Self.aisle(aisle))
-            lines += items.map { "- \(quantity($0.quantity)) \($0.name)" }
+            lines += items.map { "- \(line($0))" }
         }
         return lines.joined(separator: "\n")
+    }
+
+    static func exported(_ count: Int) -> String {
+        switch count {
+        case 0: "Die Liste in Erinnerungen ist schon aktuell."
+        case 1: "1 Eintrag in der Liste „\(RemindersExport.listTitle)“."
+        default: "\(count) Einträge in der Liste „\(RemindersExport.listTitle)“."
+        }
     }
 }
