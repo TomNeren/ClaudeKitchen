@@ -1,0 +1,6 @@
+// Signing for builds on your own iPhone or iPad.
+// Your team ID goes into Local.xcconfig next to this file, which is not checked in (the repo is public).
+// Copy Local.xcconfig.example to Local.xcconfig and fill in your team. Without it, CI and simulator builds still work.
+CODE_SIGN_STYLE = Automatic
+
+#include? "Local.xcconfig"

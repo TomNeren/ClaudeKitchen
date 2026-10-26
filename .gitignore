@@ -10,3 +10,6 @@ __pycache__/
 App/*.xcodeproj/
 App/Sources/Info.plist
 App/Widgets/Info.plist
+
+# Personal signing team for device builds (see App/Config/Signing.xcconfig)
+App/Config/Local.xcconfig
