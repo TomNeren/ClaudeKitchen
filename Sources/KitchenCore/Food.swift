@@ -105,20 +105,23 @@ public struct FoodGroup: Sendable, Hashable, Codable, Identifiable {
     public var certainty: Certainty
     /// Sources in the catalog that back `direction`.
     public var sourceIDs: [SourceID]
+    /// Measured effects of eating more of the group, each checked against its source.
+    public var effects: [EffectEstimate]
 
     public init(
         id: FoodGroupID, name: String, direction: Direction, certainty: Certainty = .notRated,
-        sourceIDs: [SourceID] = []
+        sourceIDs: [SourceID] = [], effects: [EffectEstimate] = []
     ) {
         self.id = id
         self.name = name
         self.direction = direction
         self.certainty = certainty
         self.sourceIDs = sourceIDs
+        self.effects = effects
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, direction, certainty, sourceIDs
+        case id, name, direction, certainty, sourceIDs, effects
     }
 
     public init(from decoder: any Decoder) throws {
@@ -128,6 +131,7 @@ public struct FoodGroup: Sendable, Hashable, Codable, Identifiable {
         direction = try container.decode(Direction.self, forKey: .direction)
         certainty = try container.decodeIfPresent(Certainty.self, forKey: .certainty) ?? .notRated
         sourceIDs = try container.decodeIfPresent([SourceID].self, forKey: .sourceIDs) ?? []
+        effects = try container.decodeIfPresent([EffectEstimate].self, forKey: .effects) ?? []
     }
 }
 
