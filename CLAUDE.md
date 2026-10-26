@@ -7,7 +7,7 @@ Swift 6 iOS/iPadOS cooking app: guided step-by-step cooking for a multicooker, w
 ## Layout
 
 - `Package.swift`, `Sources/KitchenCore`, `Tests/KitchenCoreTests`: platform-neutral logic. Builds and tests on Linux.
-- `App/`: SwiftUI app. `App/project.yml` is the XcodeGen spec; run `xcodegen generate --spec App/project.yml` on a Mac to get `App/ClaudeKitchen.xcodeproj` (not checked in). Builds only with Xcode 27.
+- `App/`: SwiftUI app. `App/project.yml` is the XcodeGen spec; run `xcodegen generate --spec App/project.yml` on a Mac to get `App/ClaudeKitchen.xcodeproj` (not checked in). Builds only with Xcode 27. For device builds, copy `App/Config/Local.xcconfig.example` to `App/Config/Local.xcconfig` (git-ignored) and set your `DEVELOPMENT_TEAM`; it survives every `xcodegen generate`. Never commit a team ID or certificate.
 
 Read the `app-architecture` skill before adding features or types. KitchenCore imports only Foundation.
 

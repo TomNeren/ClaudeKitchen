@@ -10,6 +10,10 @@ packages:
   KitchenCore:
     path: ..
 
+configFiles:
+  Debug: Config/Signing.xcconfig
+  Release: Config/Signing.xcconfig
+
 settings:
   base:
     SWIFT_VERSION: "6.0"
