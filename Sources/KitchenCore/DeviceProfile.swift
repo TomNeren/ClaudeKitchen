@@ -164,13 +164,13 @@ extension DeviceProfile {
     /// Rough fill level of the fullest pot: every gram counts as one millilitre. Ingredients in pieces, cloves or
     /// spoons count with their catalog weight when `catalog` knows their food; without one they are left out.
     ///
-    /// A step with `freshPot` starts a new pot. An ingredient counts in the pot of the first step that adds it outside
-    /// the steamer; ingredients that only go into the steamer are not in the pot, ingredients no step mentions count
-    /// in the first pot.
+    /// A step with `freshPot` starts a new pot. An ingredient counts in every pot a step adds it to outside the
+    /// steamer, so something taken out and put back into a fresh pot counts there too; ingredients that only go into
+    /// the steamer are not in the pot, ingredients no step mentions count in the first pot.
     public func estimatedFillLiters(
         of recipe: Recipe, servings: Int, catalog: FoodCatalog? = FoodCatalog.shared
     ) -> Double {
-        var potOfIngredient: [IngredientID: Int] = [:]
+        var potsOfIngredient: [IngredientID: Set<Int>] = [:]
         var steamerOnly: Set<IngredientID> = []
         var pot = 0
         for step in recipe.steps {
@@ -179,11 +179,11 @@ extension DeviceProfile {
             }
             for id in step.ingredientIDs {
                 if step.accessory == .steamer {
-                    if potOfIngredient[id] == nil {
+                    if potsOfIngredient[id] == nil {
                         steamerOnly.insert(id)
                     }
-                } else if potOfIngredient[id] == nil {
-                    potOfIngredient[id] = pot
+                } else {
+                    potsOfIngredient[id, default: []].insert(pot)
                     steamerOnly.remove(id)
                 }
             }
@@ -198,8 +198,9 @@ extension DeviceProfile {
             } else {
                 grams = catalog?.food(for: ingredient)?.grams(of: amount)
             }
-            if let grams {
-                gramsPerPot[potOfIngredient[ingredient.id] ?? 0] += grams
+            guard let grams else { continue }
+            for index in potsOfIngredient[ingredient.id] ?? [0] {
+                gramsPerPot[index] += grams
             }
         }
         return (gramsPerPot.max() ?? 0) / 1000
