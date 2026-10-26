@@ -55,13 +55,16 @@ struct ShoppingView: View {
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    ShareLink(
-                        item: ShoppingText.plainText(model.openItems),
-                        preview: SharePreview("Einkaufsliste")
-                    ) {
-                        Label("Teilen", systemImage: "square.and.arrow.up")
+                    Menu("Teilen", systemImage: "square.and.arrow.up") {
+                        ShareLink(
+                            "Als Liste", item: ShoppingText.plainText(model.openItems),
+                            preview: SharePreview("Einkaufsliste"))
+                        // A brief for an agent in the cook's own, logged-in browser; checkout stays with the cook.
+                        ShareLink(
+                            "Für Einkaufs-Agenten", item: model.agentBrief,
+                            preview: SharePreview("Einkaufsauftrag"))
                     }
-                    .disabled(model.list.items.isEmpty)
+                    .disabled(model.openItems.isEmpty)
                 }
                 ToolbarItem(placement: .bottomBar) {
                     Button("In Erinnerungen", systemImage: "list.bullet.rectangle") { exportToReminders() }

@@ -38,11 +38,15 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
     public var mustBoil: BoilRequirement?
     /// Where the food is in the supermarket, when it differs from its group's aisle, for example fresh herbs.
     public var aisle: Aisle?
+    /// What to type into a supermarket's search when `name` is a kitchen name, for example "Tofu natur" for
+    /// "Tofu, fest". Shop-neutral; nil when the name works.
+    public var searchName: String?
 
     public init(
         id: FoodID, name: String, aliases: [String] = [], group: FoodGroupID, role: FoodRole,
         gramsPerUnit: [MeasureUnit: Double] = [:], nutrients: Nutrients? = nil, nutrientsUnavailable: Bool = false,
-        lowSodiumVersionOf: FoodID? = nil, mustBoil: BoilRequirement? = nil, aisle: Aisle? = nil
+        lowSodiumVersionOf: FoodID? = nil, mustBoil: BoilRequirement? = nil, aisle: Aisle? = nil,
+        searchName: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -55,11 +59,19 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
         self.lowSodiumVersionOf = lowSodiumVersionOf
         self.mustBoil = mustBoil
         self.aisle = aisle
+        self.searchName = searchName
+    }
+
+    /// The term to search a shop for: `searchName`, else the name without commas and parentheses ("Paprika rot").
+    public var searchTerm: String {
+        if let searchName { return searchName }
+        let plain = name.map { ",()".contains($0) ? " " : $0 }
+        return String(plain).split(separator: " ").joined(separator: " ")
     }
 
     private enum CodingKeys: String, CodingKey {
         case id, name, aliases, group, role, gramsPerUnit, nutrients, nutrientsUnavailable, lowSodiumVersionOf
-        case mustBoil, aisle
+        case mustBoil, aisle, searchName
     }
 
     public init(from decoder: any Decoder) throws {
@@ -75,6 +87,7 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
         lowSodiumVersionOf = try container.decodeIfPresent(FoodID.self, forKey: .lowSodiumVersionOf)
         mustBoil = try container.decodeIfPresent(BoilRequirement.self, forKey: .mustBoil)
         aisle = try container.decodeIfPresent(Aisle.self, forKey: .aisle)
+        searchName = try container.decodeIfPresent(String.self, forKey: .searchName)
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -96,6 +109,7 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
         try container.encodeIfPresent(lowSodiumVersionOf, forKey: .lowSodiumVersionOf)
         try container.encodeIfPresent(mustBoil, forKey: .mustBoil)
         try container.encodeIfPresent(aisle, forKey: .aisle)
+        try container.encodeIfPresent(searchName, forKey: .searchName)
     }
 
     /// The weight of `amount` in grams, nil if it is "to taste" or the unit has no known weight.
