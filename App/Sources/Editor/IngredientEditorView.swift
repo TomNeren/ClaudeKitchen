@@ -47,13 +47,15 @@ private struct FoodSection: View {
     let id: IngredientID
 
     var body: some View {
+        let food = model.food(for: id)
+        let byHand = model.isFoodChosenByHand(id)
         Section {
             NavigationLink {
                 FoodChoiceList(model: model, id: id)
             } label: {
-                LabeledContent(model.isFoodChosenByHand(id) ? "Gewählt" : "Erkannt als") {
-                    Text(model.food(for: id)?.name ?? "Nicht erkannt")
-                        .foregroundStyle(model.food(for: id) == nil ? Palette.accent : .secondary)
+                LabeledContent(byHand ? "Gewählt" : "Erkannt als") {
+                    Text(food?.name ?? (byHand ? "Kein Lebensmittel" : "Nicht erkannt"))
+                        .foregroundStyle(food == nil && !byHand ? Palette.accent : .secondary)
                 }
             }
         } header: {
@@ -74,22 +76,24 @@ private struct FoodChoiceList: View {
     var body: some View {
         List {
             Button("Automatisch nach dem Namen") {
-                model.setFood(nil, for: id, byHand: false)
+                model.matchFoodByName(for: id)
                 dismiss()
             }
-            Button("Keins davon") {
-                model.setFood(nil, for: id)
+            Button("Kein Lebensmittel") {
+                model.chooseFood(nil, for: id)
                 dismiss()
             }
+            .disabled(!model.canDropFood(for: id))
+            let current = model.food(for: id)?.id
             ForEach(filtered) { food in
                 Button {
-                    model.setFood(food.id, for: id)
+                    model.chooseFood(food.id, for: id)
                     dismiss()
                 } label: {
                     HStack {
                         Text(food.name).foregroundStyle(.primary)
                         Spacer()
-                        if model.food(for: id)?.id == food.id {
+                        if current == food.id {
                             Image(systemName: "checkmark").foregroundStyle(Palette.accent)
                         }
                     }
