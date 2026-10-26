@@ -1,9 +1,9 @@
 """Checks every nutrient value in food-catalog.json against the USDA FoodData Central SR Legacy CSV files.
 
-Usage:
-    mkdir -p /tmp/fdc && cd /tmp/fdc
-    curl -sSLO https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_sr_legacy_food_csv_2018-04.zip
-    unzip -q FoodData_Central_sr_legacy_food_csv_2018-04.zip
+Usage, from the repository root:
+    mkdir -p /tmp/fdc
+    curl -sSL -o /tmp/fdc/sr.zip https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_sr_legacy_food_csv_2018-04.zip
+    unzip -q -d /tmp/fdc /tmp/fdc/sr.zip
     python3 -I Scripts/check_nutrients.py Sources/KitchenCore/Resources/Evidence/food-catalog.json \
         /tmp/fdc/FoodData_Central_sr_legacy_food_csv_2018-04
 
@@ -32,12 +32,11 @@ for food in foods:
         print("UNKNOWN FDC ID", food["id"], fdc_id)
         continue
     source = values.get(fdc_id, {})
-    for name in fields.values():
-        ours, theirs = food["nutrients"].get(name), source.get(name)
-        if ours != theirs:
-            failures += 1
-            print("MISMATCH", food["id"], name, ours, theirs)
-    print("ok" if all(food["nutrients"].get(n) == source.get(n) for n in fields.values()) else "FAIL",
-          food["id"], "->", descriptions[fdc_id])
+    mismatches = [(n, food["nutrients"].get(n), source.get(n)) for n in fields.values()
+                  if food["nutrients"].get(n) != source.get(n)]
+    for name, ours, theirs in mismatches:
+        print("MISMATCH", food["id"], name, ours, theirs)
+    failures += len(mismatches)
+    print("FAIL" if mismatches else "ok", food["id"], "->", descriptions[fdc_id])
 print("failures:", failures)
 sys.exit(1 if failures else 0)

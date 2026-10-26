@@ -7,7 +7,7 @@
   "totalMinutes": 25,
   "verified": false,
   "ingredients": [
-    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 700, "unit": "g", "note": "in den Topf", "scales": false },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 700, "unit": "g", "note": "in den Topf", "scales": false, "eaten": false },
     { "id": "lachs", "name": "Lachsfilet", "food": "salmon", "quantity": 3, "unit": "Stk", "note": "à 150 g",
       "substitutes": [
         { "name": "Kabeljaufilet", "ratio": 1, "note": "2 Min kürzer dämpfen" },

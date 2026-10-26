@@ -27,9 +27,10 @@ struct FoodCatalogTests {
                 FoodGroup(id: "g", name: "G2", direction: .limit),
             ],
             foods: [
-                Food(id: "f", name: "F", group: "nowhere", role: .seasoning),
+                Food(id: "f", name: "F", group: "nowhere", role: .seasoning, nutrientsUnavailable: true),
                 Food(
-                    id: "f", name: "F2", group: "g", role: .seasoning, gramsPerUnit: [.piece: 0, .gram: 1, .clove: 3]),
+                    id: "f", name: "F2", group: "g", role: .seasoning, gramsPerUnit: [.piece: 0, .gram: 1, .clove: 3],
+                    nutrientsUnavailable: true),
             ])
         #expect(
             catalog.issues() == [

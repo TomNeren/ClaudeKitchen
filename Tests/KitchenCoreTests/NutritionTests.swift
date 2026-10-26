@@ -18,7 +18,7 @@ struct NutritionTests {
             Food(
                 id: "onion", name: "Zwiebel", group: "g", role: .aromatic, gramsPerUnit: [.piece: 100], nutrients: onion
             ),
-            Food(id: "salt", name: "Salz", group: "g", role: .seasoning),
+            Food(id: "salt", name: "Salz", group: "g", role: .seasoning, nutrientsUnavailable: true),
         ])
 
     @Test func sumsNutrientsPerServingFromScaledAmounts() {
@@ -30,14 +30,25 @@ struct NutritionTests {
                 Ingredient(id: "c", name: "Salz", amount: .toTaste, food: "salt"),
                 Ingredient(id: "d", name: "Zwiebel, fest", amount: .measured(1, .piece), food: "onion", scales: false),
                 Ingredient(id: "e", name: "Unbekannt", amount: .measured(5, .gram)),
+                Ingredient(id: "f", name: "Kochwasser", amount: .measured(500, .gram), food: "lentils", eaten: false),
             ],
             steps: [])
         let facts = Self.catalog.nutritionPerServing(of: recipe)
-        // 100 g lentils + 50 g onion per serving, plus the non-scaling 100 g onion counted in full.
-        #expect(abs(facts.kcal - (358 + 20 + 40)) < 0.001)
-        #expect(abs(facts.carbohydrate - (63 + 4.5 + 9)) < 0.001)
+        // Per serving of two: 100 g lentils, half of one onion, half of the non-scaling onion.
+        #expect(abs(facts.kcal - (358 + 20 + 20)) < 0.001)
+        #expect(abs(facts.carbohydrate - (63 + 4.5 + 4.5)) < 0.001)
         #expect(abs(facts.fiber - 11) < 0.001)
         #expect(facts.uncounted == ["c", "e"])
+        #expect(facts.fiberUnknown == ["b", "d"])
+    }
+
+    @Test func recipeWithoutServingsCountsNothing() {
+        let recipe = Recipe(
+            id: "r", name: "R", tag: "", baseServings: 0, totalMinutes: 1,
+            ingredients: [Ingredient(id: "a", name: "Linsen", amount: .measured(200, .gram), food: "lentils")],
+            steps: [])
+        let facts = Self.catalog.nutritionPerServing(of: recipe)
+        #expect(facts.kcal == 0 && facts.uncounted == ["a"])
     }
 
     @Test(arguments: [
@@ -74,12 +85,14 @@ struct NutritionTests {
             foods: [
                 Food(id: "base", name: "B", group: "g", role: .base),
                 Food(id: "spice", name: "S", group: "g", role: .seasoning),
+                Food(id: "blend", name: "M", group: "g", role: .seasoning, nutrientsUnavailable: true),
                 Food(id: "odd", name: "O", group: "g", role: .fat, nutrients: bad),
             ])
-        #expect(catalog.issues() == [.missingNutrients("base"), .implausibleNutrients("odd")])
+        #expect(
+            catalog.issues() == [.missingNutrients("base"), .missingNutrients("spice"), .implausibleNutrients("odd")])
     }
 
-    @Test func everyBundledRecipeHasNutritionForAllButSeasoningsToTaste() throws {
+    @Test func everyBundledRecipeCountsAllButToTasteAndUnavailable() throws {
         let catalog = try FoodCatalog.bundled()
         for recipe in try RecipeLibrary.bundled() {
             let facts = catalog.nutritionPerServing(of: recipe)
@@ -87,9 +100,19 @@ struct NutritionTests {
             for id in facts.uncounted {
                 let ingredient = try #require(recipe.ingredient(id))
                 let food = try #require(catalog.food(for: ingredient))
-                #expect(food.role == .seasoning, "\(recipe.id): \(id) not counted")
+                #expect(
+                    ingredient.amount == .toTaste || food.nutrientsUnavailable, "\(recipe.id): \(id) not counted")
             }
         }
+    }
+
+    @Test func foodAndIngredientWithoutNewFieldsDecode() throws {
+        let food = try JSONDecoder().decode(
+            Food.self, from: Data(#"{"id": "x", "name": "X", "group": "g", "role": "base"}"#.utf8))
+        #expect(food.nutrients == nil && !food.nutrientsUnavailable)
+        let ingredient = try JSONDecoder().decode(
+            Ingredient.self, from: Data(#"{"id": "x", "name": "X", "quantity": 1, "unit": "g"}"#.utf8))
+        #expect(ingredient.eaten)
     }
 
     @Test func nutrientsRoundTripThroughFoodJSON() throws {

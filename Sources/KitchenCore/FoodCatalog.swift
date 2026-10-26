@@ -91,7 +91,7 @@ public enum CatalogIssue: Sendable, Hashable {
     case unknownGroup(food: FoodID, group: FoodGroupID)
     /// A weight per unit that is not a positive number, or a weight given for grams.
     case invalidWeight(food: FoodID, unit: MeasureUnit)
-    /// A food that is not a seasoning has no nutrients, so recipe totals would leave it out.
+    /// A food has no nutrients and is not marked `nutrientsUnavailable`, so recipe totals would silently leave it out.
     case missingNutrients(FoodID)
     /// Negative values, more saturated fat than fat, or more than 100 g of macronutrients per 100 g.
     case implausibleNutrients(FoodID)
@@ -166,7 +166,7 @@ extension FoodCatalog {
                 if !nutrients.isPlausible {
                     issues.append(.implausibleNutrients(food.id))
                 }
-            } else if food.role != .seasoning {
+            } else if !food.nutrientsUnavailable {
                 issues.append(.missingNutrients(food.id))
             }
         }

@@ -27,11 +27,13 @@ public struct Nutrients: Sendable, Hashable, Codable {
         self.sodiumMilligrams = sodiumMilligrams
     }
 
-    /// True when no value is negative, saturated fat fits into fat, and the macronutrients fit into 100 g.
+    /// True when no value is negative, saturated fat fits into fat, fiber into carbohydrate (USDA counts it in
+    /// "carbohydrate by difference"), the macronutrients into 100 g, and energy stays below pure fat (900 kcal).
     public var isPlausible: Bool {
         let values = [kcal, protein, fat, saturatedFat, carbohydrate, fiber ?? 0, sodiumMilligrams]
         guard values.allSatisfy({ $0.isFinite && $0 >= 0 }) else { return false }
-        return saturatedFat <= fat && protein + fat + carbohydrate <= 100.5
+        return saturatedFat <= fat && (fiber ?? 0) <= carbohydrate && protein + fat + carbohydrate <= 100.5
+            && kcal <= 900
     }
 }
 
@@ -45,7 +47,10 @@ public struct NutritionFacts: Sendable, Hashable {
     public var fiber: Double = 0
     public var sodiumMilligrams: Double = 0
     /// Ingredients left out of the totals: "to taste", unmapped, without weight, or without nutrients.
+    /// Ingredients that are not eaten are left out on purpose and not listed.
     public var uncounted: [IngredientID] = []
+    /// Counted ingredients whose source has no fiber value, so `fiber` is a lower bound.
+    public var fiberUnknown: [IngredientID] = []
 
     public init() {}
 
@@ -62,17 +67,26 @@ public struct NutritionFacts: Sendable, Hashable {
 }
 
 extension FoodCatalog {
-    /// Nutrients of one serving of `recipe`, with amounts scaled like the cook sees them.
+    /// Nutrients of one serving of `recipe`: the whole recipe at its base servings, divided by them. Ingredients
+    /// that do not scale are shared across the servings like everything else.
     public func nutritionPerServing(of recipe: Recipe) -> NutritionFacts {
         var facts = NutritionFacts()
-        for ingredient in recipe.ingredients {
+        guard recipe.baseServings > 0 else {
+            facts.uncounted = recipe.ingredients.map(\.id)
+            return facts
+        }
+        let share = 1 / Double(recipe.baseServings)
+        for ingredient in recipe.ingredients where ingredient.eaten {
             guard let food = food(for: ingredient), let nutrients = food.nutrients,
-                let grams = food.grams(of: ingredient.amount(from: recipe.baseServings, to: 1))
+                let grams = food.grams(of: ingredient.amount)
             else {
                 facts.uncounted.append(ingredient.id)
                 continue
             }
-            facts.add(nutrients, grams: grams)
+            facts.add(nutrients, grams: grams * share)
+            if nutrients.fiber == nil {
+                facts.fiberUnknown.append(ingredient.id)
+            }
         }
         return facts
     }
