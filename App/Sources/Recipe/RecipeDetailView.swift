@@ -9,14 +9,18 @@ struct RecipeDetailView: View {
     private let onStartCooking: (_ servings: Int, _ goal: RewriteGoalID?) -> Void
     private let isOwn: Bool
     private let onEdit: (() -> Void)?
+    private let onAddToShopping: ((_ servings: Int) -> Void)?
+    @State private var addedServings: Int?
 
     /// `recipe` seeds the screen model once; the screen does not follow later changes to it.
     init(
         recipe: Recipe, isOwn: Bool = false, onEdit: (() -> Void)? = nil,
+        onAddToShopping: ((_ servings: Int) -> Void)? = nil,
         onStartCooking: @escaping (_ servings: Int, _ goal: RewriteGoalID?) -> Void
     ) {
         self.isOwn = isOwn
         self.onEdit = onEdit
+        self.onAddToShopping = onAddToShopping
         self.model = RecipeDetailModel(recipe: recipe)
         self.onStartCooking = onStartCooking
     }
@@ -44,6 +48,19 @@ struct RecipeDetailView: View {
         .navigationTitle(model.recipe.name)
         .toolbarTitleDisplayMode(.inline)
         .toolbar {
+            if let onAddToShopping {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        onAddToShopping(model.servings)
+                        addedServings = model.servings
+                    } label: {
+                        Label(
+                            addedServings == nil ? "Auf die Einkaufsliste" : "Auf der Einkaufsliste",
+                            systemImage: addedServings == nil ? "cart.badge.plus" : "cart.fill")
+                    }
+                    .sensoryFeedback(.success, trigger: addedServings)
+                }
+            }
             if let onEdit {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(
