@@ -61,9 +61,13 @@ public enum ClaudeRecipeImport {
     }
 
     /// Reads a Messages API response and turns the recipe JSON into a `Recipe` with id `id`.
-    /// `status` is the HTTP status; a failure status without an error object becomes `.http`.
-    public static func recipe(fromResponse data: Data, status: Int = 200, id: RecipeID) throws -> Recipe {
-        try draft(fromResponse: data, status: status).recipe(id: id)
+    /// `status` is the HTTP status; a failure status without an error object becomes `.http`. Ingredients get their
+    /// food from `catalog` by name, so nutrition, the boil check and shopping know them.
+    public static func recipe(
+        fromResponse data: Data, status: Int = 200, id: RecipeID, catalog: FoodCatalog? = FoodCatalog.shared
+    ) throws -> Recipe {
+        let recipe = try draft(fromResponse: data, status: status).recipe(id: id)
+        return catalog.map { recipe.assigningFoods(from: $0) } ?? recipe
     }
 
     static func draft(fromResponse data: Data, status: Int = 200) throws -> RecipeDraft {

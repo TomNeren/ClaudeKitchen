@@ -481,7 +481,7 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M8 | M8a erledigt (PR #12), M8b erledigt (PR #14), M8c erledigt (PR #16). Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
 | M9 | Erledigt: M9a (PR #18), M9b (PR #19), M9c (PR #20). Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil, Ziele Ausgewogen, Blutdruck, Abnehmen, Low Carb; in der App Umschalter Original/Variante mit Zielwahl, Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
 | M10 | Erledigt: M10a (PR #21), M10b Indien (PR #22), M10c Thailand (PR #23), M10d Südostasien (PR #24), M10e China (PR #25), M10f Japan und Korea (PR #26), M10g Türkei und Levante (PR #27), M10h Georgien (PR #28), M10i Europa (PR #29). M10j Mexiko und Peru im Review. Rezeptbestand: `origin`, `references`, `variantOf`, Ziel 27 traditionelle Rezepte aus neun Küchenräumen, Stand 29 aus allen neun (Indien und Europa mit je vier, weil das Kichererbsen-Curry und der Linsen-Eintopf von Ikaria dazuzählen), Ziel erreicht (ohne das eigene Lachsrezept); Bibliothek filtert nach Küche | Alle bestehen `validate` und sind vollständig zugeordnet |
-| M11 | Einkauf und Vorrat: Bedarf minus Vorrat, Mindestbestand, Abbuchen nach dem Kochen, Export nach Erinnerungen und Teilen (Abschnitt 3d) | Logik-Tests in KitchenCore; Export am Gerät laut Prüfliste |
+| M11 | M11a0 Zuordnung über Namen (im Review). Einkauf und Vorrat: Bedarf minus Vorrat, Mindestbestand, Abbuchen nach dem Kochen, Export nach Erinnerungen und Teilen (Abschnitt 3d) | Logik-Tests in KitchenCore; Export am Gerät laut Prüfliste |
 | M12 | (v2) Sprachprotokoll, Ersatzlisten für alle Rezepte, Rezept-Editor (PR #13, unabhängig von M8 bis M11) | In Arbeit: Protokoll in den Einstellungen, Editor für eigene Rezepte und Kopien; Bedienung am Handy offen laut Geräte-Prüfliste |
 | M13 | Parallele Timer (Abschnitt 3e): höchstens ein Gerätetimer, dazu bis zu 4 Nebentimer für Herd, Ofen und Arbeitsfläche. M13a KitchenCore, M13b App (Alarme abgleichen, Timer-Liste, Live Activity, Siri), M13c Editor und Import | Tests: zweiter Gerätetimer abgelehnt; Gerätetimer und Nebentimer laufen und enden unabhängig; ein Tick beendet mehrere und zählt jeden; Zurücksetzen trifft nur den aktuellen Schritt; Entscheidung 10 gilt weiter; altes Rezept-JSON dekodiert unverändert; `validate` lehnt Schritt mit beiden Timern ab. Am Gerät laut Prüfliste |
 
@@ -540,7 +540,15 @@ Getroffen (2026-10-25):
     zusammen kürzer bei mindestens 100 °C kochen; Dampf und Dampfaufsatz zählen nicht, ein frischer Topf mit den
     Bohnen zählt mit. Dosenbohnen sind eigene Lebensmittel ohne Kochpflicht. Nur eine Warnung, weil das Gerät nicht
     erkennen kann, ob der Topf in der Aufheizzeit schon sprudelt. Gilt für jedes Rezept, dessen Zutaten einem
-    Lebensmittel zugeordnet sind; importierte und im Editor neu angelegte Zutaten sind das noch nicht (offener Punkt).
+    Lebensmittel zugeordnet sind; seit M11a0 ordnen Import und Editor neue Zutaten selbst zu (Entscheidung 35).
+35. (Loop, umkehrbar) **Zutaten werden über Namen und Aliase zugeordnet** (`FoodMatcher`): Name oder Alias muss
+    als ganze Wörter im Zutatennamen stehen, verglichen nach Wortstamm (Groß- und Kleinschreibung, Akzente und
+    übliche Endungen zählen nicht, „roten Linsen“ findet „Rote Linsen“). Ein Name mit Zusatz nach dem Komma passt nur
+    ganz, die Kurzform braucht einen Alias, damit „Paprika“ nicht zu „Paprika, rot“ wird. Der längste Treffer
+    gewinnt, bei Gleichstand keiner. Import, Editor und das Laden gespeicherter Rezepte ordnen neue und umbenannte
+    Zutaten zu; findet ein neuer Name nichts, bleibt das alte Lebensmittel. Rohe und Dosenbohnen haben eigene Aliase.
+    An den mitgelieferten Rezepten: 353 von 355 Zutaten erkannt, keine falsch; ein Test hält Trefferquote (mindestens
+    90 Prozent) und Fehlerfreiheit.
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.

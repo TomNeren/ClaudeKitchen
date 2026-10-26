@@ -9,11 +9,11 @@ public enum RecipeSearch {
         _ recipes: [Recipe], query: String, cuisine: Cuisine? = nil,
         cuisineName: (Cuisine) -> String = \.rawValue
     ) -> [Recipe] {
-        let words = query.split(whereSeparator: \.isWhitespace).map { normalized(String($0)) }
+        let words = query.split(whereSeparator: \.isWhitespace).map { TextFold.fold(String($0)) }
         return recipes.filter { recipe in
             if let cuisine, recipe.origin?.cuisine != cuisine { return false }
             guard !words.isEmpty else { return true }
-            let haystack = normalized(
+            let haystack = TextFold.fold(
                 ([
                     recipe.name, recipe.tag, recipe.origin.map { cuisineName($0.cuisine) } ?? "",
                     recipe.origin?.region ?? "",
@@ -28,17 +28,5 @@ public enum RecipeSearch {
     public static func cuisines(in recipes: [Recipe]) -> [Cuisine] {
         let present = Set(recipes.compactMap(\.origin?.cuisine))
         return Cuisine.allCases.filter(present.contains)
-    }
-
-    /// Letters that diacritic folding leaves alone because they have no base letter to decompose into.
-    private static let extraFolds: [(String, String)] = [
-        ("ı", "i"), ("ł", "l"), ("đ", "d"), ("ø", "o"), ("æ", "ae"), ("œ", "oe"), ("ß", "ss"),
-    ]
-
-    /// Folds case and diacritics, plus the letters in `extraFolds`.
-    private static func normalized(_ text: String) -> String {
-        extraFolds.reduce(text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)) {
-            $0.replacing($1.0, with: $1.1)
-        }
     }
 }

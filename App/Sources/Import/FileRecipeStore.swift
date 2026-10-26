@@ -18,8 +18,10 @@ actor FileRecipeStore: RecipeStore {
     func load() throws -> [Recipe] {
         let urls = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
             .filter { $0.pathExtension == "json" }
-        // A damaged file must not hide the others.
-        return urls.compactMap { try? RecipeLibrary.load(from: $0) }.sorted { $0.name < $1.name }
+        // A damaged file must not hide the others. Recipes saved before foods were assigned by name get them here.
+        let recipes = urls.compactMap { try? RecipeLibrary.load(from: $0) }.sorted { $0.name < $1.name }
+        guard let catalog = FoodCatalog.shared else { return recipes }
+        return recipes.map { $0.assigningFoods(from: catalog) }
     }
 
     func save(_ recipe: Recipe) throws {
