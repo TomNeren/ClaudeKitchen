@@ -201,7 +201,7 @@ final class ShoppingModel {
     private func refresh() {
         guard let catalog else { return }
         list = state.list(recipes: recipes, catalog: catalog) { recipe, goal in
-            HealthGoals.advisor?.variantRecipe(of: recipe, for: goal)
+            HealthGoals.variantRecipe(of: recipe, for: goal)
         }
     }
 }

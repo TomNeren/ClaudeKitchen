@@ -5,6 +5,7 @@ struct SettingsView: View {
     @State private var key = ""
     @State private var hasKey = APIKeyStore.hasKey
     @AppStorage(VoiceLogStore.enabledKey) private var logsVoice = true
+    @AppStorage(HealthGoals.vegetarianByDefaultKey) private var vegetarianByDefault = true
     @Environment(\.dismiss) private var dismiss
 
     init() {}
@@ -36,6 +37,16 @@ struct SettingsView: View {
                 } footer: {
                     Text(
                         "Für den Rezept-Import. Einen Schlüssel erstellst du unter console.anthropic.com. Er bleibt nur auf diesem Gerät; jeder Import kostet ein paar Cent auf deinem Anthropic-Konto."
+                    )
+                }
+
+                Section {
+                    Toggle("Vegetarisch als Standard", isOn: $vegetarianByDefault)
+                } header: {
+                    Text("Rezepte")
+                } footer: {
+                    Text(
+                        "Rezepte mit Fleisch öffnen mit Tofu statt Fleisch; das Original wählst du oben im Ziel-Menü. Fisch und Würzen wie Fischsauce bleiben, ihre vegetarische Alternative steht in der Ersatzliste."
                     )
                 }
 

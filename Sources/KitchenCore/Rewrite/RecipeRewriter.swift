@@ -7,6 +7,8 @@ public struct RecipeChange: Sendable, Hashable {
     public var ingredient: IngredientID
     /// The ingredient that now carries the new food: the same ID for a full swap, a new one for a partial swap.
     public var newIngredient: IngredientID
+    /// True when the rule only offered an alternative (`SwapRule.offer`); the ingredient is unchanged.
+    public var isOffer = false
 }
 
 /// A rule that matched an ingredient but was not applied, and why.
@@ -33,9 +35,11 @@ public struct RecipeRewrite: Sendable, Hashable {
 extension Recipe {
     /// A variant of the recipe with `goal`'s swaps applied, under the ID `<recipe>-<goal>`. Pass a goal from
     /// `RewriteRules.resolved(_:)` so inherited rules apply too. A recipe that already is a variant (`variantOf`)
-    /// comes back unchanged. Seasonings and aromatics stay as they are, because rules may not target them
+    /// comes back unchanged. Swaps leave seasonings and aromatics alone, because rules may not target them
     /// (`RewriteRules.issues(in:)`); the one exception is a seasoning's declared low-sodium version under the sodium
-    /// criterion (decision 33). The swapped ingredient offers the original as its first substitute.
+    /// criterion (decision 33). Swaps also leave ingredients that are not eaten alone. Offer rules (`SwapRule.offer`)
+    /// change neither: they only put an alternative first in the substitutes, also for seasonings and ingredients
+    /// that are not eaten. The swapped ingredient offers the original as its first substitute.
     ///
     /// Extra cooking time goes once onto the step that cooks the swapped food: the longest heated, timed step from
     /// the step that adds it up to the next fresh pot. The total time grows by the same amount.
@@ -47,8 +51,16 @@ extension Recipe {
         variant.variantOf = id
         var changes: [RecipeChange] = []
         var skipped: [SkippedSwap] = []
-        for ingredient in ingredients where ingredient.eaten {
+        for ingredient in ingredients {
             guard let rule = goal.rules.first(where: { $0.from == ingredient.food }) else { continue }
+            if rule.offer {
+                variant.offer(rule, for: ingredient.id, catalog: catalog)
+                changes.append(
+                    RecipeChange(rule: rule.id, ingredient: ingredient.id, newIngredient: ingredient.id, isOffer: true))
+                continue
+            }
+            // Swaps change what is eaten; something that leaves the dish, like a bay leaf, stays.
+            guard ingredient.eaten else { continue }
             let cookingStep = rule.extraTime > .zero ? variant.cookingStep(for: ingredient.id) : nil
             if let reason = variant.blocker(for: rule, on: ingredient, cookingStep: cookingStep, profile: profile) {
                 skipped.append(SkippedSwap(rule: rule.id, ingredient: ingredient.id, reason: reason))
@@ -129,6 +141,24 @@ extension Recipe {
             steps[noteStep].note = [steps[noteStep].note, note].compactMap { $0 }.joined(separator: " ")
         }
         return newID
+    }
+
+    /// Puts the rule's alternative first in the ingredient's substitutes, unless it is listed already. The rule's
+    /// ratio is by weight; the substitute's is in the ingredient's unit, so spoons and pieces are converted when both
+    /// foods have a weight for the unit.
+    private mutating func offer(_ rule: SwapRule, for ingredient: IngredientID, catalog: FoodCatalog) {
+        guard let index = ingredients.firstIndex(where: { $0.id == ingredient }),
+            !ingredients[index].substitutes.contains(where: { $0.name == rule.toName })
+        else { return }
+        var ratio = rule.ratio
+        if case .measured(_, let unit) = ingredients[index].amount, unit != .gram,
+            let fromWeight = catalog.food(rule.from)?.gramsPerUnit[unit],
+            let toWeight = catalog.food(rule.to)?.gramsPerUnit[unit]
+        {
+            ratio = rule.ratio * fromWeight / toWeight
+        }
+        let alternative = Substitute(name: rule.toName, ratio: ratio, note: rule.stepNote)
+        ingredients[index].substitutes.insert(alternative, at: 0)
     }
 
     private func firstStep(adding ingredient: IngredientID) -> Int? {

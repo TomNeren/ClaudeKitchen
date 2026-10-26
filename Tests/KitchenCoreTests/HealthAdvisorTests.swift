@@ -5,9 +5,9 @@ import Testing
 
 @Suite("Health advisor")
 struct HealthAdvisorTests {
-    @Test func bundledAdvisorOffersTheFourGoalsInFileOrder() throws {
+    @Test func bundledAdvisorOffersTheGoalsInFileOrder() throws {
         let advisor = try HealthAdvisor.bundled()
-        #expect(advisor.goals == ["balanced", "blood-pressure", "weight-loss", "low-carb"])
+        #expect(advisor.goals == ["vegetarian", "balanced", "blood-pressure", "weight-loss", "low-carb"])
     }
 
     @Test func variantResolvesChangesSourcesAndNutrition() throws {

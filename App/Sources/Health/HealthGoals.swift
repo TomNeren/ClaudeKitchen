@@ -1,9 +1,28 @@
+import Foundation
 import KitchenCore
 
 /// German names and texts for the rewrite goals, and the advisor the app shares. Rules live in KitchenCore.
 enum HealthGoals {
     /// Nil if the bundled catalog or rules cannot be read; the recipe screen then offers no variants.
     static let advisor: HealthAdvisor? = try? HealthAdvisor.bundled()
+
+    /// Settings key: recipes with meat open in their vegetarian variant. On unless switched off.
+    static let vegetarianByDefaultKey = "vegetarianByDefault"
+
+    static var vegetarianByDefault: Bool {
+        UserDefaults.standard.object(forKey: vegetarianByDefaultKey) as? Bool ?? true
+    }
+
+    /// The goal that holds under `goal` too: vegetarian while the setting is on, so a health goal does not bring
+    /// meat back.
+    static func standing(under goal: RewriteGoalID, vegetarian: Bool = vegetarianByDefault) -> RewriteGoalID? {
+        vegetarian && goal != RewriteGoal.vegetarian ? RewriteGoal.vegetarian : nil
+    }
+
+    /// The recipe as cooked and shopped for `goal`, with the standing vegetarian preference.
+    static func variantRecipe(of recipe: Recipe, for goal: RewriteGoalID) -> Recipe? {
+        advisor?.variantRecipe(of: recipe, for: goal, combinedWith: standing(under: goal))
+    }
 
     /// How much of an ingredient a partial swap replaces, for the change list: "zur Hälfte" or "zu 30 %".
     static func shareText(_ share: Double) -> String {
@@ -12,6 +31,7 @@ enum HealthGoals {
 
     static func name(_ id: RewriteGoalID) -> String {
         switch id {
+        case RewriteGoal.vegetarian: "Vegetarisch"
         case RewriteGoal.balanced: "Ausgewogen"
         case RewriteGoal.bloodPressure: "Blutdruck"
         case RewriteGoal.weightLoss: "Abnehmen"

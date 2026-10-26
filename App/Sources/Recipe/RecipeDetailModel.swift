@@ -14,20 +14,40 @@ final class RecipeDetailModel {
     private(set) var servings: Int
     /// Nil shows the original recipe.
     var goal: RewriteGoalID? {
-        didSet {
-            variant = goal.flatMap { advisor?.variant(of: recipe, for: $0) }
-            servingsRange = profile.servingsRange(for: displayed)
-            servings = min(max(servings, servingsRange.lowerBound), servingsRange.upperBound)
-        }
+        didSet { applyGoal() }
     }
+    /// With the setting on, every health goal keeps the vegetarian swaps.
+    private let vegetarian: Bool
     private(set) var variant: RecipeVariant?
 
-    init(recipe: Recipe, profile: DeviceProfile = .omniCook, advisor: HealthAdvisor? = HealthGoals.advisor) {
+    /// With `vegetarianByDefault`, a recipe the vegetarian goal changes or offers something for opens in that
+    /// variant; the original stays one choice away in the goal menu.
+    init(
+        recipe: Recipe, profile: DeviceProfile = .omniCook, advisor: HealthAdvisor? = HealthGoals.advisor,
+        vegetarianByDefault: Bool = HealthGoals.vegetarianByDefault
+    ) {
         self.recipe = recipe
         self.profile = profile
         self.advisor = advisor
+        self.vegetarian = vegetarianByDefault
         servingsRange = profile.servingsRange(for: recipe)
         servings = recipe.baseServings
+        // `affects` is cheap, so recipes without meat or fish skip the rewrite entirely.
+        if vegetarianByDefault, recipe.variantOf == nil, advisor?.affects(recipe, goal: RewriteGoal.vegetarian) == true
+        {
+            goal = RewriteGoal.vegetarian
+            // didSet does not run inside init.
+            applyGoal()
+        }
+    }
+
+    private func applyGoal() {
+        variant = goal.flatMap { goal in
+            advisor?.variant(
+                of: recipe, for: goal, combinedWith: HealthGoals.standing(under: goal, vegetarian: vegetarian))
+        }
+        servingsRange = profile.servingsRange(for: displayed)
+        servings = min(max(servings, servingsRange.lowerBound), servingsRange.upperBound)
     }
 
     /// The recipe the screen shows and cooks: the variant for the chosen goal, else the original.
