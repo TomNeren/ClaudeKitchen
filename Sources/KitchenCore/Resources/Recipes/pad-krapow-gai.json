@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "id": "pad-krapow-gai",
+  "name": "Pad Krapow Gai",
+  "tag": "Thailändisch · Basilikum-Hähnchen",
+  "baseServings": 2,
+  "totalMinutes": 25,
+  "verified": false,
+  "origin": { "cuisine": "thailand", "region": "Bangkok" },
+  "references": [
+    { "title": "Simple Thai Food", "author": "Leela Punyaratabandhu", "year": 2014 }
+  ],
+  "authenticityChecks": [
+    "Hähnchen grob gehackt, nicht fein faschiert",
+    "Knoblauch und Vogelaugenchilis zerstoßen, viel Heiliges Basilikum (Bai Krapow), nicht das süßliche Thai-Basilikum (Horapha)",
+    "Würze aus Austernsauce, Fischsauce, wenig Zucker; dazu Jasminreis und Spiegelei"
+  ],
+  "ingredients": [
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 5, "unit": "Zehen" },
+    { "id": "chilis", "name": "Vogelaugenchili", "food": "birds-eye-chili", "quantity": 4, "unit": "Stk", "note": "nach Schärfe" },
+    { "id": "huhn", "name": "Hähnchenschenkel, ohne Haut", "food": "chicken-thigh", "quantity": 350, "unit": "g",
+      "note": "in 3 cm Würfeln, gut gekühlt" },
+    { "id": "oel", "name": "Rapsöl", "food": "canola-oil", "quantity": 20, "unit": "g" },
+    { "id": "austernsauce", "name": "Austernsauce", "food": "oyster-sauce", "quantity": 1, "unit": "EL" },
+    { "id": "fischsauce", "name": "Fischsauce", "food": "fish-sauce", "quantity": 1, "unit": "EL" },
+    { "id": "sojasauce", "name": "Sojasauce", "food": "soy-sauce", "quantity": 1, "unit": "TL" },
+    { "id": "zucker", "name": "Palmzucker", "food": "palm-sugar", "quantity": 1, "unit": "TL" },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 30, "unit": "g" },
+    { "id": "basilikum", "name": "Heiliges Basilikum", "food": "holy-basil", "quantity": 30, "unit": "g", "note": "nur die Blätter",
+      "substitutes": [ { "name": "Thai-Basilikum", "ratio": 1, "note": "süßlicher, wenn Bai Krapow fehlt" } ] }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Hacken", "text": "Knoblauch und Chilis in den Topf geben und zerkleinern.",
+      "ingredientIDs": ["knoblauch", "chilis"],
+      "setting": { "speed": 6, "seconds": 4 } },
+    { "id": "s2", "phase": "Hähnchen hacken", "text": "Hähnchenwürfel zugeben und grob hacken.",
+      "ingredientIDs": ["huhn"],
+      "setting": { "speed": 6, "seconds": 3 } },
+    { "id": "s2b", "phase": "Nachhacken", "text": "Prüfen und, wenn noch große Stücke da sind, noch einmal kurz hacken.",
+      "note": "Es soll grob bleiben, nicht zu Brät werden.",
+      "setting": { "speed": 6, "seconds": 2 } },
+    { "id": "s3", "phase": "Braten", "text": "Öl zugeben und das Hähnchen krümelig braten.",
+      "note": "Ohne Messbecher, damit es brät und nicht kocht.",
+      "ingredientIDs": ["oel"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 480 } },
+    { "id": "s4", "phase": "Würzen", "text": "Austernsauce, Fischsauce, Sojasauce, Zucker und Wasser zugeben und einkochen.",
+      "ingredientIDs": ["austernsauce", "fischsauce", "sojasauce", "zucker", "wasser"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 120 } },
+    { "id": "s5", "phase": "Basilikum", "text": "Basilikum unterheben, bis es gerade zusammenfällt.",
+      "note": "Mit Jasminreis und einem Spiegelei servieren.",
+      "ingredientIDs": ["basilikum"],
+      "setting": { "speed": 1, "reverse": true, "seconds": 30 } }
+  ]
+}
