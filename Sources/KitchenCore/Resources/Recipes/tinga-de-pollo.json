@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "id": "tinga-de-pollo",
+  "name": "Tinga de pollo",
+  "tag": "Mexikanisch · Huhn in Chipotle-Tomate",
+  "baseServings": 4,
+  "totalMinutes": 50,
+  "verified": false,
+  "origin": { "cuisine": "mexicoPeru", "region": "Puebla" },
+  "references": [
+    { "title": "The Cuisines of Mexico", "author": "Diana Kennedy", "year": 1972 }
+  ],
+  "authenticityChecks": [
+    "Viele Zwiebeln in Streifen, weich und süßlich gedünstet",
+    "Sauce aus Tomaten mit Chipotle in Adobo, rauchig und scharf",
+    "Huhn zerzupft, auf Tostadas oder in Tortillas serviert",
+    "Abgleich mit der Quelle: Kennedys Tinga poblana nutzt Schwein und Chorizo; prüfen, ob die Variante mit Huhn dem Original sonst folgt"
+  ],
+  "ingredients": [
+    { "id": "oel", "name": "Rapsöl", "food": "canola-oil", "quantity": 2, "unit": "EL" },
+    { "id": "zwiebeln", "name": "Zwiebeln", "food": "onion", "quantity": 2, "unit": "Stk", "note": "in dünnen Halbringen" },
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 2, "unit": "Zehen", "note": "zerdrückt" },
+    { "id": "tomaten", "name": "Tomaten, reif", "food": "tomato", "quantity": 4, "unit": "Stk", "note": "gewürfelt" },
+    { "id": "chipotle", "name": "Chipotle in Adobo", "food": "chipotle-in-adobo", "quantity": 2, "unit": "Stk",
+      "note": "gehackt" },
+    { "id": "adobo", "name": "Adobo-Sauce aus der Dose", "food": "chipotle-in-adobo", "quantity": 1, "unit": "EL" },
+    { "id": "oregano", "name": "Oregano, getrocknet", "food": "oregano-dried", "quantity": 1, "unit": "TL",
+      "note": "mexikanischer Oregano, wenn erhältlich" },
+    { "id": "huhn", "name": "Hähnchenschenkel ohne Haut", "food": "chicken-thigh", "quantity": 600, "unit": "g",
+      "note": "in großen Stücken" },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 100, "unit": "g" },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    { "id": "tortillas", "name": "Maistortillas oder Tostadas", "food": "corn-tortilla", "quantity": 8, "unit": "Stk" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Zwiebeln", "text": "Öl und Zwiebeln in den Topf geben und weich dünsten.",
+      "note": "Ohne Messbecher.",
+      "ingredientIDs": ["oel", "zwiebeln"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 420 } },
+    { "id": "s2", "phase": "Schmoren", "text": "Knoblauch, Tomaten, Chipotle mit Adobo-Sauce, Oregano, Huhn, Wasser und Salz zugeben und schmoren, bis das Huhn zart ist.",
+      "note": "Messbecher einsetzen.",
+      "ingredientIDs": ["knoblauch", "tomaten", "chipotle", "adobo", "oregano", "huhn", "wasser", "salz"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 1500 } },
+    { "id": "s3", "phase": "Zerzupfen", "text": "Das Huhn im Linkslauf zerzupfen.",
+      "note": "Nur kurz, es soll faserig bleiben und nicht zu Brei werden.",
+      "ingredientIDs": [],
+      "setting": { "speed": 4, "reverse": true, "seconds": 6 } },
+    { "id": "s4", "phase": "Einkochen", "text": "Ohne Messbecher einkochen, bis die Sauce das Huhn nur noch umhüllt.",
+      "ingredientIDs": [],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 300 } },
+    { "id": "s5", "phase": "Anrichten", "text": "In warmen Maistortillas oder auf Tostadas servieren.",
+      "ingredientIDs": ["tortillas"] }
+  ]
+}
