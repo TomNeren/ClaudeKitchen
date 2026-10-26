@@ -49,14 +49,26 @@ public struct HealthAdvisor: Sendable {
     public var goals: [RewriteGoalID] { rules.goals.map(\.id) }
 
     /// Just the rewritten recipe for `goalID`, without the comparison numbers, for cooking it. Nil for an unknown goal.
-    public func variantRecipe(of recipe: Recipe, for goalID: RewriteGoalID) -> Recipe? {
-        rules.resolved(goalID).map { recipe.rewritten(for: $0, catalog: catalog).recipe }
+    /// `combinedWith` adds a standing preference such as vegetarian (`RewriteRules.resolved(_:combinedWith:)`).
+    public func variantRecipe(
+        of recipe: Recipe, for goalID: RewriteGoalID, combinedWith combined: RewriteGoalID? = nil
+    ) -> Recipe? {
+        rules.resolved(goalID, combinedWith: combined).map { recipe.rewritten(for: $0, catalog: catalog).recipe }
+    }
+
+    /// True when `goalID` would change or offer something for one of the recipe's ingredients. Cheap: no rewrite.
+    public func affects(_ recipe: Recipe, goal goalID: RewriteGoalID) -> Bool {
+        guard let goal = rules.resolved(goalID) else { return false }
+        let foods = Set(recipe.ingredients.compactMap(\.food))
+        return goal.rules.contains { foods.contains($0.from) }
     }
 
     /// `recipe` rewritten for `goalID`, nil for an unknown goal. Every change of the rewrite has a detail; rule IDs
     /// are unique within a resolved goal (`RewriteRules.issues(in:)`).
-    public func variant(of recipe: Recipe, for goalID: RewriteGoalID) -> RecipeVariant? {
-        guard let goal = rules.resolved(goalID) else { return nil }
+    public func variant(
+        of recipe: Recipe, for goalID: RewriteGoalID, combinedWith combined: RewriteGoalID? = nil
+    ) -> RecipeVariant? {
+        guard let goal = rules.resolved(goalID, combinedWith: combined) else { return nil }
         let rewrite = recipe.rewritten(for: goal, catalog: catalog)
         let changes = rewrite.changes.compactMap { change -> ChangeDetail? in
             guard let original = recipe.ingredient(change.ingredient),

@@ -142,7 +142,7 @@ struct RecipeLibraryView: View {
             }
         case .cooking(let id, let servings, let goal):
             if let recipe = model.recipe(id) {
-                let variant = goal.flatMap { HealthGoals.advisor?.variantRecipe(of: recipe, for: $0) }
+                let variant = goal.flatMap { HealthGoals.variantRecipe(of: recipe, for: $0) }
                 let cooked = variant ?? recipe
                 CookingView(recipe: cooked, servings: servings) {
                     // Books what the recipe used out of the pantry; the shopping screen offers undo.

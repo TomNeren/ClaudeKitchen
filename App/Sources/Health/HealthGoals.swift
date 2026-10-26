@@ -13,6 +13,17 @@ enum HealthGoals {
         UserDefaults.standard.object(forKey: vegetarianByDefaultKey) as? Bool ?? true
     }
 
+    /// The goal that holds under `goal` too: vegetarian while the setting is on, so a health goal does not bring
+    /// meat back.
+    static func standing(under goal: RewriteGoalID, vegetarian: Bool = vegetarianByDefault) -> RewriteGoalID? {
+        vegetarian && goal != RewriteGoal.vegetarian ? RewriteGoal.vegetarian : nil
+    }
+
+    /// The recipe as cooked and shopped for `goal`, with the standing vegetarian preference.
+    static func variantRecipe(of recipe: Recipe, for goal: RewriteGoalID) -> Recipe? {
+        advisor?.variantRecipe(of: recipe, for: goal, combinedWith: standing(under: goal))
+    }
+
     /// How much of an ingredient a partial swap replaces, for the change list: "zur Hälfte" or "zu 30 %".
     static func shareText(_ share: Double) -> String {
         share == 0.5 ? "zur Hälfte" : "zu \((share * 100).formatted(.number.precision(.fractionLength(0)))) %"

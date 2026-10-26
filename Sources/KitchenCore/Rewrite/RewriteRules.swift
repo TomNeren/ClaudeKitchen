@@ -213,13 +213,21 @@ public struct RewriteRules: Sendable, Hashable, Codable {
 
     /// The goal with the rules and notes of the goals it extends folded in: its own rules first, then inherited
     /// rules for foods it has no rule for. Nil for an unknown goal or a cycle of `extends`.
-    public func resolved(_ id: RewriteGoalID) -> RewriteGoal? {
+    ///
+    /// `combined` adds another goal underneath, the same way as `extends`, for a preference that holds whatever goal
+    /// is chosen, for example vegetarian under blood pressure: the chosen goal's rules win, the combined goal fills
+    /// in the foods it does not cover.
+    public func resolved(_ id: RewriteGoalID, combinedWith combined: RewriteGoalID? = nil) -> RewriteGoal? {
         var chain: [RewriteGoal] = []
         var next: RewriteGoalID? = id
         while let current = next {
             guard let goal = goal(current), !chain.contains(where: { $0.id == current }) else { return nil }
             chain.append(goal)
             next = goal.extends
+        }
+        if let combined, combined != id, !chain.contains(where: { $0.id == combined }) {
+            guard let extra = resolved(combined) else { return nil }
+            chain.append(extra)
         }
         var result = chain[0]
         result.extends = nil
@@ -292,7 +300,9 @@ extension RewriteRules {
             }
             if let resolved = resolved(goal.id), let measure = goal.criterion.measure {
                 let own = Set(goal.rules.map(\.id))
-                for rule in resolved.rules where !own.contains(rule.id) && rule.worsens(measure, in: catalog) {
+                // Offers leave the recipe as it is, so they cannot worsen anything.
+                for rule in resolved.rules
+                where !own.contains(rule.id) && !rule.offer && rule.worsens(measure, in: catalog) {
                     issues.append(.inheritedRuleWorsens(goal: goal.id, rule: rule.id))
                 }
             }

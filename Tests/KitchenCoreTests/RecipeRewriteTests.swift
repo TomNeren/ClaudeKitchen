@@ -158,6 +158,33 @@ struct RecipeRewriteTests {
         #expect(fishVariant.ingredients.first { $0.food == "sea-bass" }?.substitutes.first?.name == "Tofu, fest")
     }
 
+    @Test func aCombinedGoalFillsInTheFoodsTheChosenGoalDoesNotCover() throws {
+        let rules = try RewriteRules.bundled()
+        let combined = try #require(rules.resolved(RewriteGoal.bloodPressure, combinedWith: RewriteGoal.vegetarian))
+        #expect(combined.rules.contains { $0.id == "chicken-to-tofu" })
+        #expect(combined.rules.contains { $0.id == "low-sodium-soy-sauce" })
+        #expect(
+            rules.resolved(RewriteGoal.vegetarian, combinedWith: RewriteGoal.vegetarian)
+                == rules.resolved(RewriteGoal.vegetarian))
+        #expect(rules.resolved(RewriteGoal.balanced, combinedWith: "unknown") == nil)
+        let advisor = try HealthAdvisor.bundled()
+        let chicken = try #require(try RecipeLibrary.bundled().first { $0.id == "chicken-adobo" })
+        let variant = try #require(
+            advisor.variantRecipe(of: chicken, for: RewriteGoal.bloodPressure, combinedWith: RewriteGoal.vegetarian))
+        #expect(!variant.ingredients.contains { $0.food == "chicken-thigh" })
+        #expect(advisor.affects(chicken, goal: RewriteGoal.vegetarian))
+        #expect(!advisor.affects(Self.recipe, goal: RewriteGoal.vegetarian))
+    }
+
+    @Test func offeredSpoonAmountsAreConvertedByWeight() {
+        var offer = Self.rule("cumin-alternative", from: "cumin", to: "black-pepper", ratio: 1)
+        offer.offer = true
+        let rewrite = Self.recipe.rewritten(for: RewriteGoal(id: "x", rules: [offer]), catalog: Self.catalog)
+        let cumin = Self.catalog.food("cumin")?.gramsPerUnit[.teaspoon] ?? 0
+        let pepper = Self.catalog.food("black-pepper")?.gramsPerUnit[.teaspoon] ?? 1
+        #expect(rewrite.recipe.ingredient("kreuzkuemmel")?.substitutes.first?.ratio == cumin / pepper)
+    }
+
     @Test func ingredientsThatAreNotEatenAreNotSwapped() {
         var recipe = Self.recipe
         recipe.ingredients[2].eaten = false
@@ -186,9 +213,14 @@ struct RecipeRewriteTests {
                     goal.criterion == .sodium
                     && after.food.flatMap(Self.catalog.food)?.lowSodiumVersionOf == food.id
                     && after.amount == ingredient.amount
-                // An offer only adds an alternative to the substitutes; food and amount stay.
-                let unchanged = after.food == ingredient.food && after.amount == ingredient.amount
-                #expect(unchanged || lowSodium, "\(recipe.id) \(goal.id): \(ingredient.id)")
+                // An offer only puts an alternative first in the substitutes; everything else stays.
+                var withoutOffer = after
+                if goal.rules.contains(where: { $0.offer && $0.from == ingredient.food }),
+                    after.substitutes.count > ingredient.substitutes.count
+                {
+                    withoutOffer.substitutes.removeFirst()
+                }
+                #expect(withoutOffer == ingredient || lowSodium, "\(recipe.id) \(goal.id): \(ingredient.id)")
             }
         }
     }

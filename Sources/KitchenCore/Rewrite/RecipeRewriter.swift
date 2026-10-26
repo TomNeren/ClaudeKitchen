@@ -35,9 +35,11 @@ public struct RecipeRewrite: Sendable, Hashable {
 extension Recipe {
     /// A variant of the recipe with `goal`'s swaps applied, under the ID `<recipe>-<goal>`. Pass a goal from
     /// `RewriteRules.resolved(_:)` so inherited rules apply too. A recipe that already is a variant (`variantOf`)
-    /// comes back unchanged. Seasonings and aromatics stay as they are, because rules may not target them
+    /// comes back unchanged. Swaps leave seasonings and aromatics alone, because rules may not target them
     /// (`RewriteRules.issues(in:)`); the one exception is a seasoning's declared low-sodium version under the sodium
-    /// criterion (decision 33). The swapped ingredient offers the original as its first substitute.
+    /// criterion (decision 33). Swaps also leave ingredients that are not eaten alone. Offer rules (`SwapRule.offer`)
+    /// change neither: they only put an alternative first in the substitutes, also for seasonings and ingredients
+    /// that are not eaten. The swapped ingredient offers the original as its first substitute.
     ///
     /// Extra cooking time goes once onto the step that cooks the swapped food: the longest heated, timed step from
     /// the step that adds it up to the next fresh pot. The total time grows by the same amount.
@@ -52,7 +54,7 @@ extension Recipe {
         for ingredient in ingredients {
             guard let rule = goal.rules.first(where: { $0.from == ingredient.food }) else { continue }
             if rule.offer {
-                variant.offer(rule, for: ingredient.id)
+                variant.offer(rule, for: ingredient.id, catalog: catalog)
                 changes.append(
                     RecipeChange(rule: rule.id, ingredient: ingredient.id, newIngredient: ingredient.id, isOffer: true))
                 continue
@@ -141,12 +143,21 @@ extension Recipe {
         return newID
     }
 
-    /// Puts the rule's alternative first in the ingredient's substitutes, unless it is listed already.
-    private mutating func offer(_ rule: SwapRule, for ingredient: IngredientID) {
+    /// Puts the rule's alternative first in the ingredient's substitutes, unless it is listed already. The rule's
+    /// ratio is by weight; the substitute's is in the ingredient's unit, so spoons and pieces are converted when both
+    /// foods have a weight for the unit.
+    private mutating func offer(_ rule: SwapRule, for ingredient: IngredientID, catalog: FoodCatalog) {
         guard let index = ingredients.firstIndex(where: { $0.id == ingredient }),
             !ingredients[index].substitutes.contains(where: { $0.name == rule.toName })
         else { return }
-        let alternative = Substitute(name: rule.toName, ratio: rule.ratio, note: rule.stepNote)
+        var ratio = rule.ratio
+        if case .measured(_, let unit) = ingredients[index].amount, unit != .gram,
+            let fromWeight = catalog.food(rule.from)?.gramsPerUnit[unit],
+            let toWeight = catalog.food(rule.to)?.gramsPerUnit[unit]
+        {
+            ratio = rule.ratio * fromWeight / toWeight
+        }
+        let alternative = Substitute(name: rule.toName, ratio: ratio, note: rule.stepNote)
         ingredients[index].substitutes.insert(alternative, at: 0)
     }
 

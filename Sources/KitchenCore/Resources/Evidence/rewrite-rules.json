@@ -25,7 +25,7 @@
         {
           "id": "pork-belly-to-smoked-tofu",
           "from": "pork-belly",
-          "to": "firm-tofu",
+          "to": "smoked-tofu",
           "toName": "Räuchertofu",
           "stepNote": "Räuchertofu in Scheiben bringt das Rauchige; wie den Schweinebauch anbraten.",
           "sourceID": "dge-2024",

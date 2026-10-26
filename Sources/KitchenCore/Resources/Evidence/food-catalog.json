@@ -300,6 +300,8 @@
     { "id": "dried-shiitake", "name": "Shiitake, getrocknet", "aliases": ["Getrocknete Shiitake"], "group": "vegetables", "role": "base", "gramsPerUnit": { "Stk": 4 },
       "nutrients": { "fdcID": 168436, "kcal": 296, "protein": 9.58, "fat": 0.99, "saturatedFat": 0.225, "carbohydrate": 75.37, "fiber": 11.5, "sodiumMilligrams": 13 } },
     { "id": "mushroom-oyster-sauce", "name": "Vegetarische Austernsauce", "aliases": ["Pilz-Austernsauce"], "group": "condiments", "role": "seasoning", "gramsPerUnit": { "EL": 18, "TL": 6 }, "nutrientsUnavailable": true },
+    { "id": "smoked-tofu", "name": "Räuchertofu", "aisle": "chilled", "aliases": ["Tofu, geräuchert"], "group": "legumes", "role": "base",
+      "nutrients": { "fdcID": 172475, "kcal": 144, "protein": 17.27, "fat": 8.72, "saturatedFat": 1.261, "carbohydrate": 2.78, "fiber": 2.3, "sodiumMilligrams": 14 } },
     { "id": "black-pepper", "name": "Schwarzer Pfeffer", "aliases": ["Pfeffer", "Pfefferkörner"], "group": "herbs-spices", "role": "seasoning", "gramsPerUnit": { "TL": 2, "EL": 6 },
       "nutrients": { "fdcID": 170931, "kcal": 251, "protein": 10.39, "fat": 3.26, "saturatedFat": 1.392, "carbohydrate": 63.95, "fiber": 25.3, "sodiumMilligrams": 20 } },
     { "id": "salt", "name": "Salz", "group": "salt", "role": "seasoning", "gramsPerUnit": { "TL": 6, "EL": 18 },
