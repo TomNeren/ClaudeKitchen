@@ -26,10 +26,15 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
     public var role: FoodRole
     /// Weight of one unit, for units that are not grams, for example 100 g per "Stk" onion.
     public var gramsPerUnit: [MeasureUnit: Double]
+    /// Nutrients per 100 g. Nil only together with `nutrientsUnavailable`.
+    public var nutrients: Nutrients?
+    /// True when the source has no entry for the food (for example a spice blend), so leaving out `nutrients` is
+    /// deliberate.
+    public var nutrientsUnavailable: Bool
 
     public init(
         id: FoodID, name: String, aliases: [String] = [], group: FoodGroupID, role: FoodRole,
-        gramsPerUnit: [MeasureUnit: Double] = [:]
+        gramsPerUnit: [MeasureUnit: Double] = [:], nutrients: Nutrients? = nil, nutrientsUnavailable: Bool = false
     ) {
         self.id = id
         self.name = name
@@ -37,10 +42,12 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
         self.group = group
         self.role = role
         self.gramsPerUnit = gramsPerUnit
+        self.nutrients = nutrients
+        self.nutrientsUnavailable = nutrientsUnavailable
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, aliases, group, role, gramsPerUnit
+        case id, name, aliases, group, role, gramsPerUnit, nutrients, nutrientsUnavailable
     }
 
     public init(from decoder: any Decoder) throws {
@@ -51,6 +58,8 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
         group = try container.decode(FoodGroupID.self, forKey: .group)
         role = try container.decode(FoodRole.self, forKey: .role)
         gramsPerUnit = try container.decodeIfPresent([MeasureUnit: Double].self, forKey: .gramsPerUnit) ?? [:]
+        nutrients = try container.decodeIfPresent(Nutrients.self, forKey: .nutrients)
+        nutrientsUnavailable = try container.decodeIfPresent(Bool.self, forKey: .nutrientsUnavailable) ?? false
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -64,6 +73,10 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
         try container.encode(role, forKey: .role)
         if !gramsPerUnit.isEmpty {
             try container.encode(gramsPerUnit, forKey: .gramsPerUnit)
+        }
+        try container.encodeIfPresent(nutrients, forKey: .nutrients)
+        if nutrientsUnavailable {
+            try container.encode(true, forKey: .nutrientsUnavailable)
         }
     }
 

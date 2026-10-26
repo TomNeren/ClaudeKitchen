@@ -114,7 +114,10 @@ stehen nebeneinander, die App zeigt, was sich geändert hat und warum.
 - **Nährwerte (M8c):** kcal, Kohlenhydrate, Ballaststoffe, Eiweiß, Fett, Natrium je 100 g für jedes Lebensmittel
   im Katalog, aus USDA FoodData Central (CC0, mit FDC-ID je Eintrag zum Nachprüfen). Gebraucht für die Ziele
   Abnehmen, Low Carb und Blutdruck. Der BLS 4.0 wäre für deutsche Lebensmittel genauer, seine Lizenz für die
-  Weitergabe ist aber ungeklärt.
+  Weitergabe ist aber ungeklärt. **Stand M8c:** 28 von 29 Lebensmitteln haben Nährwerte aus SR Legacy (April 2018);
+  Garam Masala fehlt dort und bleibt als Gewürzmischung ohne. Nährwerte pro Portion zählen „nach Geschmack“ nicht
+  mit (Salz!), die App muss das beim Ziel Blutdruck anzeigen. `Scripts/check_nutrients.py` vergleicht jeden Wert
+  mit dem USDA-Datensatz.
 
 **Umwandlung (KitchenCore, deterministisch):**
 - Tauschregeln als JSON: von Lebensmittel, zu Lebensmittel, Mengenverhältnis, Begründung mit Quellenverweis,
@@ -387,7 +390,7 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M5 | Barrierefreiheit, iPad-Layout, Feinschliff Motion, App-Icon | Erledigt (PR #8); Gefühl und Lesbarkeit offen laut Geräte-Prüfliste |
 | M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Erledigt (PR #10, 68 Tests): Import aus Text oder https-Link, Prüfung, Speichern, Löschen; Editor bei Bedarf; Test am Gerät braucht API-Schlüssel |
 | M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Erledigt (PR #11, 76 Tests): `VoiceCommand` in KitchenCore, Zuhören, Antworten und KI-Fragen in der App; Durchkochen per Sprache offen laut Geräte-Prüfliste |
-| M8 | M8a erledigt (PR #12), M8b erledigt (PR #14), M8c offen. Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
+| M8 | M8a erledigt (PR #12), M8b erledigt (PR #14), M8c im Review. Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
 | M9 | Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil, Ziele Ausgewogen, Blutdruck, Abnehmen, Low Carb; in der App Umschalter Original/Variante mit Zielwahl, Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
 | M10 | Rezeptbestand: `origin`, `references`, `variantOf`, 27 traditionelle Rezepte aus neun Küchenräumen; Bibliothek filtert nach Küche | Alle 27 bestehen `validate` und sind vollständig zugeordnet |
 | M11 | Einkauf und Vorrat: Bedarf minus Vorrat, Mindestbestand, Abbuchen nach dem Kochen, Export nach Erinnerungen und Teilen (Abschnitt 3d) | Logik-Tests in KitchenCore; Export am Gerät laut Prüfliste |

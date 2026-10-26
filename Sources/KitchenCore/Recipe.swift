@@ -64,7 +64,7 @@ public struct Substitute: Sendable, Hashable, Codable {
 /// One ingredient with its amount for the recipe's base servings.
 ///
 /// JSON shape: `{"id": "linsen", "name": "Rote Linsen", "quantity": 200, "unit": "g"}`.
-/// Without `quantity` the amount is "to taste". `scales` defaults to true, `substitutes` to none.
+/// Without `quantity` the amount is "to taste". `scales` and `eaten` default to true, `substitutes` to none.
 /// `food` points at the `FoodCatalog` entry, for example `"food": "red-lentils"`.
 public struct Ingredient: Sendable, Hashable, Identifiable {
     public let id: IngredientID
@@ -76,11 +76,14 @@ public struct Ingredient: Sendable, Hashable, Identifiable {
     public var note: String?
     /// False for things like a bay leaf, where the amount stays the same for more servings.
     public var scales: Bool
+    /// False for things that leave the dish before eating, like steaming water or a bay leaf; they do not count
+    /// towards nutrition.
+    public var eaten: Bool
     public var substitutes: [Substitute]
 
     public init(
         id: IngredientID, name: String, amount: Amount, food: FoodID? = nil, note: String? = nil,
-        scales: Bool = true, substitutes: [Substitute] = []
+        scales: Bool = true, eaten: Bool = true, substitutes: [Substitute] = []
     ) {
         self.id = id
         self.name = name
@@ -88,6 +91,7 @@ public struct Ingredient: Sendable, Hashable, Identifiable {
         self.food = food
         self.note = note
         self.scales = scales
+        self.eaten = eaten
         self.substitutes = substitutes
     }
 
@@ -112,7 +116,7 @@ public struct Ingredient: Sendable, Hashable, Identifiable {
 
 extension Ingredient: Codable {
     private enum CodingKeys: String, CodingKey {
-        case id, name, quantity, unit, food, note, scales, substitutes
+        case id, name, quantity, unit, food, note, scales, eaten, substitutes
     }
 
     public init(from decoder: any Decoder) throws {
@@ -127,6 +131,7 @@ extension Ingredient: Codable {
         food = try container.decodeIfPresent(FoodID.self, forKey: .food)
         note = try container.decodeIfPresent(String.self, forKey: .note)
         scales = try container.decodeIfPresent(Bool.self, forKey: .scales) ?? true
+        eaten = try container.decodeIfPresent(Bool.self, forKey: .eaten) ?? true
         substitutes = try container.decodeIfPresent([Substitute].self, forKey: .substitutes) ?? []
     }
 
@@ -142,6 +147,9 @@ extension Ingredient: Codable {
         try container.encodeIfPresent(note, forKey: .note)
         if !scales {
             try container.encode(false, forKey: .scales)
+        }
+        if !eaten {
+            try container.encode(false, forKey: .eaten)
         }
         if !substitutes.isEmpty {
             try container.encode(substitutes, forKey: .substitutes)
