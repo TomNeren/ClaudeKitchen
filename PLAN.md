@@ -574,6 +574,11 @@ Getroffen (2026-10-25):
     einen Agenten im eigenen, eingeloggten Browser, in welchem Shop auch immer: nur Warenkorb, keine Kasse, keine
     Konto-, Adress- oder Zahlungsdaten, keine Captchas lösen, sondern anhalten. Artikel mit unbekanntem Vorrat stehen
     unter „Erst fragen“. Am Ende eine Tabelle mit Produkt, Menge, Preis und Fehlendem.
+40. (deine Entscheidung) **TestFlight über das Schulkonto:** Du verwaltest das Entwicklerkonto der Schule und bist
+    der einzige Nutzer. Die Bundle-ID `de.tomneren.ClaudeKitchen` hängt nicht an der Schule; ein späterer Umzug auf ein
+    eigenes Konto geht per App-Transfer. Der Workflow `testflight.yml` lädt jeden Stand von `main` hoch, nie Pull
+    Requests; die Zugangsdaten liegen im GitHub-Environment `testflight`, das nur `main` nutzen darf. Ohne sie wird
+    der Upload übersprungen. Einrichtung: `App/TESTFLIGHT.md`.
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
