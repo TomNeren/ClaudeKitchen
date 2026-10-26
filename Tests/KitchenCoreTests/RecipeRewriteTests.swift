@@ -6,6 +6,8 @@ import Testing
 @Suite("Recipe rewrite")
 struct RecipeRewriteTests {
     private static let quote = "Pflanzliche Öle bevorzugen"
+    // Force-try is fine in a test fixture: a broken bundled catalog fails every test anyway.
+    private static let catalog = try! FoodCatalog.bundled()
 
     private static func rule(
         _ id: SwapRuleID, from: FoodID, to: FoodID, share: Double = 1, ratio: Double = 1,
@@ -43,7 +45,7 @@ struct RecipeRewriteTests {
         ])
 
     @Test func fullSwapReplacesTheIngredientAndLengthensItsStep() throws {
-        let rewrite = Self.recipe.rewritten(for: Self.goal)
+        let rewrite = Self.recipe.rewritten(for: Self.goal, catalog: Self.catalog)
         let rice = try #require(rewrite.recipe.ingredient("reis"))
         #expect(rice.food == "brown-rice" && rice.name == "Neu brown-rice")
         #expect(rice.amount == .measured(200, .gram))
@@ -56,7 +58,7 @@ struct RecipeRewriteTests {
     }
 
     @Test func partialSwapSplitsTheAmountAndJoinsTheSameSteps() throws {
-        let rewrite = Self.recipe.rewritten(for: Self.goal)
+        let rewrite = Self.recipe.rewritten(for: Self.goal, catalog: Self.catalog)
         #expect(rewrite.recipe.ingredient("ghee")?.amount == .measured(15, .gram))
         let oil = try #require(rewrite.recipe.ingredient("ghee-half-ghee"))
         #expect(oil.food == "olive-oil" && oil.amount == .measured(15, .gram))
@@ -71,7 +73,7 @@ struct RecipeRewriteTests {
 
     @Test func ratioScalesTheNewFoodAndTheSubstituteLeadsBack() throws {
         let goal = RewriteGoal(id: "g", rules: [Self.rule("butter", from: "ghee", to: "olive-oil", ratio: 0.8)])
-        let oil = try #require(Self.recipe.rewritten(for: goal).recipe.ingredient("ghee"))
+        let oil = try #require(Self.recipe.rewritten(for: goal, catalog: Self.catalog).recipe.ingredient("ghee"))
         #expect(oil.amount == .measured(24, .gram))
         let back = oil.substitutions(from: 2, to: 2)
         #expect(back.count == 1)
@@ -83,7 +85,7 @@ struct RecipeRewriteTests {
     }
 
     @Test func seasoningsAromaticsAndOtherIngredientsStayUntouched() {
-        let rewrite = Self.recipe.rewritten(for: Self.goal)
+        let rewrite = Self.recipe.rewritten(for: Self.goal, catalog: Self.catalog)
         for id: IngredientID in ["zwiebel", "kreuzkuemmel", "wasser"] {
             #expect(rewrite.recipe.ingredient(id) == Self.recipe.ingredient(id), "\(id)")
         }
@@ -92,7 +94,7 @@ struct RecipeRewriteTests {
     @Test func skipsASwapThatWouldExceedTheDeviceTimeLimit() {
         var recipe = Self.recipe
         recipe.steps[1].setting?.duration = .seconds(95 * 60)
-        let rewrite = recipe.rewritten(for: Self.goal)
+        let rewrite = recipe.rewritten(for: Self.goal, catalog: Self.catalog)
         #expect(rewrite.recipe.ingredient("reis")?.food == "white-rice")
         #expect(
             rewrite.skipped == [SkippedSwap(rule: "brown-rice", ingredient: "reis", reason: .exceedsMaxDuration("s2"))])
@@ -101,7 +103,7 @@ struct RecipeRewriteTests {
     @Test func skipsAPartialSwapOfAnAmountToTaste() {
         var recipe = Self.recipe
         recipe.ingredients[1].amount = .toTaste
-        let rewrite = recipe.rewritten(for: Self.goal)
+        let rewrite = recipe.rewritten(for: Self.goal, catalog: Self.catalog)
         #expect(rewrite.recipe.ingredient("ghee")?.amount == .toTaste)
         #expect(rewrite.skipped.map(\.reason) == [.amountToTaste])
     }
@@ -109,15 +111,16 @@ struct RecipeRewriteTests {
     @Test func ingredientsThatAreNotEatenAreNotSwapped() {
         var recipe = Self.recipe
         recipe.ingredients[2].eaten = false
-        #expect(recipe.rewritten(for: Self.goal).changes.map(\.rule) == ["half-ghee"])
+        #expect(recipe.rewritten(for: Self.goal, catalog: Self.catalog).changes.map(\.rule) == ["half-ghee"])
     }
 
-    @Test func variantPassesDeviceValidationAndKeepsSeasoningsForEveryBundledRecipe() throws {
+    // The bundled recipes contain no food the balanced rules swap yet (PLAN.md, M9a); the pilaw does.
+    @Test func variantPassesDeviceValidationAndKeepsSeasoningsForPilawAndEveryBundledRecipe() throws {
         let catalog = try FoodCatalog.bundled()
         let goals = try RewriteRules.bundled().goals
         for recipe in try RecipeLibrary.bundled() + [Self.recipe] {
             for goal in goals {
-                let variant = recipe.rewritten(for: goal).recipe
+                let variant = recipe.rewritten(for: goal, catalog: catalog).recipe
                 let errors = DeviceProfile.omniCook.validate(variant).filter { $0.severity == .error }
                 #expect(errors.isEmpty, "\(recipe.id) \(goal.id): \(errors)")
                 for ingredient in recipe.ingredients {
@@ -132,7 +135,7 @@ struct RecipeRewriteTests {
     @Test func balancedVariantHasMoreWholeGrainAndLessSaturatedFat() throws {
         let catalog = try FoodCatalog.bundled()
         let balanced = try #require(try RewriteRules.bundled().goal(RewriteGoal.balanced))
-        let variant = Self.recipe.rewritten(for: balanced).recipe
+        let variant = Self.recipe.rewritten(for: balanced, catalog: catalog).recipe
         let before = catalog.groupGramsPerServing(of: Self.recipe)
         let after = catalog.groupGramsPerServing(of: variant)
         #expect(before["whole-grains"] == nil && after["whole-grains"] == 100)
@@ -157,6 +160,7 @@ struct RecipeRewriteTests {
                 rules: [
                     Self.rule("spice", from: "cumin", to: "turmeric"),
                     Self.rule("worse", from: "olive-oil", to: "butter"),
+                    Self.rule("same", from: "ghee", to: "butter"),
                     Self.rule("ghost", from: "nothing", to: "olive-oil"),
                     Self.rule("bad", from: "ghee", to: "olive-oil", share: 1.5),
                     Self.rule("bad", from: "butter", to: "olive-oil"),
@@ -166,9 +170,57 @@ struct RecipeRewriteTests {
         #expect(
             rules.issues(in: catalog) == [
                 .protectedFood(rule: "spice", food: "cumin"), .protectedFood(rule: "spice", food: "turmeric"),
-                .worseningSwap("worse"), .unknownFood(rule: "ghost", food: "nothing"), .invalidRule("bad"),
+                .notImproving("spice"),
+                .notImproving("worse"), .notImproving("same"), .unknownFood(rule: "ghost", food: "nothing"),
+                .invalidRule("bad"),
                 .duplicateRule(goal: "g", rule: "bad"), .duplicateGoal("g"),
             ])
+    }
+
+    @Test func extraTimeGoesOnceOntoTheLongestHeatedStepAfterTheIngredientIsAdded() {
+        var recipe = Self.recipe
+        recipe.steps[0].ingredientIDs.append("reis")
+        recipe.steps[1].ingredientIDs.removeAll { $0 == "reis" }
+        let rewrite = recipe.rewritten(for: Self.goal, catalog: Self.catalog)
+        #expect(rewrite.recipe.steps[0].setting?.duration == .seconds(180))
+        #expect(rewrite.recipe.steps[1].setting?.duration == .seconds(1980))
+        #expect(rewrite.recipe.steps[1].note == "Deckel zu. Länger garen.")
+        #expect(rewrite.recipe.totalMinutes == 45)
+    }
+
+    @Test func extraTimeStopsAtAFreshPot() {
+        var recipe = Self.recipe
+        recipe.steps[0].ingredientIDs.append("reis")
+        recipe.steps[1].freshPot = true
+        let rewrite = recipe.rewritten(for: Self.goal, catalog: Self.catalog)
+        #expect(rewrite.recipe.steps[0].setting?.duration == .seconds(1080))
+        #expect(rewrite.recipe.steps[1].setting?.duration == .seconds(1080))
+    }
+
+    @Test func spoonAmountsAreConvertedByWeight() throws {
+        var recipe = Self.recipe
+        recipe.ingredients[1] = Ingredient(
+            id: "ghee", name: "Butter", amount: .measured(2, .tablespoon), food: "butter",
+            substitutes: [Substitute(name: "Margarine")])
+        let goal = RewriteGoal(
+            id: "g", rules: [Self.rule("butter", from: "butter", to: "olive-oil", ratio: 0.8)])
+        let oil = try #require(recipe.rewritten(for: goal, catalog: Self.catalog).recipe.ingredient("ghee"))
+        let grams = try #require(Self.catalog.food("olive-oil")?.grams(of: oil.amount))
+        #expect(abs(grams - 2 * 14 * 0.8) < 0.0001)
+        #expect(oil.substitutes.map(\.name) == ["Butter", "Margarine"])
+    }
+
+    @Test func aVariantIsNotRewrittenAgain() {
+        let variant = Self.recipe.rewritten(for: Self.goal, catalog: Self.catalog).recipe
+        let again = variant.rewritten(for: Self.goal, catalog: Self.catalog)
+        #expect(again.recipe == variant && again.changes.isEmpty)
+    }
+
+    @Test func partialSwapPicksAFreeIngredientID() {
+        var recipe = Self.recipe
+        recipe.ingredients.append(Ingredient(id: "ghee-half-ghee", name: "Schon da", amount: .toTaste))
+        let rewrite = recipe.rewritten(for: Self.goal, catalog: Self.catalog)
+        #expect(rewrite.changes.first?.newIngredient == "ghee-half-ghee-2")
     }
 
     @Test func rulesRoundTripThroughJSON() throws {

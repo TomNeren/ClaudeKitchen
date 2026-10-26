@@ -98,6 +98,11 @@ public struct RewriteGoal: Sendable, Hashable, Codable, Identifiable {
 public struct RewriteRules: Sendable, Hashable, Codable {
     public static let currentSchemaVersion = 1
 
+    public enum LoadError: Error, Equatable {
+        case missingResource
+        case unsupportedSchemaVersion(Int)
+    }
+
     public var schemaVersion: Int
     public var goals: [RewriteGoal]
 
@@ -110,7 +115,7 @@ public struct RewriteRules: Sendable, Hashable, Codable {
         guard
             let url = Bundle.module.url(forResource: "rewrite-rules", withExtension: "json", subdirectory: "Evidence")
         else {
-            throw FoodCatalog.LoadError.missingResource
+            throw LoadError.missingResource
         }
         return try decode(Data(contentsOf: url))
     }
@@ -120,7 +125,7 @@ public struct RewriteRules: Sendable, Hashable, Codable {
         struct Header: Decodable { var schemaVersion: Int }
         let version = try JSONDecoder().decode(Header.self, from: data).schemaVersion
         guard version <= currentSchemaVersion else {
-            throw FoodCatalog.LoadError.unsupportedSchemaVersion(version)
+            throw LoadError.unsupportedSchemaVersion(version)
         }
         return try JSONDecoder().decode(RewriteRules.self, from: data)
     }
@@ -137,8 +142,8 @@ public enum RewriteRuleIssue: Sendable, Hashable {
     case unknownFood(rule: SwapRuleID, food: FoodID)
     /// The rule would swap a seasoning or aromatic, which decision 26 forbids.
     case protectedFood(rule: SwapRuleID, food: FoodID)
-    /// The new food's group is assessed worse than the old one's.
-    case worseningSwap(SwapRuleID)
+    /// The new food's group is not assessed better than the old one's, so the swap does not make the dish healthier.
+    case notImproving(SwapRuleID)
     case unknownSource(rule: SwapRuleID, source: SourceID)
     /// Share outside (0, 1], ratio not positive, negative extra time, empty name or quote.
     case invalidRule(SwapRuleID)
@@ -187,9 +192,9 @@ extension RewriteRules {
         }
         if let from = foods[0].1.flatMap({ catalog.group($0.group) }),
             let to = foods[1].1.flatMap({ catalog.group($0.group) }),
-            to.direction.rank < from.direction.rank
+            to.direction.rank <= from.direction.rank
         {
-            issues.append(.worseningSwap(rule.id))
+            issues.append(.notImproving(rule.id))
         }
         return issues
     }

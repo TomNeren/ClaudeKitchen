@@ -31,74 +31,114 @@ public struct RecipeRewrite: Sendable, Hashable {
 }
 
 extension Recipe {
-    /// A variant of the recipe with `goal`'s swaps applied, under the ID `<recipe>-<goal>`. Seasonings and
-    /// aromatics stay as they are, because rules may not target them (`RewriteRules.issues(in:)`). The variant keeps
-    /// the original ingredient as a substitute, so the cook can switch back. Extra cooking time lengthens the steps
-    /// and the total time.
-    public func rewritten(for goal: RewriteGoal, profile: DeviceProfile = .omniCook) -> RecipeRewrite {
+    /// A variant of the recipe with `goal`'s swaps applied, under the ID `<recipe>-<goal>`. A recipe that already
+    /// is such a variant comes back unchanged. Seasonings and aromatics stay as they are, because rules may not
+    /// target them (`RewriteRules.issues(in:)`). The swapped ingredient offers the original as its first substitute.
+    ///
+    /// Extra cooking time goes once onto the step that cooks the swapped food: the longest heated, timed step from
+    /// the step that adds it up to the next fresh pot. The total time grows by the same amount.
+    public func rewritten(
+        for goal: RewriteGoal, catalog: FoodCatalog, profile: DeviceProfile = .omniCook
+    ) -> RecipeRewrite {
+        let suffix = "-\(goal.id.rawValue)"
+        guard !id.rawValue.hasSuffix(suffix) else { return RecipeRewrite(recipe: self, changes: [], skipped: []) }
         var variant = Recipe(
-            id: RecipeID("\(id.rawValue)-\(goal.id.rawValue)"), name: name, tag: tag, baseServings: baseServings,
+            id: RecipeID(id.rawValue + suffix), name: name, tag: tag, baseServings: baseServings,
             totalMinutes: totalMinutes, ingredients: ingredients, steps: steps, verified: false,
             schemaVersion: schemaVersion)
         var changes: [RecipeChange] = []
         var skipped: [SkippedSwap] = []
         for ingredient in ingredients where ingredient.eaten {
             guard let rule = goal.rules.first(where: { $0.from == ingredient.food }) else { continue }
-            if let reason = variant.blocker(for: rule, on: ingredient, profile: profile) {
+            let cookingStep = rule.extraTime > .zero ? variant.cookingStep(for: ingredient.id) : nil
+            if let reason = variant.blocker(for: rule, on: ingredient, cookingStep: cookingStep, profile: profile) {
                 skipped.append(SkippedSwap(rule: rule.id, ingredient: ingredient.id, reason: reason))
                 continue
             }
-            let newID = variant.apply(rule, to: ingredient)
+            let newID = variant.apply(rule, to: ingredient, cookingStep: cookingStep, catalog: catalog)
             changes.append(RecipeChange(rule: rule.id, ingredient: ingredient.id, newIngredient: newID))
         }
         return RecipeRewrite(recipe: variant, changes: changes, skipped: skipped)
     }
 
-    private func blocker(for rule: SwapRule, on ingredient: Ingredient, profile: DeviceProfile) -> SkippedSwap.Reason? {
+    /// Index of the longest heated, timed step from the first step that adds `ingredient` up to the next fresh pot.
+    private func cookingStep(for ingredient: IngredientID) -> Int? {
+        guard let first = steps.firstIndex(where: { $0.ingredientIDs.contains(ingredient) }) else { return nil }
+        var best: (index: Int, duration: Duration)?
+        for index in steps.indices[first...] {
+            if index > first && steps[index].freshPot { break }
+            guard steps[index].setting?.heat != nil, let duration = steps[index].timerDuration else { continue }
+            if best.map({ duration > $0.duration }) ?? true {
+                best = (index, duration)
+            }
+        }
+        return best?.index
+    }
+
+    private func blocker(
+        for rule: SwapRule, on ingredient: Ingredient, cookingStep: Int?, profile: DeviceProfile
+    ) -> SkippedSwap.Reason? {
         if rule.share < 1, ingredient.amount == .toTaste {
             return .amountToTaste
         }
-        for step in steps where step.ingredientIDs.contains(ingredient.id) {
-            if let duration = step.timerDuration, duration + rule.extraTime > profile.maxDuration {
-                return .exceedsMaxDuration(step.id)
-            }
+        if let cookingStep, let duration = steps[cookingStep].timerDuration,
+            duration + rule.extraTime > profile.maxDuration
+        {
+            return .exceedsMaxDuration(steps[cookingStep].id)
         }
         return nil
     }
 
     /// Applies `rule` to `ingredient` and returns the ID of the ingredient that now holds the new food.
-    private mutating func apply(_ rule: SwapRule, to ingredient: Ingredient) -> IngredientID {
+    private mutating func apply(
+        _ rule: SwapRule, to ingredient: Ingredient, cookingStep: Int?, catalog: FoodCatalog
+    ) -> IngredientID {
         guard let index = ingredients.firstIndex(where: { $0.id == ingredient.id }) else { return ingredient.id }
-        let original = Substitute(name: ingredient.name, ratio: 1 / rule.ratio, note: "Original")
+        // Ratio is by weight, so amounts in TL, EL or Stk are converted through the two foods' unit weights.
+        let unitFactor = ingredient.amount.weightFactor(from: catalog.food(rule.from), to: catalog.food(rule.to))
+        let factor = rule.ratio * unitFactor
+        let original = Substitute(name: ingredient.name, ratio: 1 / factor, note: "Original")
         let newID: IngredientID
         if rule.share >= 1 {
             newID = ingredient.id
             ingredients[index].name = rule.toName
             ingredients[index].food = rule.to
-            ingredients[index].amount = ingredient.amount.multiplied(by: rule.ratio)
-            ingredients[index].substitutes = [original]
+            ingredients[index].amount = ingredient.amount.multiplied(by: factor)
+            ingredients[index].substitutes = [original] + ingredient.substitutes
         } else {
-            newID = IngredientID("\(ingredient.id.rawValue)-\(rule.id.rawValue)")
+            newID = uniqueIngredientID("\(ingredient.id.rawValue)-\(rule.id.rawValue)")
             ingredients[index].amount = ingredient.amount.multiplied(by: 1 - rule.share)
             let added = Ingredient(
-                id: newID, name: rule.toName, amount: ingredient.amount.multiplied(by: rule.share * rule.ratio),
+                id: newID, name: rule.toName, amount: ingredient.amount.multiplied(by: rule.share * factor),
                 food: rule.to, scales: ingredient.scales, substitutes: [original])
             ingredients.insert(added, at: index + 1)
         }
-        for stepIndex in steps.indices {
-            guard let position = steps[stepIndex].ingredientIDs.firstIndex(of: ingredient.id) else { continue }
-            if newID != ingredient.id {
+        if newID != ingredient.id {
+            for stepIndex in steps.indices {
+                guard let position = steps[stepIndex].ingredientIDs.firstIndex(of: ingredient.id) else { continue }
                 steps[stepIndex].ingredientIDs.insert(newID, at: position + 1)
             }
-            if let duration = steps[stepIndex].setting?.duration, duration > .zero, rule.extraTime > .zero {
-                steps[stepIndex].setting?.duration = duration + rule.extraTime
-                totalMinutes += Int((Double(rule.extraTime.components.seconds) / 60).rounded(.up))
-            }
-            if let note = rule.stepNote {
-                steps[stepIndex].note = [steps[stepIndex].note, note].compactMap { $0 }.joined(separator: " ")
-            }
+        }
+        if let cookingStep, let duration = steps[cookingStep].setting?.duration {
+            steps[cookingStep].setting?.duration = duration + rule.extraTime
+            totalMinutes += Int((Double(rule.extraTime.components.seconds) / 60).rounded(.up))
+        }
+        let noteStep = cookingStep ?? steps.firstIndex { $0.ingredientIDs.contains(ingredient.id) }
+        if let note = rule.stepNote, let noteStep {
+            steps[noteStep].note = [steps[noteStep].note, note].compactMap { $0 }.joined(separator: " ")
         }
         return newID
+    }
+
+    private func uniqueIngredientID(_ base: String) -> IngredientID {
+        let taken = Set(ingredients.map(\.id.rawValue))
+        var candidate = base
+        var number = 2
+        while taken.contains(candidate) {
+            candidate = "\(base)-\(number)"
+            number += 1
+        }
+        return IngredientID(candidate)
     }
 }
 
@@ -108,5 +148,14 @@ extension Amount {
         case .measured(let value, let unit): return .measured(value * factor, unit)
         case .toTaste: return .toTaste
         }
+    }
+
+    /// How many units of `to` weigh as much as one unit of `from`, for this amount's unit. 1 for grams, for
+    /// amounts to taste, and when either food has no weight for the unit.
+    fileprivate func weightFactor(from: Food?, to: Food?) -> Double {
+        guard case .measured(_, let unit) = self, unit != .gram, let fromWeight = from?.gramsPerUnit[unit],
+            let toWeight = to?.gramsPerUnit[unit]
+        else { return 1 }
+        return fromWeight / toWeight
     }
 }

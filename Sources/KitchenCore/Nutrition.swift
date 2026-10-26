@@ -75,33 +75,39 @@ extension FoodCatalog {
             facts.uncounted = recipe.ingredients.map(\.id)
             return facts
         }
-        let share = 1 / Double(recipe.baseServings)
-        for ingredient in recipe.ingredients where ingredient.eaten {
-            guard let food = food(for: ingredient), let nutrients = food.nutrients,
-                let grams = food.grams(of: ingredient.amount)
-            else {
+        for (ingredient, weighed) in eatenIngredients(of: recipe) {
+            guard let (food, grams) = weighed, let nutrients = food.nutrients else {
                 facts.uncounted.append(ingredient.id)
                 continue
             }
-            facts.add(nutrients, grams: grams * share)
+            facts.add(nutrients, grams: grams)
             if nutrients.fiber == nil {
                 facts.fiberUnknown.append(ingredient.id)
             }
         }
         return facts
     }
-}
 
-extension FoodCatalog {
     /// Grams per serving of each food group in `recipe`, for comparing a variant with the original and with
-    /// intake targets. Ingredients that are not eaten, not mapped or cannot be weighed are left out.
+    /// intake targets. Counts the same ingredients as `nutritionPerServing(of:)`, nutrients or not.
     public func groupGramsPerServing(of recipe: Recipe) -> [FoodGroupID: Double] {
         guard recipe.baseServings > 0 else { return [:] }
         var grams: [FoodGroupID: Double] = [:]
-        for ingredient in recipe.ingredients where ingredient.eaten {
-            guard let food = food(for: ingredient), let weight = food.grams(of: ingredient.amount) else { continue }
-            grams[food.group, default: 0] += weight / Double(recipe.baseServings)
+        for case (_, let (food, weight)?) in eatenIngredients(of: recipe) {
+            grams[food.group, default: 0] += weight
         }
         return grams
+    }
+
+    /// Eaten ingredients in recipe order, each with its food and grams per serving, or nil when it cannot be
+    /// weighed (to taste, unmapped, or without a weight for its unit). Expects `baseServings > 0`.
+    private func eatenIngredients(of recipe: Recipe) -> [(Ingredient, (Food, Double)?)] {
+        let share = 1 / Double(recipe.baseServings)
+        return recipe.ingredients.filter(\.eaten).map { ingredient in
+            guard let food = food(for: ingredient), let grams = food.grams(of: ingredient.amount) else {
+                return (ingredient, nil)
+            }
+            return (ingredient, (food, grams * share))
+        }
     }
 }

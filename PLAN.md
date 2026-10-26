@@ -145,8 +145,10 @@ den Unterschied zu Ausgewogen.
 **Stand M9a:** Regeln stehen in `Resources/Evidence/rewrite-rules.json`, jede mit Wortlaut der DGE-Seite.
 Ausgewogen tauscht Weißreis gegen Vollkornreis (15 Min länger), Nudeln gegen Vollkornnudeln (2 Min länger), Mehl zur
 Hälfte gegen Vollkornmehl, Butter gegen 80 % Olivenöl und Ghee zur Hälfte gegen Olivenöl. Die Variante heißt
-`<rezept>-<ziel>`, behält das Original als Ersatz („Original“) und überspringt einen Tausch, der die 99-Minuten-Grenze
-sprengen würde. **Offen:** Kokosmilch und Sahne. Die DGE-Seite begründet „Pflanzliche Öle bevorzugen“, sagt aber nichts
+`<rezept>-<ziel>`, behält das Original als ersten Ersatz („Original“), rechnet Mengen in TL und EL über das Gewicht um
+und überspringt einen Tausch, der die 99-Minuten-Grenze sprengen würde. Die Zusatzgarzeit kommt einmal auf den längsten
+beheizten Schritt ab dem Zugeben bis zum nächsten frischen Topf; eine Regel muss die Gruppe verbessern, sonst gilt
+sie als Fehler. **Offen:** Kokosmilch und Sahne. Die DGE-Seite begründet „Pflanzliche Öle bevorzugen“, sagt aber nichts
 wörtlich zu Kokos oder Sahne; ein Tausch dafür braucht eine eigene Quelle (z. B. DGE-Leitlinie Fett). Von den drei
 mitgelieferten Rezepten ändert Ausgewogen deshalb noch keines, die Regeln greifen bei den Rezepten aus M10.
 
