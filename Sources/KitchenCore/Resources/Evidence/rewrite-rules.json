@@ -2,6 +2,105 @@
   "schemaVersion": 1,
   "goals": [
     {
+      "id": "vegetarian",
+      "rules": [
+        {
+          "id": "chicken-to-tofu",
+          "from": "chicken-thigh",
+          "to": "firm-tofu",
+          "toName": "Tofu, fest",
+          "stepNote": "Tofu in mundgerechten Würfeln, gut trocken getupft; behutsam rühren, damit er ganz bleibt.",
+          "sourceID": "dge-2024",
+          "quote": "zeigen einen Weg, den Verzehr von pflanzlichen Lebensmitteln zu steigern und den von tierischen Lebensmitteln zu senken, um Gesundheit und Umwelt zu schützen"
+        },
+        {
+          "id": "pork-mince-to-tofu",
+          "from": "pork-mince",
+          "to": "firm-tofu",
+          "toName": "Tofu, fest, zerbröselt",
+          "stepNote": "Tofu mit den Fingern grob zerbröseln und wie Hackfleisch kräftig anbraten.",
+          "sourceID": "dge-2024",
+          "quote": "zeigen einen Weg, den Verzehr von pflanzlichen Lebensmitteln zu steigern und den von tierischen Lebensmitteln zu senken, um Gesundheit und Umwelt zu schützen"
+        },
+        {
+          "id": "pork-belly-to-smoked-tofu",
+          "from": "pork-belly",
+          "to": "firm-tofu",
+          "toName": "Räuchertofu",
+          "stepNote": "Räuchertofu in Scheiben bringt das Rauchige; wie den Schweinebauch anbraten.",
+          "sourceID": "dge-2024",
+          "quote": "zeigen einen Weg, den Verzehr von pflanzlichen Lebensmitteln zu steigern und den von tierischen Lebensmitteln zu senken, um Gesundheit und Umwelt zu schützen"
+        },
+        {
+          "id": "salmon-alternative",
+          "from": "salmon",
+          "to": "firm-tofu",
+          "toName": "Tofu, fest",
+          "stepNote": "in Scheiben, gleich lange garen",
+          "sourceID": "dge-2024-ernaehrungskreis-fleisch-fisch",
+          "quote": "Basis einer gesunden Ernährung sind pflanzliche Lebensmittel",
+          "offer": true
+        },
+        {
+          "id": "sea-bass-alternative",
+          "from": "sea-bass",
+          "to": "firm-tofu",
+          "toName": "Tofu, fest",
+          "stepNote": "in dicken Scheiben, gleich lange dämpfen",
+          "sourceID": "dge-2024-ernaehrungskreis-fleisch-fisch",
+          "quote": "Basis einer gesunden Ernährung sind pflanzliche Lebensmittel",
+          "offer": true
+        },
+        {
+          "id": "fish-sauce-alternative",
+          "from": "fish-sauce",
+          "to": "soy-sauce",
+          "toName": "Helle Sojasauce mit etwas Miso",
+          "stepNote": "vegetarisch, weniger Meeresaroma",
+          "sourceID": "dge-2024-ernaehrungskreis-fleisch-fisch",
+          "quote": "Basis einer gesunden Ernährung sind pflanzliche Lebensmittel",
+          "offer": true
+        },
+        {
+          "id": "shrimp-paste-alternative",
+          "from": "shrimp-paste",
+          "to": "miso",
+          "toName": "Miso",
+          "stepNote": "vegetarisch, ähnlich salzig-würzig",
+          "sourceID": "dge-2024-ernaehrungskreis-fleisch-fisch",
+          "quote": "Basis einer gesunden Ernährung sind pflanzliche Lebensmittel",
+          "offer": true
+        },
+        {
+          "id": "oyster-sauce-alternative",
+          "from": "oyster-sauce",
+          "to": "mushroom-oyster-sauce",
+          "toName": "Vegetarische Austernsauce",
+          "stepNote": "auf Pilzbasis",
+          "sourceID": "dge-2024-ernaehrungskreis-fleisch-fisch",
+          "quote": "Basis einer gesunden Ernährung sind pflanzliche Lebensmittel",
+          "offer": true
+        },
+        {
+          "id": "katsuobushi-alternative",
+          "from": "katsuobushi",
+          "to": "dried-shiitake",
+          "toName": "Shiitake, getrocknet",
+          "stepNote": "vegetarische Dashi: mit dem Kombu ziehen lassen",
+          "sourceID": "dge-2024-ernaehrungskreis-fleisch-fisch",
+          "quote": "Basis einer gesunden Ernährung sind pflanzliche Lebensmittel",
+          "offer": true
+        }
+      ],
+      "notes": [
+        {
+          "text": "Vegetarisch tauscht Fleisch gegen Tofu. Fisch und tierische Würzen wie Fischsauce bleiben im Original, ihre vegetarische Alternative steht ganz oben in der Ersatzliste. Die DGE empfiehlt Fisch ein- bis zweimal pro Woche.",
+          "sourceID": "dge-2024-ernaehrungskreis-fleisch-fisch",
+          "quote": "Pro Woche können 1 bis 2 Portionen Fisch auf den Tisch kommen"
+        }
+      ]
+    },
+    {
       "id": "balanced",
       "rules": [
         {

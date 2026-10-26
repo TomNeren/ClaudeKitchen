@@ -22,12 +22,27 @@ final class RecipeDetailModel {
     }
     private(set) var variant: RecipeVariant?
 
-    init(recipe: Recipe, profile: DeviceProfile = .omniCook, advisor: HealthAdvisor? = HealthGoals.advisor) {
+    /// With `vegetarianByDefault`, a recipe the vegetarian goal swaps meat in opens in that variant; the original
+    /// stays one choice away in the goal menu.
+    init(
+        recipe: Recipe, profile: DeviceProfile = .omniCook, advisor: HealthAdvisor? = HealthGoals.advisor,
+        vegetarianByDefault: Bool = HealthGoals.vegetarianByDefault
+    ) {
         self.recipe = recipe
         self.profile = profile
         self.advisor = advisor
         servingsRange = profile.servingsRange(for: recipe)
         servings = recipe.baseServings
+        if vegetarianByDefault, recipe.variantOf == nil,
+            let vegetarian = advisor?.variant(of: recipe, for: RewriteGoal.vegetarian),
+            vegetarian.changes.contains(where: { !$0.change.isOffer })
+        {
+            // didSet does not run inside init, so the derived values are set here too.
+            goal = RewriteGoal.vegetarian
+            variant = vegetarian
+            servingsRange = profile.servingsRange(for: vegetarian.recipe)
+            servings = min(max(servings, servingsRange.lowerBound), servingsRange.upperBound)
+        }
     }
 
     /// The recipe the screen shows and cooks: the variant for the chosen goal, else the original.

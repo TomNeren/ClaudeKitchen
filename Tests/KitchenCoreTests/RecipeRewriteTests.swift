@@ -109,6 +109,55 @@ struct RecipeRewriteTests {
         #expect(rewrite.skipped.map(\.reason) == [.amountToTaste])
     }
 
+    @Test func anOfferKeepsTheIngredientAndPutsTheAlternativeFirst() {
+        var offer = Self.rule("cumin-alternative", from: "cumin", to: "coriander-ground", note: "milder")
+        offer.offer = true
+        var recipe = Self.recipe
+        recipe.ingredients[3].eaten = false
+        recipe.ingredients[3].substitutes = [Substitute(name: "Kümmel")]
+        let goal = RewriteGoal(id: "vegetarian", rules: [offer])
+        let rewrite = recipe.rewritten(for: goal, catalog: Self.catalog)
+        let cumin = rewrite.recipe.ingredient("kreuzkuemmel")
+        #expect(cumin?.food == "cumin" && cumin?.amount == .measured(1, .teaspoon))
+        #expect(cumin?.substitutes.map(\.name) == ["Neu coriander-ground", "Kümmel"])
+        #expect(cumin?.substitutes.first?.note == "milder")
+        #expect(
+            rewrite.changes == [
+                RecipeChange(
+                    rule: "cumin-alternative", ingredient: "kreuzkuemmel", newIngredient: "kreuzkuemmel", isOffer: true)
+            ])
+        // Offering twice does not list the alternative twice.
+        var twice = rewrite.recipe
+        twice.variantOf = nil
+        #expect(
+            twice.rewritten(for: goal, catalog: Self.catalog).recipe.ingredient("kreuzkuemmel")?.substitutes.count == 2)
+    }
+
+    @Test func offersMayNameSeasoningsWithoutImproving() {
+        var offer = Self.rule("fish-sauce-alternative", from: "fish-sauce", to: "soy-sauce")
+        offer.offer = true
+        let rules = RewriteRules(goals: [RewriteGoal(id: "vegetarian", rules: [offer])])
+        #expect(rules.issues(in: Self.catalog).isEmpty)
+        offer.offer = false
+        let swap = RewriteRules(goals: [RewriteGoal(id: "vegetarian", rules: [offer])])
+        #expect(
+            swap.issues(in: Self.catalog).contains(.protectedFood(rule: "fish-sauce-alternative", food: "fish-sauce")))
+    }
+
+    @Test func vegetarianSwapsMeatAndOffersAlternativesForFishAndAnimalSeasonings() throws {
+        let advisor = try HealthAdvisor.bundled()
+        let recipes = try RecipeLibrary.bundled()
+        let meat = try #require(recipes.first { $0.id == "pad-krapow-gai" })
+        let variant = try #require(advisor.variant(of: meat, for: RewriteGoal.vegetarian))
+        #expect(variant.recipe.ingredients.allSatisfy { $0.food != "chicken-thigh" })
+        #expect(variant.recipe.ingredients.contains { $0.food == "fish-sauce" })
+        #expect(variant.changes.contains { $0.change.isOffer && $0.newName == "Helle Sojasauce mit etwas Miso" })
+        let fish = try #require(recipes.first { $0.id == "gedaempfter-wolfsbarsch" })
+        let fishVariant = try #require(advisor.variantRecipe(of: fish, for: RewriteGoal.vegetarian))
+        #expect(fishVariant.ingredients.contains { $0.food == "sea-bass" })
+        #expect(fishVariant.ingredients.first { $0.food == "sea-bass" }?.substitutes.first?.name == "Tofu, fest")
+    }
+
     @Test func ingredientsThatAreNotEatenAreNotSwapped() {
         var recipe = Self.recipe
         recipe.ingredients[2].eaten = false
@@ -117,7 +166,7 @@ struct RecipeRewriteTests {
 
     @Test func everyVariantPassesDeviceValidationAndKeepsSeasonings() throws {
         let rules = try RewriteRules.bundled()
-        #expect(rules.goals.count == 4)
+        #expect(rules.goals.count == 5)
         for goal in try rules.goals.map({ try #require(rules.resolved($0.id)) }) {
             try checkVariants(for: goal)
         }
@@ -137,7 +186,9 @@ struct RecipeRewriteTests {
                     goal.criterion == .sodium
                     && after.food.flatMap(Self.catalog.food)?.lowSodiumVersionOf == food.id
                     && after.amount == ingredient.amount
-                #expect(after == ingredient || lowSodium, "\(recipe.id) \(goal.id): \(ingredient.id)")
+                // An offer only adds an alternative to the substitutes; food and amount stay.
+                let unchanged = after.food == ingredient.food && after.amount == ingredient.amount
+                #expect(unchanged || lowSodium, "\(recipe.id) \(goal.id): \(ingredient.id)")
             }
         }
     }

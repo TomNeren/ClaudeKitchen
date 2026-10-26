@@ -7,6 +7,8 @@ public struct RecipeChange: Sendable, Hashable {
     public var ingredient: IngredientID
     /// The ingredient that now carries the new food: the same ID for a full swap, a new one for a partial swap.
     public var newIngredient: IngredientID
+    /// True when the rule only offered an alternative (`SwapRule.offer`); the ingredient is unchanged.
+    public var isOffer = false
 }
 
 /// A rule that matched an ingredient but was not applied, and why.
@@ -47,8 +49,16 @@ extension Recipe {
         variant.variantOf = id
         var changes: [RecipeChange] = []
         var skipped: [SkippedSwap] = []
-        for ingredient in ingredients where ingredient.eaten {
+        for ingredient in ingredients {
             guard let rule = goal.rules.first(where: { $0.from == ingredient.food }) else { continue }
+            if rule.offer {
+                variant.offer(rule, for: ingredient.id)
+                changes.append(
+                    RecipeChange(rule: rule.id, ingredient: ingredient.id, newIngredient: ingredient.id, isOffer: true))
+                continue
+            }
+            // Swaps change what is eaten; something that leaves the dish, like a bay leaf, stays.
+            guard ingredient.eaten else { continue }
             let cookingStep = rule.extraTime > .zero ? variant.cookingStep(for: ingredient.id) : nil
             if let reason = variant.blocker(for: rule, on: ingredient, cookingStep: cookingStep, profile: profile) {
                 skipped.append(SkippedSwap(rule: rule.id, ingredient: ingredient.id, reason: reason))
@@ -129,6 +139,15 @@ extension Recipe {
             steps[noteStep].note = [steps[noteStep].note, note].compactMap { $0 }.joined(separator: " ")
         }
         return newID
+    }
+
+    /// Puts the rule's alternative first in the ingredient's substitutes, unless it is listed already.
+    private mutating func offer(_ rule: SwapRule, for ingredient: IngredientID) {
+        guard let index = ingredients.firstIndex(where: { $0.id == ingredient }),
+            !ingredients[index].substitutes.contains(where: { $0.name == rule.toName })
+        else { return }
+        let alternative = Substitute(name: rule.toName, ratio: rule.ratio, note: rule.stepNote)
+        ingredients[index].substitutes.insert(alternative, at: 0)
     }
 
     private func firstStep(adding ingredient: IngredientID) -> Int? {

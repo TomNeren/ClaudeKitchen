@@ -258,23 +258,43 @@ private struct ChangeRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(detail.originalName).foregroundStyle(Palette.muted).strikethrough()
-                Image(systemName: "arrow.right").foregroundStyle(Palette.herb).accessibilityHidden(true)
-                Text(detail.newName).foregroundStyle(Palette.ink).fontWeight(.semibold)
-                if detail.rule.share < 1 {
-                    Text(HealthGoals.shareText(detail.rule.share)).font(.footnote).foregroundStyle(Palette.muted)
-                }
+            if detail.change.isOffer {
+                offer
+            } else {
+                swap
             }
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(
-                "\(detail.originalName) wird \(detail.rule.share < 1 ? HealthGoals.shareText(detail.rule.share) + " " : "")zu \(detail.newName)"
-            )
             if let note = detail.rule.stepNote {
                 Text(note).font(.footnote).foregroundStyle(Palette.muted)
             }
             SourceDisclosure(quote: detail.rule.quote, source: detail.source)
         }
+    }
+
+    /// The original stays; the alternative is first in its substitutes.
+    private var offer: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(detail.originalName).foregroundStyle(Palette.ink).fontWeight(.semibold)
+            Label("Alternative: \(detail.newName)", systemImage: "arrow.triangle.branch")
+                .font(.subheadline)
+                .foregroundStyle(Palette.herb)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(detail.originalName) bleibt, Alternative: \(detail.newName)")
+    }
+
+    private var swap: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Text(detail.originalName).foregroundStyle(Palette.muted).strikethrough()
+            Image(systemName: "arrow.right").foregroundStyle(Palette.herb).accessibilityHidden(true)
+            Text(detail.newName).foregroundStyle(Palette.ink).fontWeight(.semibold)
+            if detail.rule.share < 1 {
+                Text(HealthGoals.shareText(detail.rule.share)).font(.footnote).foregroundStyle(Palette.muted)
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            "\(detail.originalName) wird \(detail.rule.share < 1 ? HealthGoals.shareText(detail.rule.share) + " " : "")zu \(detail.newName)"
+        )
     }
 }
 

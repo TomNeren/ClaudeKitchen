@@ -6,7 +6,7 @@ public struct ChangeDetail: Sendable, Hashable {
     public var rule: SwapRule
     /// Ingredient name in the original recipe, for example "Basmatireis".
     public var originalName: String
-    /// Ingredient name in the variant, for example "Vollkornreis".
+    /// Ingredient name in the variant, for example "Vollkornreis"; for an offer the offered alternative.
     public var newName: String
     /// The source the rule cites, nil only for an inconsistent rule set.
     public var source: EvidenceSource?
@@ -64,7 +64,8 @@ public struct HealthAdvisor: Sendable {
                 let new = rewrite.recipe.ingredient(change.newIngredient)
             else { return nil }
             return ChangeDetail(
-                change: change, rule: rule, originalName: original.name, newName: new.name,
+                change: change, rule: rule, originalName: original.name,
+                newName: change.isOffer ? rule.toName : new.name,
                 source: catalog.source(rule.sourceID))
         }
         let notes = goal.notes.map { NoteDetail(note: $0, source: catalog.source($0.sourceID)) }

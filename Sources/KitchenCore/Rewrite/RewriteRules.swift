@@ -7,7 +7,11 @@ public typealias SwapRuleID = Identifier<SwapRule>
 ///
 /// JSON shape: `{"id": "brown-rice", "from": "white-rice", "to": "brown-rice", "toName": "Vollkornreis",
 /// "share": 1, "ratio": 1, "extraSeconds": 900, "stepNote": "…", "sourceID": "dge-2024", "quote": "…"}`.
-/// `share` and `ratio` default to 1, `extraSeconds` and `extraWaterPerGram` to 0.
+/// `share` and `ratio` default to 1, `extraSeconds` and `extraWaterPerGram` to 0, `offer` to false.
+///
+/// With `"offer": true` the rule swaps nothing: the original stays and `toName` is offered as the first substitute,
+/// with `ratio` and `stepNote` as its note. Offers may name seasonings, because the dish stays as written, for
+/// example a vegetarian alternative to fish sauce.
 public struct SwapRule: Sendable, Hashable, Codable, Identifiable {
     public let id: SwapRuleID
     public var from: FoodID
@@ -28,11 +32,13 @@ public struct SwapRule: Sendable, Hashable, Codable, Identifiable {
     public var sourceID: SourceID
     /// The passage of the source that backs the swap, verbatim.
     public var quote: String
+    /// True for a rule that only offers `toName` as a substitute and keeps the original.
+    public var offer: Bool
 
     public init(
         id: SwapRuleID, from: FoodID, to: FoodID, toName: String, share: Double = 1, ratio: Double = 1,
         extraTime: Duration = .zero, extraWaterPerGram: Double = 0, stepNote: String? = nil, sourceID: SourceID,
-        quote: String
+        quote: String, offer: Bool = false
     ) {
         self.id = id
         self.from = from
@@ -45,10 +51,11 @@ public struct SwapRule: Sendable, Hashable, Codable, Identifiable {
         self.stepNote = stepNote
         self.sourceID = sourceID
         self.quote = quote
+        self.offer = offer
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, from, to, toName, share, ratio, extraSeconds, extraWaterPerGram, stepNote, sourceID, quote
+        case id, from, to, toName, share, ratio, extraSeconds, extraWaterPerGram, stepNote, sourceID, quote, offer
     }
 
     public init(from decoder: any Decoder) throws {
@@ -64,6 +71,7 @@ public struct SwapRule: Sendable, Hashable, Codable, Identifiable {
         stepNote = try container.decodeIfPresent(String.self, forKey: .stepNote)
         sourceID = try container.decode(SourceID.self, forKey: .sourceID)
         quote = try container.decode(String.self, forKey: .quote)
+        offer = try container.decodeIfPresent(Bool.self, forKey: .offer) ?? false
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -87,6 +95,9 @@ public struct SwapRule: Sendable, Hashable, Codable, Identifiable {
         try container.encodeIfPresent(stepNote, forKey: .stepNote)
         try container.encode(sourceID, forKey: .sourceID)
         try container.encode(quote, forKey: .quote)
+        if offer {
+            try container.encode(true, forKey: .offer)
+        }
     }
 }
 
@@ -157,6 +168,7 @@ public struct RewriteGoal: Sendable, Hashable, Codable, Identifiable {
     public static let bloodPressure: RewriteGoalID = "blood-pressure"
     public static let weightLoss: RewriteGoalID = "weight-loss"
     public static let lowCarb: RewriteGoalID = "low-carb"
+    public static let vegetarian: RewriteGoalID = "vegetarian"
 }
 
 /// All rewrite goals that ship with the app, from `Resources/Evidence/rewrite-rules.json`.
@@ -307,7 +319,8 @@ extension RewriteRules {
         for (id, food) in [(rule.from, from), (rule.to, to)] where food == nil {
             issues.append(.unknownFood(rule: rule.id, food: id))
         }
-        guard let from, let to else { return issues }
+        // An offer keeps the original, so it neither touches protected foods nor has to improve the criterion.
+        guard let from, let to, !rule.offer else { return issues }
         let lowSodiumVersion =
             criterion == .sodium && from.role == .seasoning && to.role == .seasoning
             && to.lowSodiumVersionOf == from.id
