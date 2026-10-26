@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "id": "tom-kha-gai",
+  "name": "Tom Kha Gai",
+  "tag": "Thailändisch · Suppe",
+  "baseServings": 3,
+  "totalMinutes": 35,
+  "verified": false,
+  "origin": { "cuisine": "thailand", "region": "Zentralthailand" },
+  "references": [
+    { "title": "Thai Food", "author": "David Thompson", "year": 2002 }
+  ],
+  "authenticityChecks": [
+    "Galgant, Zitronengras und Kaffirlimettenblätter in der Brühe ziehen lassen, nicht mitessen",
+    "Säure mit frischem Limettensaft erst ganz am Ende, ohne Hitze",
+    "Kokosmilch nur sanft erhitzen, nicht kochen"
+  ],
+  "ingredients": [
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 300, "unit": "g",
+      "substitutes": [ { "name": "Hühnerbrühe", "ratio": 1, "note": "kräftiger" } ] },
+    { "id": "kokosmilch", "name": "Kokosmilch", "food": "coconut-milk", "quantity": 400, "unit": "g" },
+    { "id": "galgant", "name": "Galgant", "food": "galangal", "quantity": 30, "unit": "g", "note": "in Scheiben",
+      "eaten": false },
+    { "id": "zitronengras", "name": "Zitronengras", "food": "lemongrass", "quantity": 2, "unit": "Stk",
+      "note": "in 4 cm Stücken, angedrückt", "eaten": false },
+    { "id": "kaffir", "name": "Kaffirlimettenblätter", "food": "kaffir-lime-leaves", "quantity": 5, "unit": "Stk",
+      "note": "gerissen", "scales": false, "eaten": false },
+    { "id": "huhn", "name": "Hähnchenschenkel, ohne Haut", "food": "chicken-thigh", "quantity": 300, "unit": "g",
+      "note": "in dünnen Scheiben" },
+    { "id": "pilze", "name": "Austernpilze", "food": "oyster-mushrooms", "quantity": 150, "unit": "g", "note": "gezupft" },
+    { "id": "fischsauce", "name": "Fischsauce", "food": "fish-sauce", "quantity": 2.5, "unit": "EL" },
+    { "id": "palmzucker", "name": "Palmzucker", "food": "palm-sugar", "quantity": 1, "unit": "TL" },
+    { "id": "chilis", "name": "Rote Chili", "food": "red-chili", "quantity": 3, "unit": "Stk", "note": "angedrückt" },
+    { "id": "limette", "name": "Limette", "food": "lime", "quantity": 2, "unit": "Stk", "note": "nur der Saft" },
+    { "id": "koriander", "name": "Koriandergrün", "food": "coriander-leaves", "quantity": 10, "unit": "g" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Aromen", "text": "Wasser, Kokosmilch, Galgant, Zitronengras und Kaffirlimettenblätter in den Topf geben und ziehen lassen.",
+      "note": "Messbecher einsetzen.",
+      "ingredientIDs": ["wasser", "kokosmilch", "galgant", "zitronengras", "kaffir"],
+      "setting": { "heat": 90, "speed": 1, "reverse": true, "seconds": 480 } },
+    { "id": "s2", "phase": "Garen", "text": "Hähnchen und Pilze zugeben und gar ziehen lassen.",
+      "ingredientIDs": ["huhn", "pilze"],
+      "setting": { "heat": 90, "speed": 1, "reverse": true, "seconds": 600 } },
+    { "id": "s3", "phase": "Würzen", "text": "Fischsauce, Palmzucker und Chilis zugeben.",
+      "ingredientIDs": ["fischsauce", "palmzucker", "chilis"],
+      "setting": { "heat": 85, "speed": 1, "reverse": true, "seconds": 60 } },
+    { "id": "s4", "phase": "Anrichten", "text": "Limettensaft und Koriandergrün in die Suppenschalen geben und die Suppe darüber füllen.",
+      "note": "Galgant, Zitronengras und Blätter bleiben in der Schale, werden aber nicht gegessen.",
+      "ingredientIDs": ["limette", "koriander"] }
+  ]
+}

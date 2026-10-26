@@ -22,7 +22,7 @@ struct RecipeSearchTests {
     @Test func matchesNameTagAndIngredientsIgnoringCaseAndDiacritics() {
         #expect(ids("LINSEN") == ["zitronen-linsen-eintopf"])
         #expect(ids("dampf") == ["ingwer-lachs-pak-choi"])
-        #expect(ids("kokosmilch") == ["kichererbsen-spinat-curry"])
+        #expect(ids("kokosmilch").contains("kichererbsen-spinat-curry") && !ids("kokosmilch").contains("dal-tadka"))
         #expect(ids("gemusebruhe") == ["zitronen-linsen-eintopf"])
     }
 
