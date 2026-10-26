@@ -12,7 +12,7 @@
   ],
   "authenticityChecks": [
     "Doubanjiang (Pixian) und fermentierte schwarze Bohnen im Öl gebraten, bis das Öl rot wird",
-    "Seidentofu in Würfeln, behutsam bewegt, Sauce mit Stärke gebunden",
+    "Weicher Tofu in Würfeln, vorher in heißem Salzwasser gezogen, behutsam bewegt, Sauce mit Stärke gebunden",
     "Ma la: gemahlener Szechuanpfeffer zum Schluss, scharf und prickelnd"
   ],
   "ingredients": [
@@ -29,7 +29,9 @@
     { "id": "reiswein", "name": "Shaoxing-Reiswein", "food": "shaoxing-wine", "quantity": 1, "unit": "EL" },
     { "id": "sojasauce", "name": "Sojasauce", "food": "soy-sauce", "quantity": 1, "unit": "TL" },
     { "id": "zucker", "name": "Zucker", "food": "sugar", "quantity": 0.5, "unit": "TL" },
-    { "id": "tofu", "name": "Seidentofu", "food": "soft-tofu", "quantity": 400, "unit": "g", "note": "in 2 cm Würfeln" },
+    { "id": "tofu", "name": "Tofu, weich", "food": "soft-tofu", "quantity": 400, "unit": "g",
+      "note": "in 2 cm Würfeln, 2 Min in leicht gesalzenem heißem Wasser gezogen",
+      "substitutes": [ { "name": "Tofu, mittelfest", "ratio": 1, "note": "bleibt sicherer ganz" } ] },
     { "id": "staerke", "name": "Speisestärke", "food": "cornstarch", "quantity": 1, "unit": "EL" },
     { "id": "staerke-wasser", "name": "Wasser", "food": "water", "quantity": 30, "unit": "g", "note": "für die Stärke" },
     { "id": "szechuanpfeffer", "name": "Szechuanpfeffer, gemahlen", "food": "sichuan-pepper", "quantity": 1, "unit": "TL",
@@ -47,14 +49,18 @@
     { "id": "s3", "phase": "Würze", "text": "Doubanjiang, schwarze Bohnen und Chilipulver zugeben und braten, bis das Öl rot wird.",
       "ingredientIDs": ["doubanjiang", "douchi", "chilipulver"],
       "setting": { "heat": 110, "speed": 1, "reverse": true, "seconds": 120 } },
-    { "id": "s4", "phase": "Tofu", "text": "Wasser, Reiswein, Sojasauce, Zucker und Tofu zugeben und ziehen lassen.",
-      "note": "Linkslauf auf kleinster Stufe, der Tofu zerbricht leicht. Messbecher einsetzen.",
-      "ingredientIDs": ["wasser", "reiswein", "sojasauce", "zucker", "tofu"],
-      "setting": { "heat": 95, "speed": 1, "reverse": true, "seconds": 360 } },
-    { "id": "s5", "phase": "Binden", "text": "Stärke mit Wasser glatt rühren, zugeben und kurz binden.",
+    { "id": "s4", "phase": "Sauce", "text": "Wasser, Reiswein, Sojasauce und Zucker zugeben und aufkochen.",
+      "note": "Messbecher einsetzen.",
+      "ingredientIDs": ["wasser", "reiswein", "sojasauce", "zucker"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 150 } },
+    { "id": "s5", "phase": "Tofu", "text": "Tofu zugeben und in der Sauce ziehen lassen.",
+      "note": "Linkslauf auf kleinster Stufe, der Tofu zerbricht leicht.",
+      "ingredientIDs": ["tofu"],
+      "setting": { "heat": 90, "speed": 1, "reverse": true, "seconds": 180 } },
+    { "id": "s6", "phase": "Binden", "text": "Stärke mit Wasser glatt rühren, zugeben und kurz binden.",
       "ingredientIDs": ["staerke", "staerke-wasser"],
-      "setting": { "heat": 95, "speed": 1, "reverse": true, "seconds": 120 } },
-    { "id": "s6", "phase": "Anrichten", "text": "Mit Szechuanpfeffer und Frühlingszwiebel bestreuen und mit Reis servieren.",
+      "setting": { "heat": 90, "speed": 1, "reverse": true, "seconds": 90 } },
+    { "id": "s7", "phase": "Anrichten", "text": "Mit Szechuanpfeffer und Frühlingszwiebel bestreuen und mit Reis servieren.",
       "ingredientIDs": ["szechuanpfeffer", "fruehlingszwiebel"] }
   ]
 }

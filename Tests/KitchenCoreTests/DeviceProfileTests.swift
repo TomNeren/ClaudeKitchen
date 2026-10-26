@@ -119,3 +119,21 @@ struct FillLevelCatalogTests {
         #expect(DeviceProfile.omniCook.maxServings(for: Self.recipe, catalog: nil) == 4)
     }
 }
+
+@Suite("Fill level across pots")
+struct FillLevelPotsTests {
+    @Test func anIngredientPutBackIntoAFreshPotCountsThereToo() {
+        let recipe = Recipe(
+            id: "r", name: "R", tag: "", baseServings: 1, totalMinutes: 10,
+            ingredients: [
+                Ingredient(id: "egg", name: "Ei", amount: .measured(800, .gram)),
+                Ingredient(id: "tomato", name: "Tomate", amount: .measured(800, .gram)),
+            ],
+            steps: [
+                Step(id: "s1", phase: "", text: "", ingredientIDs: ["egg"]),
+                Step(id: "s2", phase: "", text: "", ingredientIDs: ["tomato"], freshPot: true),
+                Step(id: "s3", phase: "", text: "", ingredientIDs: ["egg"]),
+            ])
+        #expect(DeviceProfile.omniCook.estimatedFillLiters(of: recipe, servings: 1, catalog: nil) == 1.6)
+    }
+}
