@@ -5,7 +5,8 @@ import SwiftUI
 struct ShoppingView: View {
     @Bindable var model: ShoppingModel
     @Environment(\.dismiss) private var dismiss
-    @State private var exportMessage: String?
+    @State private var exportMessage = ""
+    @State private var isShowingExportMessage = false
     @State private var isExporting = false
 
     var body: some View {
@@ -37,10 +38,7 @@ struct ShoppingView: View {
                         description: Text("Lege Rezepte über „Auf die Einkaufsliste“ in ihrer Ansicht hierher."))
                 }
             }
-            .alert(
-                exportMessage ?? "",
-                isPresented: Binding(get: { exportMessage != nil }, set: { _ in exportMessage = nil })
-            ) {
+            .alert(exportMessage, isPresented: $isShowingExportMessage) {
                 Button("OK", role: .cancel) {}
             }
             .navigationTitle("Einkauf")
@@ -58,7 +56,7 @@ struct ShoppingView: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     ShareLink(
-                        item: ShoppingText.plainText(model.list, checked: model.state.checked),
+                        item: ShoppingText.plainText(model.openItems),
                         preview: SharePreview("Einkaufsliste")
                     ) {
                         Label("Teilen", systemImage: "square.and.arrow.up")
@@ -67,7 +65,7 @@ struct ShoppingView: View {
                 }
                 ToolbarItem(placement: .bottomBar) {
                     Button("In Erinnerungen", systemImage: "list.bullet.rectangle") { exportToReminders() }
-                        .disabled(isExporting || ShoppingText.lines(model.list, checked: model.state.checked).isEmpty)
+                        .disabled(isExporting || model.openItems.isEmpty)
                 }
                 ToolbarItem(placement: .bottomBar) {
                     Button("Eingekauft", systemImage: "checkmark.circle") { model.buyChecked() }
@@ -111,19 +109,11 @@ struct ShoppingView: View {
 
 extension ShoppingView {
     fileprivate func exportToReminders() {
-        let lines = ShoppingText.lines(model.list, checked: model.state.checked)
         isExporting = true
         Task {
-            defer { isExporting = false }
-            do {
-                let count = try await RemindersExport.export(lines)
-                exportMessage = "\(count) Einträge in der Liste „\(RemindersExport.listTitle)“."
-            } catch RemindersExport.Failure.denied {
-                exportMessage =
-                    "Kein Zugriff auf Erinnerungen. Du kannst ihn in den Einstellungen unter Omni Cook erlauben."
-            } catch {
-                exportMessage = "Die Liste ließ sich nicht in Erinnerungen anlegen."
-            }
+            exportMessage = await model.exportToReminders()
+            isShowingExportMessage = true
+            isExporting = false
         }
     }
 
