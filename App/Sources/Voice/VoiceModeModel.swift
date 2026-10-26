@@ -1,3 +1,4 @@
+import Foundation
 import KitchenCore
 import Observation
 
@@ -28,6 +29,7 @@ final class VoiceModeModel {
     private let device: DeviceProfile
     private let listener = SpeechListener()
     private let speaker = Speaker()
+    private let log: VoiceLogStore
     private var loop: Task<Void, Never>?
     /// The last shutdown of the listener; a new start waits for it.
     private var shutdown: Task<Void, Never>?
@@ -35,9 +37,10 @@ final class VoiceModeModel {
     private var restarts = 0
     private static let maxRestarts = 3
 
-    init(cooking: CookingScreenModel, device: DeviceProfile = .omniCook) {
+    init(cooking: CookingScreenModel, device: DeviceProfile = .omniCook, log: VoiceLogStore = .shared) {
         self.cooking = cooking
         self.device = device
+        self.log = log
     }
 
     var isOn: Bool {
@@ -99,10 +102,18 @@ final class VoiceModeModel {
     }
 
     private func handle(_ sentence: String) async {
-        guard state == .listening, let command = VoiceCommand.parse(sentence) else { return }
+        guard state == .listening else { return }
+        let heardAt = Date.now
+        guard let command = VoiceCommand.parse(sentence) else {
+            // Ignored sentences too: they show what the rules missed.
+            record(.init(date: heardAt, heard: sentence, command: nil))
+            return
+        }
         state = .answering
         defer { if state == .answering { state = .listening } }
-        guard case (let reply, let isUnchecked)? = await reply(to: command), !Task.isCancelled else { return }
+        let answer = await reply(to: command)
+        record(.init(date: heardAt, heard: sentence, command: command.logName, reply: answer?.0))
+        guard case (let reply, let isUnchecked)? = answer, !Task.isCancelled else { return }
         exchange = Exchange(heard: sentence, reply: reply, isUnchecked: isUnchecked)
         listener.isMuted = true
         await speaker.say(reply)
@@ -141,6 +152,13 @@ final class VoiceModeModel {
         case .next, .previous, .repeatStep, .remainingTime, .startTimer, .pauseTimer:
             return nil
         }
+    }
+
+    /// One write per sentence, off the command path: the cook never waits for the log.
+    private func record(_ entry: VoiceLog.Entry) {
+        guard VoiceLogStore.isEnabled else { return }
+        let log = self.log
+        Task { await log.append(entry) }
     }
 
     private static func message(for error: any Error) -> String {

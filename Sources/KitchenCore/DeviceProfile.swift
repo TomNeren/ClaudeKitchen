@@ -5,6 +5,8 @@ public struct DeviceProfile: Sendable, Hashable {
     public var name: String
     /// Temperatures the manual mode accepts, in °C.
     public var temperatureRange: ClosedRange<Int>
+    /// Steps of the temperature dial, in °C.
+    public var temperatureStep: Int
     public var forwardSpeeds: ClosedRange<Int>
     public var reverseSpeeds: ClosedRange<Int>
     public var maxDuration: Duration
@@ -16,10 +18,11 @@ public struct DeviceProfile: Sendable, Hashable {
     public init(
         name: String, temperatureRange: ClosedRange<Int>, forwardSpeeds: ClosedRange<Int>,
         reverseSpeeds: ClosedRange<Int>, maxDuration: Duration, maxFillLiters: Double,
-        ownedAccessories: Set<Accessory>
+        ownedAccessories: Set<Accessory>, temperatureStep: Int = 5
     ) {
         self.name = name
         self.temperatureRange = temperatureRange
+        self.temperatureStep = temperatureStep
         self.forwardSpeeds = forwardSpeeds
         self.reverseSpeeds = reverseSpeeds
         self.maxDuration = maxDuration
