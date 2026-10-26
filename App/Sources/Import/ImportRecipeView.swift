@@ -143,7 +143,7 @@ private struct ImportPreview: View {
                 Section("Prüfung") {
                     ForEach(issues, id: \.self) { issue in
                         Label(
-                            IssueText.text(for: issue),
+                            IssueText.text(for: issue, in: recipe),
                             systemImage: issue.severity == .error
                                 ? "xmark.octagon.fill" : "exclamationmark.triangle.fill"
                         )

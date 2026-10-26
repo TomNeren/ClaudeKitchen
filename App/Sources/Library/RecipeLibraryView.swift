@@ -7,6 +7,7 @@ struct RecipeLibraryView: View {
     @State private var path: [Route] = []
     @State private var isImporting = false
     @State private var isShowingSettings = false
+    @State private var editing: EditorRequest?
     @Namespace private var transition
 
     init() {}
@@ -23,6 +24,12 @@ struct RecipeLibraryView: View {
                         }
                         .buttonStyle(.plain)
                         .contextMenu {
+                            Button(
+                                model.isOwn(recipe.id) ? "Bearbeiten" : "Als eigenes Rezept bearbeiten",
+                                systemImage: "pencil"
+                            ) {
+                                editing = model.editorRequest(for: recipe.id)
+                            }
                             if model.isOwn(recipe.id) {
                                 Button("Löschen", systemImage: "trash", role: .destructive) {
                                     Task { await model.delete(recipe.id) }
@@ -47,7 +54,12 @@ struct RecipeLibraryView: View {
                     Button("Einstellungen", systemImage: "gearshape") { isShowingSettings = true }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Rezept importieren", systemImage: "plus") { isImporting = true }
+                    Menu("Rezept hinzufügen", systemImage: "plus") {
+                        Button("Neues Rezept", systemImage: "square.and.pencil") {
+                            editing = model.newRecipeRequest()
+                        }
+                        Button("Rezept importieren", systemImage: "square.and.arrow.down") { isImporting = true }
+                    }
                 }
             }
             .sheet(isPresented: $isImporting) {
@@ -56,8 +68,22 @@ struct RecipeLibraryView: View {
             .sheet(isPresented: $isShowingSettings) {
                 SettingsView()
             }
+            .sheet(item: $editing) { request in
+                RecipeEditorView(recipe: request.recipe, isNew: request.isNew) { recipe in
+                    await save(recipe, copiedFrom: request.copiedFrom)
+                }
+            }
             .task { await model.loadOwn() }
         }
+    }
+
+    private func save(_ recipe: Recipe, copiedFrom original: RecipeID?) async -> Bool {
+        guard await model.save(recipe) else { return false }
+        // Edited a bundled recipe from its screen: show the own copy instead.
+        if let original, let last = path.last, last == .recipe(original) {
+            path[path.count - 1] = .recipe(recipe.id)
+        }
+        return true
     }
 
     @ViewBuilder
@@ -76,8 +102,13 @@ struct RecipeLibraryView: View {
         switch route {
         case .recipe(let id):
             if let recipe = model.recipe(id) {
-                RecipeDetailView(recipe: recipe) { servings in path.append(.cooking(id, servings: servings)) }
-                    .navigationTransition(.zoom(sourceID: id, in: transition))
+                RecipeDetailView(
+                    recipe: recipe, isOwn: model.isOwn(id),
+                    onEdit: { editing = model.editorRequest(for: id) }
+                ) { servings in path.append(.cooking(id, servings: servings)) }
+                // A saved change gives the screen a fresh model.
+                .id(recipe)
+                .navigationTransition(.zoom(sourceID: id, in: transition))
             }
         case .cooking(let id, let servings):
             if let recipe = model.recipe(id) {

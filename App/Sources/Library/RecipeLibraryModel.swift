@@ -1,3 +1,4 @@
+import Foundation
 import KitchenCore
 import Observation
 
@@ -46,8 +47,47 @@ final class RecipeLibraryModel {
         own = (try? await store.load()) ?? []
     }
 
+    /// Stores an own recipe, new or changed, and reloads the list. Returns false when writing failed.
+    @discardableResult
+    func save(_ recipe: Recipe) async -> Bool {
+        do {
+            try await store.save(recipe)
+            await loadOwn()
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    /// What editing `id` means: an own recipe is edited in place, a bundled one as an own copy.
+    func editorRequest(for id: RecipeID) -> EditorRequest? {
+        guard let recipe = recipe(id) else { return nil }
+        if isOwn(id) {
+            return EditorRequest(recipe: recipe, isNew: false)
+        }
+        return EditorRequest(recipe: recipe.copy(id: Self.newID(), name: recipe.name), isNew: true, copiedFrom: id)
+    }
+
+    func newRecipeRequest() -> EditorRequest {
+        EditorRequest(recipe: .blank(id: Self.newID()), isNew: true)
+    }
+
+    static func newID() -> RecipeID {
+        RecipeID("eigen-\(UUID().uuidString.prefix(8).lowercased())")
+    }
+
     func delete(_ id: RecipeID) async {
         try? await store.delete(id)
         await loadOwn()
     }
+}
+
+/// A recipe handed to the editor.
+struct EditorRequest: Identifiable {
+    var recipe: Recipe
+    var isNew: Bool
+    /// The bundled recipe this is a copy of, so the screen can switch to the copy after saving.
+    var copiedFrom: RecipeID?
+
+    var id: RecipeID { recipe.id }
 }
