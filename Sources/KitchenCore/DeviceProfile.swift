@@ -63,6 +63,9 @@ public struct ValidationIssue: Sendable, Hashable {
         case steamWithRotation
         case accessoryNotOwned(Accessory)
         case fillLevelExceeded(liters: Double)
+        /// The ingredient's food must boil for `required` (`Food.mustBoil`), but the steps from the one that adds it
+        /// up to the next fresh pot boil it for less.
+        case boilsTooShort(IngredientID, required: Duration)
     }
 
     public var kind: Kind
@@ -76,7 +79,7 @@ public struct ValidationIssue: Sendable, Hashable {
 
     public var severity: Severity {
         switch kind {
-        case .fillLevelExceeded, .accessoryNotOwned:
+        case .fillLevelExceeded, .accessoryNotOwned, .boilsTooShort:
             return .warning
         default:
             return .error
@@ -120,7 +123,30 @@ extension DeviceProfile {
         if liters > maxFillLiters {
             issues.append(ValidationIssue(kind: .fillLevelExceeded(liters: liters)))
         }
+        if let catalog {
+            issues += boilIssues(in: recipe, catalog: catalog)
+        }
         return issues
+    }
+
+    /// A warning, not an error: canned beans map to the same food and are safe without the long boil.
+    private func boilIssues(in recipe: Recipe, catalog: FoodCatalog) -> [ValidationIssue] {
+        recipe.ingredients.compactMap { ingredient in
+            guard let rule = catalog.food(for: ingredient)?.mustBoil,
+                let first = recipe.steps.firstIndex(where: { $0.ingredientIDs.contains(ingredient.id) })
+            else { return nil }
+            var boiled = Duration.zero
+            for index in recipe.steps.indices[first...] {
+                if index > first && recipe.steps[index].freshPot { break }
+                guard let setting = recipe.steps[index].setting, case .celsius(let celsius) = setting.heat,
+                    celsius >= 100, let duration = setting.duration
+                else { continue }
+                boiled += duration
+            }
+            guard boiled < rule.duration else { return nil }
+            return ValidationIssue(
+                kind: .boilsTooShort(ingredient.id, required: rule.duration), stepID: recipe.steps[first].id)
+        }
     }
 
     private func validate(_ step: Step) -> [ValidationIssue.Kind] {

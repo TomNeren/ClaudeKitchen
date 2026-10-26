@@ -20,6 +20,11 @@ enum IssueText {
         case .accessoryNotOwned(let accessory): return prefix + "Zubehör fehlt: \(accessory.displayName)."
         case .fillLevelExceeded(let liters):
             return "Etwa \(liters.formatted(.number.precision(.fractionLength(1)))) l: über der Füllmarke."
+        case .boilsTooShort(let id, let required):
+            let name = recipe.ingredient(id)?.name ?? "Eine Zutat"
+            return prefix
+                + "\(name) muss roh mindestens \(SettingFormatter.duration(required)) bei 100 °C sprudelnd kochen."
+                + " Aus der Dose ist sie schon gegart."
         }
     }
 

@@ -9,6 +9,8 @@ Usage:
     curl -sS "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id=28446499&rettype=abstract&retmode=text" \
         > /tmp/evidence-sources/schwingshackl-2017.txt
     curl -sSL <url of each dge source in the catalog> > /tmp/evidence-sources/<source id>.html
+    curl -sSL <url of the bfr-lektine-2024 PDF> -o /tmp/lektine.pdf
+    pdftotext /tmp/lektine.pdf /tmp/evidence-sources/bfr-lektine-2024.txt
     python3 -I Scripts/check_evidence_quotes.py Sources/KitchenCore/Resources/Evidence/food-catalog.json \
         /tmp/evidence-sources
 
@@ -27,6 +29,7 @@ for f in os.listdir(srcdir):
 c = json.load(open(cat))
 items = [(g['id'], e['sourceID'], e['quote']) for g in c['groups'] for e in g.get('effects', [])]
 items += [(t['id'], t['sourceID'], t['quote']) for t in c['targets']]
+items += [(f['id'] + '/mustBoil', f['mustBoil']['sourceID'], f['mustBoil']['quote']) for f in c['foods'] if 'mustBoil' in f]
 rules_path = os.path.join(os.path.dirname(cat), 'rewrite-rules.json')
 if os.path.exists(rules_path):
     for goal in json.load(open(rules_path, encoding='utf-8'))['goals']:
@@ -55,5 +58,9 @@ for t in c['targets']:
     for key in ('minimum', 'maximum', 'servingGrams'):
         if key in t and float(t[key]) not in nums:
             bad += 1; print('NUMBERS', t['id'], key, t[key])
+# the boiling time must appear in minutes in its quote
+for f in c['foods']:
+    if 'mustBoil' in f and f"{f['mustBoil']['seconds'] // 60} Minuten" not in f['mustBoil']['quote']:
+        bad += 1; print('NUMBERS', f['id'], 'mustBoil')
 print("failures:", bad)
 sys.exit(1 if bad else 0)

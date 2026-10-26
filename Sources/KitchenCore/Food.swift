@@ -34,11 +34,13 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
     /// The food this one is the low-sodium version of, for example reduced-sodium soy sauce of soy sauce. Only
     /// such a pair lets the blood pressure goal touch a seasoning (decision 33).
     public var lowSodiumVersionOf: FoodID?
+    /// How long the food must boil before it is safe to eat, for example dried kidney beans.
+    public var mustBoil: BoilRequirement?
 
     public init(
         id: FoodID, name: String, aliases: [String] = [], group: FoodGroupID, role: FoodRole,
         gramsPerUnit: [MeasureUnit: Double] = [:], nutrients: Nutrients? = nil, nutrientsUnavailable: Bool = false,
-        lowSodiumVersionOf: FoodID? = nil
+        lowSodiumVersionOf: FoodID? = nil, mustBoil: BoilRequirement? = nil
     ) {
         self.id = id
         self.name = name
@@ -49,10 +51,12 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
         self.nutrients = nutrients
         self.nutrientsUnavailable = nutrientsUnavailable
         self.lowSodiumVersionOf = lowSodiumVersionOf
+        self.mustBoil = mustBoil
     }
 
     private enum CodingKeys: String, CodingKey {
         case id, name, aliases, group, role, gramsPerUnit, nutrients, nutrientsUnavailable, lowSodiumVersionOf
+        case mustBoil
     }
 
     public init(from decoder: any Decoder) throws {
@@ -66,6 +70,7 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
         nutrients = try container.decodeIfPresent(Nutrients.self, forKey: .nutrients)
         nutrientsUnavailable = try container.decodeIfPresent(Bool.self, forKey: .nutrientsUnavailable) ?? false
         lowSodiumVersionOf = try container.decodeIfPresent(FoodID.self, forKey: .lowSodiumVersionOf)
+        mustBoil = try container.decodeIfPresent(BoilRequirement.self, forKey: .mustBoil)
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -85,6 +90,7 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
             try container.encode(true, forKey: .nutrientsUnavailable)
         }
         try container.encodeIfPresent(lowSodiumVersionOf, forKey: .lowSodiumVersionOf)
+        try container.encodeIfPresent(mustBoil, forKey: .mustBoil)
     }
 
     /// The weight of `amount` in grams, nil if it is "to taste" or the unit has no known weight.
@@ -96,6 +102,38 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
 }
 
 extension MeasureUnit: CodingKeyRepresentable {}
+
+/// A food-safety rule: the food must boil at 100 °C or more for at least `duration`, with the sentence from the
+/// source that says so.
+public struct BoilRequirement: Sendable, Hashable, Codable {
+    public var duration: Duration
+    public var sourceID: SourceID
+    public var quote: String
+
+    public init(duration: Duration, sourceID: SourceID, quote: String) {
+        self.duration = duration
+        self.sourceID = sourceID
+        self.quote = quote
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case seconds, sourceID, quote
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        duration = .seconds(try container.decode(Int.self, forKey: .seconds))
+        sourceID = try container.decode(SourceID.self, forKey: .sourceID)
+        quote = try container.decode(String.self, forKey: .quote)
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(duration.components.seconds, forKey: .seconds)
+        try container.encode(sourceID, forKey: .sourceID)
+        try container.encode(quote, forKey: .quote)
+    }
+}
 
 extension Food {
     /// The catalog's plain water, which rules like `SwapRule.extraWaterPerGram` add to.

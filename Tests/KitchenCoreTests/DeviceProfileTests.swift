@@ -137,3 +137,72 @@ struct FillLevelPotsTests {
         #expect(DeviceProfile.omniCook.estimatedFillLiters(of: recipe, servings: 1, catalog: nil) == 1.6)
     }
 }
+
+@Suite("Boil requirement")
+struct BoilRequirementTests {
+    private static let catalog = FoodCatalog(
+        sources: [EvidenceSource(id: "bfr", citation: "BfR", year: 2024)],
+        groups: [FoodGroup(id: "g", name: "G", direction: .notAssessed)],
+        foods: [
+            Food(
+                id: "beans", name: "Bohnen", group: "g", role: .base, nutrientsUnavailable: true,
+                mustBoil: BoilRequirement(duration: .seconds(1800), sourceID: "bfr", quote: "30 Minuten kochen"))
+        ])
+
+    private static func step(_ id: StepID, _ heat: Heat?, seconds: Int, beans: Bool = false, freshPot: Bool = false)
+        -> Step
+    {
+        Step(
+            id: id, phase: "", text: "", ingredientIDs: beans ? ["beans"] : [],
+            setting: DeviceSetting(heat: heat, duration: .seconds(seconds)), freshPot: freshPot)
+    }
+
+    private static func issues(_ steps: [Step]) -> [ValidationIssue] {
+        let recipe = Recipe(
+            id: "r", name: "R", tag: "", baseServings: 1, totalMinutes: 60,
+            ingredients: [Ingredient(id: "beans", name: "Bohnen", amount: .measured(100, .gram), food: "beans")],
+            steps: steps)
+        return DeviceProfile.omniCook.validate(recipe, catalog: catalog).filter {
+            if case .boilsTooShort = $0.kind { return true }
+            return false
+        }
+    }
+
+    @Test func boilingStepsAfterTheBeansGoInAddUp() {
+        let enough = [
+            Self.step("s1", .celsius(110), seconds: 900, beans: true), Self.step("s2", .celsius(100), seconds: 900),
+        ]
+        #expect(Self.issues(enough).isEmpty)
+    }
+
+    @Test func warnsWhenTheBeansBoilTooShortOrBelow100Degrees() {
+        let short = [
+            Self.step("s1", .celsius(100), seconds: 600, beans: true), Self.step("s2", .celsius(95), seconds: 3600),
+        ]
+        let issue = ValidationIssue(kind: .boilsTooShort("beans", required: .seconds(1800)), stepID: "s1")
+        #expect(Self.issues(short) == [issue])
+        #expect(issue.severity == .warning)
+    }
+
+    @Test func boilingBeforeTheBeansOrInAFreshPotDoesNotCount() {
+        let steps = [
+            Self.step("s1", .celsius(100), seconds: 1800), Self.step("s2", .celsius(100), seconds: 60, beans: true),
+            Self.step("s3", .celsius(100), seconds: 1800, freshPot: true),
+        ]
+        #expect(Self.issues(steps).map(\.stepID) == ["s2"])
+    }
+
+    @Test func steamDoesNotCount() {
+        #expect(Self.issues([Self.step("s1", .steam, seconds: 3600, beans: true)]).count == 1)
+    }
+
+    @Test func everyBundledRecipeBoilsItsBeansLongEnough() throws {
+        for recipe in try RecipeLibrary.bundled() {
+            let boil = DeviceProfile.omniCook.validate(recipe).filter {
+                if case .boilsTooShort = $0.kind { return true }
+                return false
+            }
+            #expect(boil.isEmpty, "\(recipe.id)")
+        }
+    }
+}
