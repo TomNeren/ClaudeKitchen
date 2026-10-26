@@ -23,11 +23,11 @@
     { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 400, "unit": "g", "note": "heiß" },
     { "id": "salz", "name": "Salz", "food": "salt" },
     { "id": "spinat", "name": "Blattspinat, tiefgekühlt", "food": "spinach", "quantity": 450, "unit": "g",
-      "note": "aufgetaut und leicht ausgedrückt",
-      "substitutes": [ { "name": "Frischer Spinat", "ratio": 1.5, "note": "grob gehackt, in zwei Portionen zugeben" } ] },
+      "note": "aufgetaut und leicht ausgedrückt" },
     { "id": "dill", "name": "Dill", "food": "dill", "quantity": 15, "unit": "g", "note": "gehackt" },
     { "id": "zitrone", "name": "Zitrone", "food": "lemon", "quantity": 1, "unit": "Stk", "note": "Saft, dazu Spalten zum Servieren" },
-    { "id": "pfeffer", "name": "Schwarzer Pfeffer", "food": "black-pepper" }
+    { "id": "pfeffer", "name": "Schwarzer Pfeffer", "food": "black-pepper" },
+    { "id": "feta", "name": "Feta", "food": "feta", "quantity": 100, "unit": "g", "note": "zum Servieren, nach Wunsch" }
   ],
   "steps": [
     { "id": "s1", "phase": "Hacken", "text": "Zwiebel in den Topf geben und zerkleinern.",
@@ -48,8 +48,10 @@
       "note": "Messbecher einsetzen. Der Reis soll saftig sein; ist er zu trocken, etwas heißes Wasser zugeben.",
       "ingredientIDs": ["spinat"],
       "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 480 } },
-    { "id": "s6", "phase": "Dill und Zitrone", "text": "Dill und Zitronensaft unterrühren, mit Pfeffer abschmecken und 5 Minuten ruhen lassen.",
-      "ingredientIDs": ["dill", "zitrone", "pfeffer"] },
-    { "id": "s7", "phase": "Anrichten", "text": "Mit Zitronenspalten und nach Wunsch Feta servieren." }
+    { "id": "s6", "phase": "Dill und Zitrone", "text": "Dill und Zitronensaft unterrühren, mit Pfeffer abschmecken und ohne Hitze ruhen lassen.",
+      "ingredientIDs": ["dill", "zitrone", "pfeffer"],
+      "setting": { "seconds": 300 } },
+    { "id": "s7", "phase": "Anrichten", "text": "Mit Zitronenspalten und nach Wunsch Feta servieren.",
+      "ingredientIDs": ["feta"] }
   ]
 }

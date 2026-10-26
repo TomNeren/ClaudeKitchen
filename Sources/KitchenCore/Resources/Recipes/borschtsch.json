@@ -56,9 +56,12 @@
       "note": "Messbecher einsetzen.",
       "ingredientIDs": ["kohl"],
       "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 600 } },
-    { "id": "s6", "phase": "Knoblauch und Dill", "text": "Knoblauch und Dill unterrühren, Gerät ausschalten und 10 Minuten ziehen lassen.",
+    { "id": "s6", "phase": "Knoblauch und Dill", "text": "Knoblauch und Dill unterrühren.",
       "ingredientIDs": ["knoblauch", "dill"],
       "setting": { "heat": 90, "speed": 1, "reverse": true, "seconds": 60 } },
+    { "id": "s6b", "phase": "Ziehen lassen", "text": "Ohne Hitze mit geschlossenem Deckel ziehen lassen.",
+      "ingredientIDs": [],
+      "setting": { "seconds": 600 } },
     { "id": "s7", "phase": "Anrichten", "text": "Lorbeer entfernen und mit saurer Sahne servieren.",
       "ingredientIDs": ["saure-sahne"] }
   ]

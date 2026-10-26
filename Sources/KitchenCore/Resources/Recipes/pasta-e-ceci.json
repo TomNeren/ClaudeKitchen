@@ -27,7 +27,8 @@
     { "id": "nudeln", "name": "Ditalini", "food": "pasta", "quantity": 150, "unit": "g",
       "substitutes": [ { "name": "Gebrochene Spaghetti", "ratio": 1, "note": "so in vielen römischen Familien" } ] },
     { "id": "kaese", "name": "Pecorino Romano oder Parmesan", "food": "parmesan", "quantity": 30, "unit": "g", "note": "frisch gerieben" },
-    { "id": "pfeffer", "name": "Schwarzer Pfeffer", "food": "black-pepper" }
+    { "id": "pfeffer", "name": "Schwarzer Pfeffer", "food": "black-pepper" },
+    { "id": "olivenoel-servieren", "name": "Olivenöl zum Beträufeln", "food": "olive-oil", "quantity": 1, "unit": "EL" }
   ],
   "steps": [
     { "id": "s1", "phase": "Hacken", "text": "Knoblauch und Rosmarin in den Topf geben und fein hacken.",
@@ -52,7 +53,10 @@
       "note": "Messbecher einsetzen. Wird es zu dick, etwas heißes Wasser zugeben.",
       "ingredientIDs": ["nudeln"],
       "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 600 } },
-    { "id": "s7", "phase": "Anrichten", "text": "Kurz ruhen lassen, mit Käse, Pfeffer und einem Faden Olivenöl servieren.",
-      "ingredientIDs": ["kaese", "pfeffer"] }
+    { "id": "s7", "phase": "Ruhen", "text": "Ohne Hitze ruhen lassen, die Suppe dickt noch etwas nach.",
+      "ingredientIDs": [],
+      "setting": { "seconds": 180 } },
+    { "id": "s8", "phase": "Anrichten", "text": "Mit Käse, Pfeffer und einem Faden Olivenöl servieren.",
+      "ingredientIDs": ["kaese", "pfeffer", "olivenoel-servieren"] }
   ]
 }

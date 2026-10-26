@@ -28,7 +28,7 @@ struct RecipeSearchTests {
             Set(ids("kokosmilch")) == [
                 "kichererbsen-spinat-curry", "gaeng-keow-wan-gai", "tom-kha-gai", "sayur-lodeh",
             ])
-        #expect(Set(ids("gemusebruhe")) == ["zitronen-linsen-eintopf", "borschtsch"])
+        #expect(ids("gemusebruhe") == ["borschtsch", "zitronen-linsen-eintopf"])
     }
 
     @Test func everyWordMustMatch() {
