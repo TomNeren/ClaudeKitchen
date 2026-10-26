@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "id": "dal-tadka",
+  "name": "Dal Tadka",
+  "tag": "Indisch · Dal",
+  "baseServings": 3,
+  "totalMinutes": 55,
+  "verified": false,
+  "origin": { "cuisine": "india", "region": "Nordindien" },
+  "references": [
+    { "title": "An Invitation to Indian Cooking", "author": "Madhur Jaffrey", "year": 1973 },
+    { "title": "India: The Cookbook", "author": "Pushpesh Pant", "year": 2010 }
+  ],
+  "authenticityChecks": [
+    "Tadka: Ghee, ganzer Kreuzkümmel, eine Prise Asafoetida, Knoblauch und Chili, erst ganz am Ende über das Dal",
+    "Toor Dal weich und sämig gekocht, nicht püriert",
+    "Würzung: Kurkuma beim Kochen, Garam Masala nur zum Schluss"
+  ],
+  "ingredients": [
+    { "id": "dal", "name": "Toor Dal", "food": "toor-dal", "quantity": 180, "unit": "g", "note": "gewaschen" },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 750, "unit": "g" },
+    { "id": "kurkuma", "name": "Kurkuma", "food": "turmeric", "quantity": 1, "unit": "TL" },
+    { "id": "zwiebel", "name": "Zwiebel", "food": "onion", "quantity": 1, "unit": "Stk" },
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 4, "unit": "Zehen" },
+    { "id": "ingwer", "name": "Ingwer, frisch", "food": "ginger", "quantity": 15, "unit": "g" },
+    { "id": "chili", "name": "Grüne Chili", "food": "green-chili", "quantity": 1, "unit": "Stk" },
+    { "id": "ghee", "name": "Ghee", "food": "ghee", "quantity": 25, "unit": "g" },
+    { "id": "kreuzkuemmel", "name": "Kreuzkümmel, ganz", "food": "cumin", "quantity": 1, "unit": "TL" },
+    { "id": "hing", "name": "Asafoetida", "food": "asafoetida", "note": "eine Prise" },
+    { "id": "tomate", "name": "Tomate", "food": "tomato", "quantity": 1, "unit": "Stk", "note": "fein gewürfelt" },
+    { "id": "chilipulver", "name": "Chilipulver, mild", "food": "chili-powder", "quantity": 1, "unit": "TL" },
+    { "id": "garam-masala", "name": "Garam Masala", "food": "garam-masala", "quantity": 0.5, "unit": "TL" },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    { "id": "koriander", "name": "Koriandergrün", "food": "coriander-leaves", "quantity": 10, "unit": "g" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Vorbereiten", "text": "Toor Dal in einem Sieb waschen, bis das Wasser klar bleibt.",
+      "note": "Wer Zeit hat, weicht das Dal 30 Minuten ein; es wird dann noch cremiger." },
+    { "id": "s2", "phase": "Dal kochen", "text": "Dal, Wasser und Kurkuma in den Topf geben und weich kochen.",
+      "note": "Messbecher einsetzen. Das Dal ist fertig, wenn es zwischen den Fingern zerfällt.",
+      "ingredientIDs": ["dal", "wasser", "kurkuma"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 1800 } },
+    { "id": "s3", "phase": "Umfüllen", "text": "Dal in eine Schüssel umfüllen und warm halten. Topf ausspülen." },
+    { "id": "s4", "phase": "Hacken", "text": "Zwiebel, Knoblauch, Ingwer und Chili grob zerkleinert in den Topf geben und hacken.",
+      "note": "Danach mit dem Spatel nach unten schieben.",
+      "ingredientIDs": ["zwiebel", "knoblauch", "ingwer", "chili"],
+      "setting": { "speed": 5, "seconds": 5 }, "freshPot": true },
+    { "id": "s5", "phase": "Tadka", "text": "Ghee, Kreuzkümmel und Asafoetida zugeben und anbraten, bis die Zwiebeln goldgelb sind.",
+      "note": "Ohne Messbecher, damit Feuchtigkeit entweicht.",
+      "ingredientIDs": ["ghee", "kreuzkuemmel", "hing"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 360 } },
+    { "id": "s6", "phase": "Tomate", "text": "Tomate und Chilipulver zugeben und einkochen, bis sich das Fett absetzt.",
+      "ingredientIDs": ["tomate", "chilipulver"],
+      "setting": { "heat": 110, "speed": 1, "reverse": true, "seconds": 240 } },
+    { "id": "s7", "phase": "Zusammenführen", "text": "Dal zurück in den Topf geben, Garam Masala und Salz zugeben und kurz durchziehen lassen.",
+      "note": "Ist es zu dick, einen Schluck heißes Wasser zugeben.",
+      "ingredientIDs": ["garam-masala", "salz"],
+      "setting": { "heat": 95, "speed": 1, "reverse": true, "seconds": 180 } },
+    { "id": "s8", "phase": "Anrichten", "text": "Mit Koriandergrün bestreuen.",
+      "note": "Dazu passt Jeera-Reis.", "ingredientIDs": ["koriander"] }
+  ]
+}
