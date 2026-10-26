@@ -36,11 +36,13 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
     public var lowSodiumVersionOf: FoodID?
     /// How long the food must boil before it is safe to eat, for example dried kidney beans.
     public var mustBoil: BoilRequirement?
+    /// Where the food is in the supermarket, when it differs from its group's aisle, for example fresh herbs.
+    public var aisle: Aisle?
 
     public init(
         id: FoodID, name: String, aliases: [String] = [], group: FoodGroupID, role: FoodRole,
         gramsPerUnit: [MeasureUnit: Double] = [:], nutrients: Nutrients? = nil, nutrientsUnavailable: Bool = false,
-        lowSodiumVersionOf: FoodID? = nil, mustBoil: BoilRequirement? = nil
+        lowSodiumVersionOf: FoodID? = nil, mustBoil: BoilRequirement? = nil, aisle: Aisle? = nil
     ) {
         self.id = id
         self.name = name
@@ -52,11 +54,12 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
         self.nutrientsUnavailable = nutrientsUnavailable
         self.lowSodiumVersionOf = lowSodiumVersionOf
         self.mustBoil = mustBoil
+        self.aisle = aisle
     }
 
     private enum CodingKeys: String, CodingKey {
         case id, name, aliases, group, role, gramsPerUnit, nutrients, nutrientsUnavailable, lowSodiumVersionOf
-        case mustBoil
+        case mustBoil, aisle
     }
 
     public init(from decoder: any Decoder) throws {
@@ -71,6 +74,7 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
         nutrientsUnavailable = try container.decodeIfPresent(Bool.self, forKey: .nutrientsUnavailable) ?? false
         lowSodiumVersionOf = try container.decodeIfPresent(FoodID.self, forKey: .lowSodiumVersionOf)
         mustBoil = try container.decodeIfPresent(BoilRequirement.self, forKey: .mustBoil)
+        aisle = try container.decodeIfPresent(Aisle.self, forKey: .aisle)
     }
 
     public func encode(to encoder: any Encoder) throws {
@@ -91,6 +95,7 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
         }
         try container.encodeIfPresent(lowSodiumVersionOf, forKey: .lowSodiumVersionOf)
         try container.encodeIfPresent(mustBoil, forKey: .mustBoil)
+        try container.encodeIfPresent(aisle, forKey: .aisle)
     }
 
     /// The weight of `amount` in grams, nil if it is "to taste" or the unit has no known weight.
@@ -170,10 +175,12 @@ public struct FoodGroup: Sendable, Hashable, Codable, Identifiable {
     public var sourceIDs: [SourceID]
     /// Measured effects of eating more of the group, each checked against its source.
     public var effects: [EffectEstimate]
+    /// Where the group's foods usually are in the supermarket; `Food.aisle` overrides it.
+    public var aisle: Aisle?
 
     public init(
         id: FoodGroupID, name: String, direction: Direction, certainty: Certainty = .notRated,
-        sourceIDs: [SourceID] = [], effects: [EffectEstimate] = []
+        sourceIDs: [SourceID] = [], effects: [EffectEstimate] = [], aisle: Aisle? = nil
     ) {
         self.id = id
         self.name = name
@@ -181,10 +188,11 @@ public struct FoodGroup: Sendable, Hashable, Codable, Identifiable {
         self.certainty = certainty
         self.sourceIDs = sourceIDs
         self.effects = effects
+        self.aisle = aisle
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, direction, certainty, sourceIDs, effects
+        case id, name, direction, certainty, sourceIDs, effects, aisle
     }
 
     public init(from decoder: any Decoder) throws {
@@ -195,6 +203,7 @@ public struct FoodGroup: Sendable, Hashable, Codable, Identifiable {
         certainty = try container.decodeIfPresent(Certainty.self, forKey: .certainty) ?? .notRated
         sourceIDs = try container.decodeIfPresent([SourceID].self, forKey: .sourceIDs) ?? []
         effects = try container.decodeIfPresent([EffectEstimate].self, forKey: .effects) ?? []
+        aisle = try container.decodeIfPresent(Aisle.self, forKey: .aisle)
     }
 }
 
