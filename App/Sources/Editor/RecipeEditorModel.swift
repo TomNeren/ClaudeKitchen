@@ -8,15 +8,19 @@ final class RecipeEditorModel {
         didSet { revalidate() }
     }
     let profile: DeviceProfile
+    private let catalog: FoodCatalog?
     /// True for a recipe that is not stored yet: a new one or a copy of a bundled one.
     let isNew: Bool
     private let original: Recipe
 
-    init(recipe: Recipe, isNew: Bool, profile: DeviceProfile = .omniCook) {
+    init(
+        recipe: Recipe, isNew: Bool, profile: DeviceProfile = .omniCook, catalog: FoodCatalog? = FoodCatalog.shared
+    ) {
         self.recipe = recipe
         self.original = recipe
         self.isNew = isNew
         self.profile = profile
+        self.catalog = catalog
         revalidate()
     }
 
@@ -37,7 +41,7 @@ final class RecipeEditorModel {
 
     private func revalidate() {
         problems = recipe.editingProblems
-        issues = profile.validate(recipe)
+        issues = profile.validate(withFoods(recipe))
         let stepIssues = issues.compactMap { issue in issue.stepID.map { ($0, issue) } }
         issuesByStep = Dictionary(grouping: stepIssues, by: \.0).mapValues { $0.map(\.1) }
     }
@@ -67,7 +71,12 @@ final class RecipeEditorModel {
         recipe.addStep()
     }
 
-    /// The recipe as it will be saved: names trimmed.
+    /// `recipe` with catalog foods for new and renamed ingredients, so the checks see what will be saved.
+    private func withFoods(_ recipe: Recipe) -> Recipe {
+        catalog.map { recipe.assigningFoods(from: $0, comparedTo: original) } ?? recipe
+    }
+
+    /// The recipe as it will be saved: names trimmed, foods assigned by name.
     var cleanedRecipe: Recipe {
         var recipe = recipe
         recipe.name = recipe.name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -75,6 +84,6 @@ final class RecipeEditorModel {
         for index in recipe.ingredients.indices {
             recipe.ingredients[index].name = recipe.ingredients[index].name.trimmingCharacters(in: .whitespaces)
         }
-        return recipe
+        return withFoods(recipe)
     }
 }

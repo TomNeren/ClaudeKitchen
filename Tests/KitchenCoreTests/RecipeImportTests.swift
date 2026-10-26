@@ -128,7 +128,12 @@ struct RecipeImportTests {
             "content": [["type": "thinking", "thinking": ""], ["type": "text", "text": recipeJSON]],
         ])
         #expect(try ClaudeRecipeImport.draft(fromResponse: response) == draft)
-        #expect(try ClaudeRecipeImport.recipe(fromResponse: response, id: "neu").id == "neu")
+        let recipe = try ClaudeRecipeImport.recipe(fromResponse: response, id: "neu")
+        #expect(recipe.id == "neu")
+        // Ingredients come back mapped to the bundled catalog by name.
+        #expect(recipe.ingredients.map(\.food) == ["onion", "tomato", "vegetable-broth", "salt", "onion"])
+        #expect(
+            try ClaudeRecipeImport.recipe(fromResponse: response, id: "neu", catalog: nil).ingredients[0].food == nil)
     }
 
     @Test func gatewayErrorsBecomeHTTPStatus() {
