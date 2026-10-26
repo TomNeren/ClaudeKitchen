@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "id": "ajapsandali",
+  "name": "Ajapsandali",
+  "tag": "Georgisch · Gemüseragout",
+  "baseServings": 4,
+  "totalMinutes": 55,
+  "verified": false,
+  "origin": { "cuisine": "georgia" },
+  "references": [
+    { "title": "The Georgian Feast", "author": "Darra Goldstein", "year": 1993 }
+  ],
+  "authenticityChecks": [
+    "Aubergine, Paprika, Zwiebel und Tomate in Öl geschmort, das Gemüse bleibt stückig",
+    "Viel Knoblauch, Koriander, Basilikum und Petersilie zum Schluss",
+    "Lauwarm oder kalt serviert, am nächsten Tag besser"
+  ],
+  "ingredients": [
+    { "id": "oel", "name": "Sonnenblumenöl", "food": "sunflower-oil", "quantity": 4, "unit": "EL" },
+    { "id": "zwiebeln", "name": "Zwiebeln", "food": "onion", "quantity": 2, "unit": "Stk", "note": "in Halbringen" },
+    { "id": "auberginen", "name": "Auberginen", "food": "eggplant", "quantity": 400, "unit": "g", "note": "in 2 cm Würfeln" },
+    { "id": "paprika", "name": "Paprika, rot", "food": "red-bell-pepper", "quantity": 2, "unit": "Stk", "note": "in Streifen" },
+    { "id": "tomaten", "name": "Tomaten, reif", "food": "tomato", "quantity": 4, "unit": "Stk", "note": "gehäutet und gewürfelt" },
+    { "id": "khmeli-suneli", "name": "Khmeli Suneli", "food": "khmeli-suneli", "quantity": 1, "unit": "TL" },
+    { "id": "chili", "name": "Rote Chili", "food": "red-chili", "quantity": 1, "unit": "Stk", "note": "fein gehackt" },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 4, "unit": "Zehen", "note": "zerdrückt" },
+    { "id": "koriander", "name": "Koriandergrün", "food": "coriander-leaves", "quantity": 15, "unit": "g", "note": "gehackt" },
+    { "id": "basilikum", "name": "Basilikum", "food": "basil", "quantity": 10, "unit": "g", "note": "gehackt" },
+    { "id": "petersilie", "name": "Petersilie", "food": "parsley", "quantity": 10, "unit": "g", "note": "gehackt" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Zwiebeln", "text": "Öl und Zwiebeln in den Topf geben und weich dünsten.",
+      "note": "Ohne Messbecher.",
+      "ingredientIDs": ["oel", "zwiebeln"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 300 } },
+    { "id": "s2", "phase": "Gemüse anbraten", "text": "Auberginen und Paprika zugeben und anbraten, bis die Aubergine weich wird.",
+      "note": "Ohne Messbecher. Die Aubergine fällt nach wenigen Minuten zusammen.",
+      "ingredientIDs": ["auberginen", "paprika"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 600 } },
+    { "id": "s3", "phase": "Schmoren", "text": "Tomaten, Khmeli Suneli, Chili und Salz zugeben und schmoren.",
+      "note": "Ohne Messbecher, damit die Sauce einkocht, und ohne Rühren, damit das Gemüse stückig bleibt.",
+      "ingredientIDs": ["tomaten", "khmeli-suneli", "chili", "salz"],
+      "setting": { "heat": 100, "seconds": 1200 } },
+    { "id": "s4", "phase": "Kräuter", "text": "Knoblauch und Kräuter unterrühren und kurz ziehen lassen.",
+      "ingredientIDs": ["knoblauch", "koriander", "basilikum", "petersilie"],
+      "setting": { "heat": 90, "speed": 1, "reverse": true, "seconds": 120 } },
+    { "id": "s5", "phase": "Anrichten", "text": "Etwas abkühlen lassen und lauwarm mit Brot servieren." }
+  ]
+}
