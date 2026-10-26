@@ -43,6 +43,11 @@ enum ShoppingText {
         }
     }
 
+    /// One line per open item, "2 Stk (200 g) Zwiebel", in list order, for Reminders.
+    static func lines(_ list: ShoppingList, checked: Set<String>) -> [String] {
+        list.items.filter { !checked.contains($0.id) }.map { "\(quantity($0.quantity)) \($0.name)" }
+    }
+
     /// The open items as plain text for the share sheet, grouped by aisle.
     static func plainText(_ list: ShoppingList, checked: Set<String>) -> String {
         let open = list.items.filter { !checked.contains($0.id) }

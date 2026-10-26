@@ -5,6 +5,8 @@ import SwiftUI
 struct ShoppingView: View {
     @Bindable var model: ShoppingModel
     @Environment(\.dismiss) private var dismiss
+    @State private var exportMessage: String?
+    @State private var isExporting = false
 
     var body: some View {
         NavigationStack {
@@ -35,6 +37,12 @@ struct ShoppingView: View {
                         description: Text("Lege Rezepte über „Auf die Einkaufsliste“ in ihrer Ansicht hierher."))
                 }
             }
+            .alert(
+                exportMessage ?? "",
+                isPresented: Binding(get: { exportMessage != nil }, set: { _ in exportMessage = nil })
+            ) {
+                Button("OK", role: .cancel) {}
+            }
             .navigationTitle("Einkauf")
             .toolbarTitleDisplayMode(.inline)
             .toolbar {
@@ -56,6 +64,10 @@ struct ShoppingView: View {
                         Label("Teilen", systemImage: "square.and.arrow.up")
                     }
                     .disabled(model.list.items.isEmpty)
+                }
+                ToolbarItem(placement: .bottomBar) {
+                    Button("In Erinnerungen", systemImage: "list.bullet.rectangle") { exportToReminders() }
+                        .disabled(isExporting || ShoppingText.lines(model.list, checked: model.state.checked).isEmpty)
                 }
                 ToolbarItem(placement: .bottomBar) {
                     Button("Eingekauft", systemImage: "checkmark.circle") { model.buyChecked() }
@@ -98,6 +110,23 @@ struct ShoppingView: View {
 }
 
 extension ShoppingView {
+    fileprivate func exportToReminders() {
+        let lines = ShoppingText.lines(model.list, checked: model.state.checked)
+        isExporting = true
+        Task {
+            defer { isExporting = false }
+            do {
+                let count = try await RemindersExport.export(lines)
+                exportMessage = "\(count) Einträge in der Liste „\(RemindersExport.listTitle)“."
+            } catch RemindersExport.Failure.denied {
+                exportMessage =
+                    "Kein Zugriff auf Erinnerungen. Du kannst ihn in den Einstellungen unter Omni Cook erlauben."
+            } catch {
+                exportMessage = "Die Liste ließ sich nicht in Erinnerungen anlegen."
+            }
+        }
+    }
+
     fileprivate func subtitle(for entry: MealPlan.Entry) -> String {
         let servings = Portions.text(entry.servings)
         return entry.goal.map { "\(servings), \(HealthGoals.name($0))" } ?? servings
