@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "id": "kimchi-jjigae",
+  "name": "Kimchi-Jjigae",
+  "tag": "Koreanisch · Eintopf",
+  "baseServings": 3,
+  "totalMinutes": 35,
+  "verified": false,
+  "origin": { "cuisine": "japanKorea", "region": "Korea" },
+  "references": [
+    { "title": "Maangchi's Real Korean Cooking", "author": "Maangchi", "year": 2015 }
+  ],
+  "authenticityChecks": [
+    "Gut gereiftes, saures Kimchi mit Schweinebauch angebraten, der Kimchi-Saft kommt in die Brühe",
+    "Schärfe aus Gochugaru und Gochujang",
+    "Tofu in Scheiben zum Schluss, im Topf serviert mit Reis"
+  ],
+  "ingredients": [
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 2, "unit": "Zehen" },
+    { "id": "schweinebauch", "name": "Schweinebauch", "food": "pork-belly", "quantity": 200, "unit": "g",
+      "note": "in dünnen Streifen",
+      "substitutes": [ { "name": "Schweineschulter", "ratio": 1, "note": "magerer" } ] },
+    { "id": "kimchi", "name": "Kimchi, gut gereift", "food": "kimchi", "quantity": 300, "unit": "g", "note": "in mundgerechten Stücken" },
+    { "id": "sesamoel", "name": "Sesamöl", "food": "sesame-oil", "quantity": 1, "unit": "TL" },
+    { "id": "zwiebel", "name": "Zwiebel", "food": "onion", "quantity": 0.5, "unit": "Stk", "note": "in Streifen" },
+    { "id": "gochugaru", "name": "Gochugaru", "food": "gochugaru", "quantity": 1, "unit": "EL" },
+    { "id": "gochujang", "name": "Gochujang", "food": "gochujang", "quantity": 1, "unit": "EL" },
+    { "id": "zucker", "name": "Zucker", "food": "sugar", "quantity": 1, "unit": "TL", "note": "nur bei sehr saurem Kimchi" },
+    { "id": "kimchi-saft", "name": "Kimchi-Saft", "food": "kimchi-juice", "quantity": 60, "unit": "g" },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 500, "unit": "g",
+      "substitutes": [ { "name": "Anchovis-Kombu-Brühe", "ratio": 1, "note": "kräftiger" } ] },
+    { "id": "tofu", "name": "Tofu, fest", "food": "firm-tofu", "quantity": 300, "unit": "g", "note": "in 1 cm dicken Scheiben" },
+    { "id": "fruehlingszwiebel", "name": "Frühlingszwiebel", "food": "spring-onion", "quantity": 2, "unit": "Stk", "note": "schräg in Stücken" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Hacken", "text": "Knoblauch in den Topf geben und fein hacken.",
+      "ingredientIDs": ["knoblauch"],
+      "setting": { "speed": 6, "seconds": 3 } },
+    { "id": "s2", "phase": "Anbraten", "text": "Schweinebauch, Kimchi und Sesamöl zugeben und braten, bis das Fett austritt.",
+      "note": "Ohne Messbecher.",
+      "ingredientIDs": ["schweinebauch", "kimchi", "sesamoel"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 360 } },
+    { "id": "s3", "phase": "Würze", "text": "Zwiebel, Gochugaru, Gochujang und Zucker zugeben und kurz mitbraten.",
+      "ingredientIDs": ["zwiebel", "gochugaru", "gochujang", "zucker"],
+      "setting": { "heat": 110, "speed": 1, "reverse": true, "seconds": 90 } },
+    { "id": "s4", "phase": "Köcheln", "text": "Kimchi-Saft und Wasser zugeben und köcheln.",
+      "note": "Messbecher einsetzen. Je länger, desto weicher wird das Kimchi.",
+      "ingredientIDs": ["kimchi-saft", "wasser"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 900 } },
+    { "id": "s5", "phase": "Tofu", "text": "Tofu zugeben und in der Brühe ziehen lassen.",
+      "note": "Linkslauf auf kleinster Stufe, der Tofu zerbricht leicht.",
+      "ingredientIDs": ["tofu"],
+      "setting": { "heat": 95, "speed": 1, "reverse": true, "seconds": 300 } },
+    { "id": "s6", "phase": "Anrichten", "text": "Mit Frühlingszwiebel bestreuen und mit Reis servieren.",
+      "ingredientIDs": ["fruehlingszwiebel"] }
+  ]
+}
