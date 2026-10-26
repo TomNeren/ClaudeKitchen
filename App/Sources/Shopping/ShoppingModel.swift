@@ -101,6 +101,11 @@ final class ShoppingModel {
         list.items.filter { !state.checked.contains($0.id) }
     }
 
+    /// The open items as a brief for a browser agent that fills the cart of the shop the cook is logged into.
+    var agentBrief: String {
+        AgentBrief.text(for: openItems, catalog: catalog ?? FoodCatalog(sources: [], groups: [], foods: []))
+    }
+
     /// Writes the open items to Apple Reminders and returns the message for the cook.
     func exportToReminders() async -> String {
         do {
