@@ -28,7 +28,9 @@ struct RecipeSearchTests {
 
     @Test func everyWordMustMatch() {
         #expect(ids("ingwer lachs") == ["ingwer-lachs-pak-choi"])
-        #expect(ids("ingwer").contains("ingwer-lachs-pak-choi") && ids("ingwer").contains("kichererbsen-spinat-curry"))
+        let ginger = ids("ingwer")
+        #expect(ginger.contains("ingwer-lachs-pak-choi") && ginger.contains("kichererbsen-spinat-curry"))
+        #expect(!ginger.contains("zitronen-linsen-eintopf") && !ginger.contains("jeera-reis"))
         #expect(ids("ingwer feta").isEmpty)
     }
 }

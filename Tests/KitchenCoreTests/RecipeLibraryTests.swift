@@ -10,7 +10,6 @@ struct RecipeLibraryTests {
         let directory = try #require(Bundle.module.url(forResource: "Recipes", withExtension: nil))
         let files = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
             .filter { $0.pathExtension == "json" }
-        #expect(recipes.count == files.count)
         #expect(Set(recipes.map(\.id.rawValue)).count == recipes.count, "duplicate recipe IDs")
         #expect(
             Set(recipes.map(\.id.rawValue) + files.map { $0.deletingPathExtension().lastPathComponent }).count

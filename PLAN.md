@@ -554,6 +554,8 @@ Fehlerliste.
 - [ ] M10a: Bibliothek: Filter „Küche“ in der Leiste zeigt nur vorhandene Küchen, das Symbol ist gefüllt, solange ein Filter aktiv ist
 - [ ] M10a: Rezeptansicht: Abschnitt „Herkunft“ mit Küche, Region, Quellen und Prüfpunkten, nur bei Rezepten mit diesen Angaben
 - [ ] M10b: Dal Tadka, Jeera-Reis und Chana Masala einmal am Gerät kochen: Zeiten, Stufen und Wassermengen stimmen; Gewürze und Technik laut Prüfpunkten
+- [ ] M10b: Jeera-Reis gart ohne Rühren: heizt der Omni Cook bei 100 °C ohne Drehung gleichmäßig, oder braucht es Linkslauf Stufe 1?
+- [ ] M10b: Vollkornreis-Variante (Ausgewogen) mit 440 g Wasser und 33 Min: Reis gar, nichts angesetzt
 - [ ] M6: API-Schlüssel in den Einstellungen eintragen und wieder entfernen
 - [ ] M6: Import aus kopiertem Text und aus einem Link (https), Vorschau mit Prüfung, Speichern; eigenes Rezept erscheint oben in der Bibliothek, Löschen per langem Druck
 - [ ] M6: Werte eines importierten Rezepts einmal am Gerät gegenprüfen

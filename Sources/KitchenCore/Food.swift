@@ -97,6 +97,11 @@ public struct Food: Sendable, Hashable, Codable, Identifiable {
 
 extension MeasureUnit: CodingKeyRepresentable {}
 
+extension Food {
+    /// The catalog's plain water, which rules like `SwapRule.extraWaterPerGram` add to.
+    public static let water: FoodID = "water"
+}
+
 /// A group of foods with one health assessment, for example whole grains or processed meat.
 ///
 /// Evidence exists for groups, not for single products, so assessments live here.

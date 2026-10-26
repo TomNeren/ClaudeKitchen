@@ -33,7 +33,7 @@
     { "id": "salz", "name": "Salz", "food": "salt" },
     { "id": "garam-masala", "name": "Garam Masala", "food": "garam-masala", "quantity": 1, "unit": "TL" },
     { "id": "amchur", "name": "Amchur", "food": "amchur", "quantity": 1, "unit": "TL",
-      "substitutes": [ { "name": "Zitronensaft", "ratio": 1, "note": "etwa 1 EL statt 1 TL" } ] },
+      "substitutes": [ { "name": "Zitronensaft", "ratio": 3, "note": "frisch gepresst, erst ganz am Ende" } ] },
     { "id": "koriander", "name": "Koriandergrün", "food": "coriander-leaves", "quantity": 10, "unit": "g" },
     { "id": "zitrone", "name": "Zitrone", "food": "lemon", "quantity": 0.5, "unit": "Stk", "note": "in Spalten" }
   ],

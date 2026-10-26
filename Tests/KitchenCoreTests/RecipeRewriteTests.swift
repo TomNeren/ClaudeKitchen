@@ -11,11 +11,11 @@ struct RecipeRewriteTests {
 
     private static func rule(
         _ id: SwapRuleID, from: FoodID, to: FoodID, share: Double = 1, ratio: Double = 1,
-        extra: Duration = .zero, note: String? = nil
+        extra: Duration = .zero, water: Double = 0, note: String? = nil
     ) -> SwapRule {
         SwapRule(
             id: id, from: from, to: to, toName: "Neu \(to)", share: share, ratio: ratio, extraTime: extra,
-            stepNote: note, sourceID: "dge-2024", quote: quote)
+            extraWaterPerGram: water, stepNote: note, sourceID: "dge-2024", quote: quote)
     }
 
     private static let recipe = Recipe(
@@ -336,6 +336,28 @@ struct RecipeRewriteTests {
         recipe.ingredients.append(Ingredient(id: "ghee-half-ghee", name: "Schon da", amount: .toTaste))
         let rewrite = recipe.rewritten(for: Self.goal, catalog: Self.catalog)
         #expect(rewrite.changes.first?.newIngredient == "ghee-half-ghee-2")
+    }
+
+    @Test func extraWaterGoesToTheWaterThatCooksTheNewFood() {
+        let goal = RewriteGoal(
+            id: "g", rules: [Self.rule("rice", from: "white-rice", to: "brown-rice", water: 0.5)])
+        let rewrite = Self.recipe.rewritten(for: goal, catalog: Self.catalog)
+        #expect(rewrite.recipe.ingredient("wasser")?.amount == .measured(500, .gram))
+    }
+
+    @Test func extraWaterFindsWaterAddedEarlierInTheSamePot() {
+        var recipe = Self.recipe
+        recipe.steps[0].ingredientIDs.append("wasser")
+        recipe.steps[1].ingredientIDs.removeAll { $0 == "wasser" }
+        let goal = RewriteGoal(
+            id: "g", rules: [Self.rule("rice", from: "white-rice", to: "brown-rice", water: 0.5)])
+        #expect(
+            recipe.rewritten(for: goal, catalog: Self.catalog).recipe.ingredient("wasser")?.amount
+                == .measured(500, .gram))
+        recipe.steps[1].freshPot = true
+        #expect(
+            recipe.rewritten(for: goal, catalog: Self.catalog).recipe.ingredient("wasser")?.amount
+                == .measured(400, .gram))
     }
 
     @Test func rulesRoundTripThroughJSON() throws {

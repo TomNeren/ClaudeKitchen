@@ -22,7 +22,7 @@
     { "id": "lorbeer", "name": "Lorbeerblatt", "food": "bay-leaf", "quantity": 1, "unit": "Stk", "scales": false,
       "eaten": false },
     { "id": "kardamom", "name": "Kardamom, grün", "food": "cardamom", "quantity": 2, "unit": "Stk",
-      "note": "angedrückt", "scales": false },
+      "note": "angedrückt", "scales": false, "eaten": false },
     { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 340, "unit": "g" },
     { "id": "salz", "name": "Salz", "food": "salt" }
   ],
@@ -34,9 +34,9 @@
       "ingredientIDs": ["ghee", "kreuzkuemmel", "lorbeer", "kardamom"],
       "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 120 } },
     { "id": "s3", "phase": "Garen", "text": "Reis, Wasser und Salz zugeben und garen.",
-      "note": "Linkslauf auf kleinster Stufe, damit die Körner ganz bleiben. Messbecher einsetzen.",
+      "note": "Ohne Rühren, damit die Körner ganz bleiben. Messbecher einsetzen. Einmal am Gerät prüfen, ob es ohne Rühren gleichmäßig heizt; sonst Linkslauf Stufe 1.",
       "ingredientIDs": ["reis", "wasser", "salz"],
-      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 1080 } },
+      "setting": { "heat": 100, "seconds": 1080 } },
     { "id": "s4", "phase": "Ruhen", "text": "Deckel 5 Minuten geschlossen lassen, dann mit einer Gabel auflockern.",
       "note": "Lorbeer und Kardamom vor dem Servieren herausnehmen." }
   ]
