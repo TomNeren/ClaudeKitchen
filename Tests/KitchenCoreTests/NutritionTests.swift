@@ -106,6 +106,31 @@ struct NutritionTests {
         }
     }
 
+    @Test func reportsInvalidLowSodiumVersions() {
+        func sauce(_ id: FoodID, sodium: Double, group: FoodGroupID = "g", of original: FoodID? = nil) -> Food {
+            Food(
+                id: id, name: "\(id)", group: group, role: .seasoning,
+                nutrients: Nutrients(
+                    fdcID: 1, kcal: 50, protein: 1, fat: 0, saturatedFat: 0, carbohydrate: 5, fiber: nil,
+                    sodiumMilligrams: sodium), lowSodiumVersionOf: original)
+        }
+        let catalog = FoodCatalog(
+            sources: [],
+            groups: [
+                FoodGroup(id: "g", name: "G", direction: .notAssessed),
+                FoodGroup(id: "h", name: "H", direction: .notAssessed),
+            ],
+            foods: [
+                sauce("soy", sodium: 5000), sauce("light", sodium: 3000, of: "soy"),
+                sauce("salty", sodium: 6000, of: "soy"), sauce("other", sodium: 100, group: "h", of: "soy"),
+                sauce("ghost", sodium: 100, of: "missing"),
+            ])
+        #expect(
+            catalog.issues() == [
+                .invalidLowSodiumVersion("salty"), .invalidLowSodiumVersion("other"), .invalidLowSodiumVersion("ghost"),
+            ])
+    }
+
     @Test func foodAndIngredientWithoutNewFieldsDecode() throws {
         let food = try JSONDecoder().decode(
             Food.self, from: Data(#"{"id": "x", "name": "X", "group": "g", "role": "base"}"#.utf8))

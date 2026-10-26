@@ -4,24 +4,133 @@
     {
       "id": "balanced",
       "rules": [
-        { "id": "brown-rice", "from": "white-rice", "to": "brown-rice", "toName": "Vollkornreis",
-          "extraSeconds": 900, "stepNote": "Vollkornreis gart etwa 15 Minuten länger und braucht etwas mehr Wasser.",
+        {
+          "id": "brown-rice",
+          "from": "white-rice",
+          "to": "brown-rice",
+          "toName": "Vollkornreis",
+          "extraSeconds": 900,
+          "stepNote": "Vollkornreis gart etwa 15 Minuten länger und braucht etwas mehr Wasser.",
           "sourceID": "dge-2024",
-          "quote": "Bei Getreideprodukten wie Brot, Nudeln, Reis und Mehl ist die Vollkornvariante die beste Wahl für die Gesundheit" },
-        { "id": "whole-wheat-pasta", "from": "pasta", "to": "whole-wheat-pasta", "toName": "Vollkornnudeln",
-          "extraSeconds": 120, "stepNote": "Vollkornnudeln brauchen etwa 2 Minuten länger.",
+          "quote": "Bei Getreideprodukten wie Brot, Nudeln, Reis und Mehl ist die Vollkornvariante die beste Wahl für die Gesundheit"
+        },
+        {
+          "id": "whole-wheat-pasta",
+          "from": "pasta",
+          "to": "whole-wheat-pasta",
+          "toName": "Vollkornnudeln",
+          "extraSeconds": 120,
+          "stepNote": "Vollkornnudeln brauchen etwa 2 Minuten länger.",
           "sourceID": "dge-2024",
-          "quote": "Bei Getreideprodukten wie Brot, Nudeln, Reis und Mehl ist die Vollkornvariante die beste Wahl für die Gesundheit" },
-        { "id": "half-whole-wheat-flour", "from": "wheat-flour", "to": "whole-wheat-flour", "toName": "Weizenvollkornmehl",
-          "share": 0.5, "stepNote": "Halb Vollkornmehl: Teig darf etwas mehr Flüssigkeit aufnehmen.",
+          "quote": "Bei Getreideprodukten wie Brot, Nudeln, Reis und Mehl ist die Vollkornvariante die beste Wahl für die Gesundheit"
+        },
+        {
+          "id": "half-whole-wheat-flour",
+          "from": "wheat-flour",
+          "to": "whole-wheat-flour",
+          "toName": "Weizenvollkornmehl",
+          "share": 0.5,
+          "stepNote": "Halb Vollkornmehl: Teig darf etwas mehr Flüssigkeit aufnehmen.",
           "sourceID": "dge-2024",
-          "quote": "Bei Getreideprodukten wie Brot, Nudeln, Reis und Mehl ist die Vollkornvariante die beste Wahl für die Gesundheit" },
-        { "id": "butter-to-olive-oil", "from": "butter", "to": "olive-oil", "toName": "Olivenöl", "ratio": 0.8,
+          "quote": "Bei Getreideprodukten wie Brot, Nudeln, Reis und Mehl ist die Vollkornvariante die beste Wahl für die Gesundheit"
+        },
+        {
+          "id": "butter-to-olive-oil",
+          "from": "butter",
+          "to": "olive-oil",
+          "toName": "Olivenöl",
+          "ratio": 0.8,
           "stepNote": "Olivenöl statt Butter: 80 % der Menge reichen, weil Butter Wasser enthält.",
-          "sourceID": "dge-2024", "quote": "Pflanzliche Öle bevorzugen" },
-        { "id": "half-ghee-to-olive-oil", "from": "ghee", "to": "olive-oil", "toName": "Olivenöl", "share": 0.5,
+          "sourceID": "dge-2024",
+          "quote": "Pflanzliche Öle bevorzugen"
+        },
+        {
+          "id": "half-ghee-to-olive-oil",
+          "from": "ghee",
+          "to": "olive-oil",
+          "toName": "Olivenöl",
+          "share": 0.5,
           "stepNote": "Halb Ghee, halb Olivenöl: das Ghee trägt weiter das Aroma.",
-          "sourceID": "dge-2024", "quote": "Pflanzliche Öle bevorzugen" }
+          "sourceID": "dge-2024",
+          "quote": "Pflanzliche Öle bevorzugen"
+        }
+      ]
+    },
+    {
+      "id": "blood-pressure",
+      "criterion": "sodium",
+      "extends": "balanced",
+      "rules": [
+        {
+          "id": "low-sodium-soy-sauce",
+          "from": "soy-sauce",
+          "to": "low-sodium-soy-sauce",
+          "toName": "Sojasauce, salzreduziert",
+          "sourceID": "sacks-2001",
+          "quote": "The reduction of sodium intake to levels below the current recommendation of 100 mmol per day and the DASH diet both lower blood pressure substantially"
+        },
+        {
+          "id": "half-broth-water",
+          "from": "vegetable-broth",
+          "to": "water",
+          "toName": "Wasser",
+          "share": 0.5,
+          "stepNote": "Halb Brühe, halb Wasser: am Ende abschmecken.",
+          "sourceID": "sacks-2001",
+          "quote": "The reduction of sodium intake to levels below the current recommendation of 100 mmol per day and the DASH diet both lower blood pressure substantially"
+        }
+      ],
+      "notes": [
+        {
+          "text": "Salz nach Geschmack zählt in den Nährwerten nicht mit. Die DGE nennt als Orientierung bis zu 6 g Salz am Tag, etwa einen Teelöffel.",
+          "sourceID": "dge-salt",
+          "quote": "Für die Speisesalzzufuhr wird ein Orientierungswert von bis zu 6 g Speisesalz/Tag angegeben"
+        }
+      ]
+    },
+    {
+      "id": "weight-loss",
+      "criterion": "energyDensity",
+      "rules": [
+        {
+          "id": "half-coconut-milk-water",
+          "from": "coconut-milk",
+          "to": "water",
+          "toName": "Wasser",
+          "share": 0.5,
+          "stepNote": "Halb Kokosmilch, halb Wasser: milder, deutlich weniger Fett.",
+          "sourceID": "ello-martin-2007",
+          "quote": "Reducing dietary energy density, particularly by combining increased fruit and vegetable intakes with decreased fat intake, is an effective strategy for managing body weight while controlling hunger"
+        }
+      ],
+      "notes": [
+        {
+          "text": "Die Variante zeigt kcal pro Portion. Weniger Energie pro Bissen, vor allem durch mehr Gemüse und weniger Fett, hilft beim Abnehmen, ohne hungrig zu bleiben.",
+          "sourceID": "ello-martin-2007",
+          "quote": "Reducing dietary energy density, particularly by combining increased fruit and vegetable intakes with decreased fat intake, is an effective strategy for managing body weight while controlling hunger"
+        }
+      ]
+    },
+    {
+      "id": "low-carb",
+      "criterion": "carbohydrate",
+      "rules": [
+        {
+          "id": "potato-to-cauliflower",
+          "from": "potato",
+          "to": "cauliflower",
+          "toName": "Blumenkohl",
+          "stepNote": "Blumenkohl statt Kartoffel: in Röschen, gart eher etwas schneller.",
+          "sourceID": "seidelmann-2018",
+          "quote": "whereas those that favoured plant-derived protein and fat intake, from sources such as vegetables, nuts, peanut butter, and whole-grain breads, were associated with lower mortality"
+        }
+      ],
+      "notes": [
+        {
+          "text": "Low Carb ist hier eine Vorliebe, kein Gesundheitsziel: Sehr wenig wie sehr viel Kohlenhydrate gingen in der Studie mit höherer Sterblichkeit einher, pflanzlicher Ersatz schnitt besser ab als tierischer. Reis und Nudeln tauscht die App nicht im selben Schritt; Blumenkohlreis als eigene Beilage zubereiten.",
+          "sourceID": "seidelmann-2018",
+          "quote": "Both high and low percentages of carbohydrate diets were associated with increased mortality, with minimal risk observed at 50-55% carbohydrate intake"
+        }
       ]
     }
   ]
