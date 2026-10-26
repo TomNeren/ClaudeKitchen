@@ -91,3 +91,17 @@ extension FoodCatalog {
         return facts
     }
 }
+
+extension FoodCatalog {
+    /// Grams per serving of each food group in `recipe`, for comparing a variant with the original and with
+    /// intake targets. Ingredients that are not eaten, not mapped or cannot be weighed are left out.
+    public func groupGramsPerServing(of recipe: Recipe) -> [FoodGroupID: Double] {
+        guard recipe.baseServings > 0 else { return [:] }
+        var grams: [FoodGroupID: Double] = [:]
+        for ingredient in recipe.ingredients where ingredient.eaten {
+            guard let food = food(for: ingredient), let weight = food.grams(of: ingredient.amount) else { continue }
+            grams[food.group, default: 0] += weight / Double(recipe.baseServings)
+        }
+        return grams
+    }
+}

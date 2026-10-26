@@ -1,5 +1,6 @@
 """Checks every quote in food-catalog.json against the source text it cites.
 
+Also checks the quotes of the swap rules in rewrite-rules.json next to the catalog.
 Each quote must appear verbatim in its source; fragments separated by "…" must appear in order.
 Effect quotes must also carry the same relative risk and interval as the data fields.
 
@@ -13,7 +14,7 @@ Usage:
 
 Each file in the source directory is named after the source id it holds. Exits non-zero on any failure.
 """
-import json, re, html, sys
+import json, os, re, html, sys
 cat, srcdir = sys.argv[1], sys.argv[2]
 def norm(t, is_html):
     if is_html:
@@ -21,12 +22,15 @@ def norm(t, is_html):
         t = html.unescape(re.sub(r'<[^>]+>', ' ', t))
     return re.sub(r'\s+', ' ', t.replace('\u00ad', ''))
 texts = {}
-import os
 for f in os.listdir(srcdir):
     texts[f.rsplit('.', 1)[0]] = norm(open(os.path.join(srcdir, f), encoding='utf-8').read(), f.endswith('.html'))
 c = json.load(open(cat))
 items = [(g['id'], e['sourceID'], e['quote']) for g in c['groups'] for e in g.get('effects', [])]
 items += [(t['id'], t['sourceID'], t['quote']) for t in c['targets']]
+rules_path = os.path.join(os.path.dirname(cat), 'rewrite-rules.json')
+if os.path.exists(rules_path):
+    for goal in json.load(open(rules_path, encoding='utf-8'))['goals']:
+        items += [(goal['id'] + '/' + r['id'], r['sourceID'], r['quote']) for r in goal['rules']]
 bad = 0
 for iid, sid, q in items:
     if sid not in texts:
