@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "id": "mercimek-corbasi",
+  "name": "Mercimek Çorbası",
+  "tag": "Türkisch · Suppe",
+  "baseServings": 4,
+  "totalMinutes": 40,
+  "verified": false,
+  "origin": { "cuisine": "turkeyLevant", "region": "Türkei" },
+  "references": [
+    { "title": "Classical Turkish Cooking", "author": "Ayla Algar", "year": 1991 }
+  ],
+  "authenticityChecks": [
+    "Rote Linsen mit Zwiebel, Karotte und Tomatenmark weich gekocht und fein püriert",
+    "Kreuzkümmel in der Suppe, zum Schluss Butter mit Pul Biber und Minze darüber",
+    "Mit Zitronenspalten serviert"
+  ],
+  "ingredients": [
+    { "id": "zwiebel", "name": "Zwiebel", "food": "onion", "quantity": 1, "unit": "Stk", "note": "halbiert" },
+    { "id": "karotte", "name": "Karotte", "food": "carrot", "quantity": 1, "unit": "Stk", "note": "in Stücken" },
+    { "id": "olivenoel", "name": "Olivenöl", "food": "olive-oil", "quantity": 2, "unit": "EL" },
+    { "id": "tomatenmark", "name": "Tomatenmark", "food": "tomato-paste", "quantity": 1, "unit": "EL" },
+    { "id": "paprikamark", "name": "Paprikamark, mild", "food": "pepper-paste", "quantity": 1, "unit": "TL",
+      "substitutes": [ { "name": "Tomatenmark", "ratio": 1, "note": "milder, weniger Tiefe" } ] },
+    { "id": "linsen", "name": "Rote Linsen", "food": "red-lentils", "quantity": 200, "unit": "g", "note": "gewaschen" },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 1000, "unit": "g",
+      "substitutes": [ { "name": "Hühnerbrühe", "ratio": 1, "note": "kräftiger, salziger" } ] },
+    { "id": "kreuzkuemmel", "name": "Kreuzkümmel, gemahlen", "food": "cumin", "quantity": 1, "unit": "TL" },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    { "id": "butter", "name": "Butter", "food": "butter", "quantity": 15, "unit": "g" },
+    { "id": "pul-biber", "name": "Pul Biber", "food": "pul-biber", "quantity": 1, "unit": "TL" },
+    { "id": "minze", "name": "Minze, getrocknet", "food": "dried-mint", "quantity": 1, "unit": "TL" },
+    { "id": "zitrone", "name": "Zitrone", "food": "lemon", "quantity": 1, "unit": "Stk", "note": "in Spalten" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Hacken", "text": "Zwiebel und Karotte in den Topf geben und zerkleinern.",
+      "ingredientIDs": ["zwiebel", "karotte"],
+      "setting": { "speed": 5, "seconds": 5 } },
+    { "id": "s2", "phase": "Anschwitzen", "text": "Olivenöl zugeben und andünsten.",
+      "note": "Ohne Messbecher.",
+      "ingredientIDs": ["olivenoel"],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 240 } },
+    { "id": "s3", "phase": "Mark", "text": "Tomaten- und Paprikamark zugeben und kurz mitrösten.",
+      "ingredientIDs": ["tomatenmark", "paprikamark"],
+      "setting": { "heat": 110, "speed": 1, "reverse": true, "seconds": 60 } },
+    { "id": "s4", "phase": "Kochen", "text": "Linsen, Wasser, Kreuzkümmel und Salz zugeben und kochen, bis die Linsen zerfallen.",
+      "note": "Messbecher einsetzen.",
+      "ingredientIDs": ["linsen", "wasser", "kreuzkuemmel", "salz"],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 1200 } },
+    { "id": "s5", "phase": "Pürieren", "text": "Die Suppe fein pürieren.",
+      "note": "Messbecher fest einsetzen und mit einem Tuch abdecken, die Suppe ist heiß. Die Stufe langsam von 1 auf 9 steigern. Ist sie zu dick, etwas heißes Wasser zugeben.",
+      "ingredientIDs": [],
+      "setting": { "speed": 9, "seconds": 40 } },
+    { "id": "s6", "phase": "Anrichten", "text": "Butter in einer kleinen Pfanne schmelzen, Pul Biber und Minze darin kurz aufschäumen lassen und über die Suppe träufeln. Mit Zitrone servieren.",
+      "ingredientIDs": ["butter", "pul-biber", "minze", "zitrone"] }
+  ]
+}
