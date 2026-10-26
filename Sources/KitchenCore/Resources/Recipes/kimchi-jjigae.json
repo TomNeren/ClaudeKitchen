@@ -11,7 +11,7 @@
     { "title": "Maangchi's Real Korean Cooking", "author": "Maangchi", "year": 2015 }
   ],
   "authenticityChecks": [
-    "Gut gereiftes, saures Kimchi samt Saft, mit Schweinebauch angebraten",
+    "Gut gereiftes, saures Kimchi mit Schweinebauch angebraten, der Kimchi-Saft kommt in die Brühe",
     "Schärfe aus Gochugaru und Gochujang",
     "Tofu in Scheiben zum Schluss, im Topf serviert mit Reis"
   ],
@@ -26,7 +26,7 @@
     { "id": "gochugaru", "name": "Gochugaru", "food": "gochugaru", "quantity": 1, "unit": "EL" },
     { "id": "gochujang", "name": "Gochujang", "food": "gochujang", "quantity": 1, "unit": "EL" },
     { "id": "zucker", "name": "Zucker", "food": "sugar", "quantity": 1, "unit": "TL", "note": "nur bei sehr saurem Kimchi" },
-    { "id": "kimchi-saft", "name": "Kimchi-Saft", "food": "kimchi", "quantity": 60, "unit": "g" },
+    { "id": "kimchi-saft", "name": "Kimchi-Saft", "food": "kimchi-juice", "quantity": 60, "unit": "g" },
     { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 500, "unit": "g",
       "substitutes": [ { "name": "Anchovis-Kombu-Brühe", "ratio": 1, "note": "kräftiger" } ] },
     { "id": "tofu", "name": "Tofu, fest", "food": "firm-tofu", "quantity": 300, "unit": "g", "note": "in 1 cm dicken Scheiben" },
