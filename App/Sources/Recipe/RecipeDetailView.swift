@@ -34,6 +34,7 @@ struct RecipeDetailView: View {
                     WarningList(issues: warnings, recipe: model.displayed)
                 }
                 StepOverview(steps: model.displayed.steps)
+                OriginSection(recipe: model.recipe)
             }
             .padding(.bottom, 96)
             // With Reduce Motion the content switches in place instead of sliding the lists below.
@@ -330,6 +331,51 @@ private struct NutritionComparison: View {
 
     private static func format(_ value: Double) -> String {
         value.formatted(.number.precision(.fractionLength(0)))
+    }
+}
+
+/// Where a traditional recipe comes from, what it draws on, and what still needs a knowing eye. Hidden for
+/// recipes without any of it.
+private struct OriginSection: View {
+    let recipe: Recipe
+
+    var body: some View {
+        if recipe.origin != nil || !recipe.references.isEmpty || !recipe.authenticityChecks.isEmpty {
+            VStack(alignment: .leading, spacing: 12) {
+                SectionTitle(text: "Herkunft")
+                VStack(alignment: .leading, spacing: 10) {
+                    if let origin = recipe.origin {
+                        Text([origin.cuisine.displayName, origin.region].compactMap { $0 }.joined(separator: " · "))
+                            .font(.headline)
+                            .foregroundStyle(Palette.ink)
+                    }
+                    ForEach(recipe.references, id: \.self) { reference in
+                        Label(Self.text(for: reference), systemImage: "book.closed")
+                            .font(.subheadline)
+                            .foregroundStyle(Palette.muted)
+                    }
+                    if !recipe.authenticityChecks.isEmpty {
+                        Text("Zum Prüfen beim ersten Kochen")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(Palette.ink)
+                        ForEach(recipe.authenticityChecks, id: \.self) { check in
+                            Label(check, systemImage: "checkmark.circle")
+                                .font(.subheadline)
+                                .foregroundStyle(Palette.muted)
+                        }
+                    }
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Palette.surface, in: .rect(cornerRadius: 16))
+            }
+            .padding(.horizontal, 16)
+        }
+    }
+
+    private static func text(for reference: RecipeReference) -> String {
+        let byline = [reference.author, reference.year.map(String.init)].compactMap { $0 }.joined(separator: ", ")
+        return byline.isEmpty ? reference.title : "\(reference.title) (\(byline))"
     }
 }
 

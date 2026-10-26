@@ -415,8 +415,8 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M6 | (v2) Rezept-Import über Claude API, eigene Rezepte | Erledigt (PR #10, 68 Tests): Import aus Text oder https-Link, Prüfung, Speichern, Löschen; Editor bei Bedarf; Test am Gerät braucht API-Schlüssel |
 | M7 | (v2) Sprachmodus Schicht 2 und 3: Gespräch im Kochmodus, Ersatzfragen | Erledigt (PR #11, 76 Tests): `VoiceCommand` in KitchenCore, Zuhören, Antworten und KI-Fragen in der App; Durchkochen per Sprache offen laut Geräte-Prüfliste |
 | M8 | M8a erledigt (PR #12), M8b erledigt (PR #14), M8c erledigt (PR #16). Evidenz-Datenbank: Lebensmittelgruppen mit Quellen, Lebensmittelkatalog, `food`-Verweis an jeder Zutat (Abschnitt 3b) | Alle Zahlen an der Originalarbeit geprüft; Test: jede Zutat aller Rezepte ist zugeordnet, jede Einstufung hat eine Quelle |
-| M9 | M9a erledigt (PR #18), M9b erledigt (PR #19), M9c im Review. Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil, Ziele Ausgewogen, Blutdruck, Abnehmen, Low Carb; in der App Umschalter Original/Variante mit Zielwahl, Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
-| M10 | Rezeptbestand: `origin`, `references`, `variantOf`, 27 traditionelle Rezepte aus neun Küchenräumen; Bibliothek filtert nach Küche | Alle 27 bestehen `validate` und sind vollständig zugeordnet |
+| M9 | Erledigt: M9a (PR #18), M9b (PR #19), M9c (PR #20). Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil, Ziele Ausgewogen, Blutdruck, Abnehmen, Low Carb; in der App Umschalter Original/Variante mit Zielwahl, Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
+| M10 | M10a im Review. Rezeptbestand: `origin`, `references`, `variantOf`, 27 traditionelle Rezepte aus neun Küchenräumen; Bibliothek filtert nach Küche | Alle 27 bestehen `validate` und sind vollständig zugeordnet |
 | M11 | Einkauf und Vorrat: Bedarf minus Vorrat, Mindestbestand, Abbuchen nach dem Kochen, Export nach Erinnerungen und Teilen (Abschnitt 3d) | Logik-Tests in KitchenCore; Export am Gerät laut Prüfliste |
 | M12 | (v2) Sprachprotokoll, Ersatzlisten für alle Rezepte, Rezept-Editor (PR #13, unabhängig von M8 bis M11) | In Arbeit: Protokoll in den Einstellungen, Editor für eigene Rezepte und Kopien; Bedienung am Handy offen laut Geräte-Prüfliste |
 
@@ -551,6 +551,8 @@ Fehlerliste.
 - [ ] M9c: Rezeptansicht: Menü „Original“ über dem Farbverlauf wirkt als Glas neben dem Portionsregler; Ziel wählen zeigt „Was sich ändert“ ohne Ruckeln
 - [ ] M9c: Änderungsliste lesbar, Quelle aufklappbar, Nährwerte pro Portion stimmen mit der Zutatenliste überein; VoiceOver liest „X wird zu Y“
 - [ ] M9c: „Kochen starten“ mit gewähltem Ziel kocht die Variante (Zutaten, Schrittzeiten, Hinweise)
+- [ ] M10a: Bibliothek: Filter „Küche“ in der Leiste zeigt nur vorhandene Küchen, das Symbol ist gefüllt, solange ein Filter aktiv ist
+- [ ] M10a: Rezeptansicht: Abschnitt „Herkunft“ mit Küche, Region, Quellen und Prüfpunkten, nur bei Rezepten mit diesen Angaben
 - [ ] M6: API-Schlüssel in den Einstellungen eintragen und wieder entfernen
 - [ ] M6: Import aus kopiertem Text und aus einem Link (https), Vorschau mit Prüfung, Speichern; eigenes Rezept erscheint oben in der Bibliothek, Löschen per langem Druck
 - [ ] M6: Werte eines importierten Rezepts einmal am Gerät gegenprüfen

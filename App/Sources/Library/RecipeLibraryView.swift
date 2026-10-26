@@ -53,6 +53,11 @@ struct RecipeLibraryView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Einstellungen", systemImage: "gearshape") { isShowingSettings = true }
                 }
+                if !model.cuisines.isEmpty {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        CuisineFilter(model: model)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu("Rezept hinzufügen", systemImage: "plus") {
                         Button("Neues Rezept", systemImage: "square.and.pencil") {
@@ -116,6 +121,28 @@ struct RecipeLibraryView: View {
                 CookingView(recipe: variant ?? recipe, servings: servings) { path.removeAll() }
             }
         }
+    }
+}
+
+/// Toolbar menu that narrows the library to one cuisine. The filled icon shows that a filter is active.
+private struct CuisineFilter: View {
+    @Bindable var model: RecipeLibraryModel
+
+    var body: some View {
+        Menu {
+            Picker("Küche", selection: $model.cuisine) {
+                Text("Alle Küchen").tag(Cuisine?.none)
+                ForEach(model.cuisines, id: \.self) { cuisine in
+                    Text(cuisine.displayName).tag(Optional(cuisine))
+                }
+            }
+        } label: {
+            Label(
+                "Küche",
+                systemImage: model.cuisine == nil
+                    ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+        }
+        .accessibilityValue(model.cuisine?.displayName ?? "Alle Küchen")
     }
 }
 

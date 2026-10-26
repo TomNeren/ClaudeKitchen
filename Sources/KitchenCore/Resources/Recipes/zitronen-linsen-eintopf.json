@@ -6,6 +6,7 @@
   "baseServings": 3,
   "totalMinutes": 35,
   "verified": false,
+  "origin": { "cuisine": "europe", "region": "Ikaria" },
   "ingredients": [
     { "id": "zwiebel", "name": "Zwiebel", "food": "onion", "quantity": 1, "unit": "Stk",
       "substitutes": [ { "name": "Schalotten", "ratio": 2 } ] },

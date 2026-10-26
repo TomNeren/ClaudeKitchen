@@ -9,6 +9,8 @@ final class RecipeLibraryModel {
     private(set) var own: [Recipe] = []
     private(set) var loadFailed: Bool
     var query = ""
+    /// Nil shows every cuisine.
+    var cuisine: Cuisine?
 
     private let store: any RecipeStore
 
@@ -32,8 +34,11 @@ final class RecipeLibraryModel {
     var recipes: [Recipe] { own + bundled }
 
     var visibleRecipes: [Recipe] {
-        RecipeSearch.filter(recipes, query: query)
+        RecipeSearch.filter(recipes, query: query, cuisine: cuisine)
     }
+
+    /// Cuisines that have at least one recipe, for the filter menu.
+    var cuisines: [Cuisine] { RecipeSearch.cuisines(in: recipes) }
 
     func recipe(_ id: RecipeID) -> Recipe? {
         recipes.first { $0.id == id }
