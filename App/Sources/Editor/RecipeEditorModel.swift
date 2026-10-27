@@ -31,7 +31,8 @@ final class RecipeEditorModel {
         revalidate()
     }
 
-    var hasChanges: Bool { isNew || recipe != original }
+    /// Only real edits count: opening a new recipe or an import and cancelling right away asks nothing.
+    var hasChanges: Bool { recipe != original }
 
     /// Checked once per change, not on every read: the form reads them per row and on every keystroke.
     private(set) var problems: [EditingProblem] = []

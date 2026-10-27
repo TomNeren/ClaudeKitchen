@@ -5,6 +5,9 @@ import SwiftUI
 struct ImportRecipeView: View {
     @State private var model: ImportRecipeModel
     @Environment(\.dismiss) private var dismiss
+    /// Claude's recipe open in the editor, before anything is saved.
+    @State private var editing: Recipe?
+    @State private var savedFromEditor = false
     private let onSaved: @MainActor () -> Void
 
     init(model: ImportRecipeModel = ImportRecipeModel(), onSaved: @escaping @MainActor () -> Void) {
@@ -24,10 +27,23 @@ struct ImportRecipeView: View {
                     ToolbarItem(placement: .confirmationAction) { primaryAction }
                     if case .preview = model.phase {
                         ToolbarItem(placement: .bottomBar) {
-                            Button("Zurück zum Text", systemImage: "pencil") { model.edit() }
+                            Button("Zurück zum Text", systemImage: "text.alignleft") { model.edit() }
+                        }
+                        ToolbarSpacer(.flexible, placement: .bottomBar)
+                        ToolbarItem(placement: .bottomBar) {
+                            Button("Bearbeiten", systemImage: "pencil") { editing = model.previewRecipe }
                         }
                     }
                 }
+        }
+        // Sichern in the editor stores the recipe; once the editor is gone, the import closes too.
+        .sheet(item: $editing, onDismiss: finishIfSaved) { recipe in
+            RecipeEditorView(recipe: recipe, isNew: true, title: "Import bearbeiten", profile: model.profile) {
+                edited in
+                let saved = await model.saveEdited(edited)
+                if saved { savedFromEditor = true }
+                return saved
+            }
         }
         .onAppear { model.refreshKey() }
         // Closing the sheet stops a running conversion, so no paid request runs on unseen.
@@ -45,6 +61,14 @@ struct ImportRecipeView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .preview(let recipe, let issues):
             ImportPreview(recipe: recipe, issues: issues)
+        case .saved:
+            ContentUnavailableView {
+                Label("Gespeichert", systemImage: "checkmark.circle")
+            } description: {
+                Text("Das Rezept steht oben in der Bibliothek.")
+            } actions: {
+                Button("Fertig") { finish() }
+            }
         case .failed(let message):
             ContentUnavailableView {
                 Label("Import nicht möglich", systemImage: "exclamationmark.triangle")
@@ -56,9 +80,20 @@ struct ImportRecipeView: View {
         }
     }
 
+    private func finishIfSaved() {
+        if savedFromEditor { finish() }
+    }
+
+    private func finish() {
+        onSaved()
+        dismiss()
+    }
+
     @ViewBuilder
     private var primaryAction: some View {
         switch model.phase {
+        case .saved:
+            Button("Fertig") { finish() }
         case .preview:
             Button("Speichern") {
                 Task {
@@ -122,6 +157,8 @@ private struct ImportPreview: View {
     let recipe: Recipe
     let issues: [ValidationIssue]
 
+    private var blocksSaving: Bool { issues.contains { $0.severity == .error } }
+
     var body: some View {
         List {
             Section {
@@ -140,7 +177,7 @@ private struct ImportPreview: View {
                 }
             }
             if !issues.isEmpty {
-                Section("Prüfung") {
+                Section {
                     ForEach(issues, id: \.self) { issue in
                         Label(
                             IssueText.text(for: issue, in: recipe),
@@ -148,6 +185,14 @@ private struct ImportPreview: View {
                                 ? "xmark.octagon.fill" : "exclamationmark.triangle.fill"
                         )
                         .foregroundStyle(issue.severity == .error ? Color.red : Palette.accent)
+                    }
+                } header: {
+                    Text("Prüfung")
+                } footer: {
+                    if blocksSaving {
+                        Text(
+                            "So lässt es sich nicht speichern. Über „Bearbeiten“ unten korrigierst du die Werte direkt."
+                        )
                     }
                 }
             }
@@ -190,7 +235,8 @@ private struct ImportPreview: View {
 #Preview("Vorschau") {
     if let recipe = Recipe.fixtures.first {
         NavigationStack {
-            ImportPreview(recipe: recipe, issues: DeviceProfile.omniCook.validate(recipe, servings: 12))
+            ImportPreview(
+                recipe: recipe, issues: DeviceProfile.omniCook.validate(recipe, servings: 12))
         }
     }
 }

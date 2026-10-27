@@ -15,8 +15,15 @@ struct RecipeEditorView: View {
     /// Returns false when the recipe could not be stored; the editor then stays open with the changes.
     private let onSave: (Recipe) async -> Bool
 
-    init(recipe: Recipe, isNew: Bool, onSave: @escaping (Recipe) async -> Bool) {
-        self.model = RecipeEditorModel(recipe: recipe, isNew: isNew)
+    private let title: String?
+
+    /// `title` replaces the default "Neues Rezept" / "Rezept bearbeiten", for example for an import.
+    init(
+        recipe: Recipe, isNew: Bool, title: String? = nil, profile: DeviceProfile = .omniCook,
+        onSave: @escaping (Recipe) async -> Bool
+    ) {
+        self.title = title
+        self.model = RecipeEditorModel(recipe: recipe, isNew: isNew, profile: profile)
         self.onSave = onSave
     }
 
@@ -31,7 +38,7 @@ struct RecipeEditorView: View {
             }
             .environment(\.editMode, $editMode)
             .editorKeyboard()
-            .navigationTitle(model.isNew ? "Neues Rezept" : "Rezept bearbeiten")
+            .navigationTitle(title ?? (model.isNew ? "Neues Rezept" : "Rezept bearbeiten"))
             .toolbarTitleDisplayMode(.inline)
             .navigationDestination(for: EditorRoute.self) { route in
                 switch route {
