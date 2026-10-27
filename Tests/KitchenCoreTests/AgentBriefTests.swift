@@ -72,6 +72,13 @@ struct AgentBriefTests {
         #expect(!text.contains("\nEinkaufen:") && !text.contains("\nErst fragen ("))
     }
 
+    @Test func theBriefTellsTheAgentToPreferCheaperPacksCheckTheCartAndSkipUnansweredAskItems() {
+        let text = AgentBrief.text(for: [], catalog: Self.catalog)
+        #expect(text.contains("Ist eine größere Packung billiger, nimm die billigere."))
+        #expect(text.contains("öffne den Warenkorb und gleiche ihn mit deiner Auswahl ab"))
+        #expect(text.contains("Wähle ich nichts aus, legst du keinen davon hinein."))
+    }
+
     @Test func bundledSearchNamesAreSetOnlyWhereTheyDiffer() throws {
         let catalog = try #require(FoodCatalog.shared)
         let redundant = catalog.foods.filter { food in
