@@ -14,7 +14,8 @@ Werte aus Abschnitt 2.
 Schreibe 10 neue, traditionelle Rezepte der Küche `<KÜCHE>` für den TOKIT Omni Cook als JSON-Dateien in
 `Sources/KitchenCore/Resources/Recipes/`. Lies vorher `CLAUDE.md`, `PLAN.md` (Abschnitt 3c und 6.2) und den Skill
 `app-architecture`. Ändere keinen Swift-Code und keine Tests. Wenn ein Rezept eine Prüfung nicht besteht, änderst
-du das Rezept, nie die Prüfung.
+du das Rezept, nie die Prüfung. Die Liste `ownCreations` im Test gilt nur für eigene Rezepte des Menschen
+(derzeit der Ingwer-Lachs); ein erzeugtes Rezept kommt nie dort hinein.
 
 ## 1. Was ein Rezept hier ist
 

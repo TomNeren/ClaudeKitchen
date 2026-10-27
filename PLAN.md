@@ -181,9 +181,11 @@ Alle Zitate prüft `Scripts/check_evidence_quotes.py`. Damit ändern Blutdruck (
   Küche abhaken kann.
 - **Qualitätsprüfung:** `RecipeQualityTests` verlangt für jedes mitgelieferte Rezept `origin` mit Region,
   Referenzen und Prüfliste, `verified: false`, ein Tag „<Küche> · <Art>“ passend zur Küche, 4 bis 10 Schritte mit
-  20 bis 160 Zeichen, keine Gedankenstriche und kein doppeltes Gericht. Auch die drei Startrezepte (Ingwer-Lachs,
-  Kichererbsen-Spinat-Curry, Linsen-Eintopf) tragen jetzt Herkunft und eine Prüfliste, die ihre Abwandlungen offen
-  nennt. Neue Rezepte entstehen mit `Prompts/rezepte-erweitern.md`.
+  20 bis 160 Zeichen, keine Gedankenstriche und kein doppeltes Gericht. Kichererbsen-Spinat-Curry und
+  Linsen-Eintopf tragen jetzt Herkunft und eine Prüfliste, die ihre Abwandlungen offen nennt. Der Ingwer-Lachs bleibt
+  ein eigenes Rezept ohne Herkunft: Er steht als einziger in `ownCreations` im Test, braucht keine Referenzen und
+  darf kein Küchen-Adjektiv im Tag tragen. Neue Rezepte entstehen mit `Prompts/rezepte-erweitern.md` und kommen
+  nie in diese Liste.
 
 ### 3d. Einkauf und Vorrat
 

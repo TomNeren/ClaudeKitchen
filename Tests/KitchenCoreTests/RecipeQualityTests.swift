@@ -52,14 +52,19 @@ struct RecipeQualityTests {
         "Peruanisch": (.mexicoPeru, "Peru"),
     ]
 
+    /// The cook's own recipes, not traditional dishes (`Recipe.origin` is nil for them). They skip the origin,
+    /// reference and authenticity checks and must not wear a cuisine in their tag; every other check applies.
+    /// Generated recipes never go here.
+    static let ownCreations: Set<RecipeID> = ["ingwer-lachs-pak-choi"]
+
     static let recipes: [Recipe] = (try? RecipeLibrary.bundled()) ?? []
 
     @Test func recipesLoad() {
         #expect(!Self.recipes.isEmpty)
     }
 
-    @Test func everyRecipeHasOriginReferencesAndChecks() {
-        for recipe in Self.recipes {
+    @Test func everyTraditionalRecipeHasOriginReferencesAndChecks() {
+        for recipe in Self.recipes where !Self.ownCreations.contains(recipe.id) {
             #expect(recipe.origin != nil, "\(recipe.id): no origin")
             let region = recipe.origin?.region ?? ""
             #expect(!region.isEmpty, "\(recipe.id): no region")
@@ -111,9 +116,24 @@ struct RecipeQualityTests {
             for part in parts {
                 #expect(!part.isEmpty && part == part.trimmingCharacters(in: .whitespaces), "\(recipe.id): tag part")
             }
+            if Self.ownCreations.contains(recipe.id) {
+                #expect(Self.tagAdjectives[parts[0]] == nil, "\(recipe.id): own creation tagged as a cuisine")
+                continue
+            }
             let adjective = try #require(
                 Self.tagAdjectives[parts[0]], "\(recipe.id): unknown cuisine \"\(parts[0])\" in tag")
             #expect(adjective.cuisine == recipe.origin?.cuisine, "\(recipe.id): tag and origin disagree")
+        }
+    }
+
+    @Test func ownCreationsExistAndClaimNoOrigin() {
+        for id in Self.ownCreations {
+            guard let recipe = Self.recipes.first(where: { $0.id == id }) else {
+                Issue.record("\(id) is listed as an own creation but not bundled")
+                continue
+            }
+            #expect(recipe.origin == nil, "\(id): an own creation has no origin")
+            #expect(recipe.references.isEmpty && recipe.authenticityChecks.isEmpty, "\(id): nothing to cite or check")
         }
     }
 
