@@ -8,7 +8,7 @@ Stand: 27.10.2026, `main` auf `35c3cfe` (Merge von PR #46). Zusammengetragen aus
 - **Qualität:** 244 Tests in 32 Suiten sind grün (unter Linux am 27.10. nachgeprüft). Auf `main` sind die CI-Jobs `kitchencore-linux` und `app-ios` grün.
 - **Inhalt:** 30 Rezepte aus neun Küchenräumen plus ein eigenes Rezept. Alle 30 haben ein Foto (BFL).
 - **Gerät:** Nichts ist bisher am iPhone geprüft. Die Geräte-Prüfliste in `PLAN.md` §10 ist komplett offen.
-- **TestFlight:** Der Workflow läuft bei jedem Push auf `main`, überspringt den Upload aber, weil die Secrets fehlen.
+- **TestFlight:** Der Workflow läuft bei jedem Push auf `main` (so entschieden, Nr. 50), überspringt den Upload aber, weil die Secrets fehlen.
 
 ## Meilensteine
 
@@ -36,7 +36,7 @@ Stand: 27.10.2026, `main` auf `35c3cfe` (Merge von PR #46). Zusammengetragen aus
 | | Einkaufsauftrag nach REWE-Test geschärft | erledigt | #46 |
 | | Import vor dem Speichern bearbeiten | erledigt | #40 |
 
-`PLAN.md` §8 und §9 sind auf diesem Stand (Entscheidungen 42 bis 49, offene Fragen 1 bis 3 als entschieden markiert, neue offene Frage 7).
+`PLAN.md` §8 und §9 sind auf diesem Stand (Entscheidungen 42 bis 50, offene Fragen 1 bis 3 und 7 als entschieden markiert).
 
 ## Offene Pull Requests
 

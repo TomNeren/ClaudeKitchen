@@ -621,6 +621,9 @@ Getroffen (2026-10-25):
     (keine Auswahl heißt keiner), eine größere Packung wird genommen, wenn sie billiger ist, Buttons werden vor dem
     Klick geprüft, Ersatz kommt mit Preis (TK bei Fisch und Fleisch ist in Ordnung), am Ende gleicht der Agent den
     Warenkorb mit der Auswahl ab. Ergänzt Entscheidung 39.
+50. (deine Entscheidung) **TestFlight bei jedem Push auf `main`:** Jeder gemergte Stand geht nach TestFlight, kein
+    Upload nur bei Tags. Beantwortet die offene Frage 7. Ob ein übersprungener Upload sichtbar gemacht wird, ist
+    noch nicht entschieden.
 
 Die Herkunft dieser und weiterer Entscheidungen aus den einzelnen Sessions steht in `ENTSCHEIDUNGEN.md`.
 
@@ -640,9 +643,9 @@ Offen (mit Empfehlung; die Nummern bleiben, damit Verweise stimmen):
    Chicken Adobo) als Nebentimer nachrüsten; (b) erst, wenn ein Rezept beim Kochen daran scheitert; (c) gar nicht, Nebenarbeit bleibt Text
    im Schritt. Empfehlung: (a), aber nur M13a und M13b; M13c folgt, sobald du im Editor oder beim Import
    einen Nebentimer vermisst.
-7. **TestFlight-Auslöser:** Upload bei jedem Push auf `main` (Stand) oder nur bei Tags; dazu ein übersprungener
-   Upload sichtbar machen (Hinweis in der Job-Zusammenfassung). Empfehlung: Push auf `main` lassen und das
-   Überspringen sichtbar machen, solange du der einzige Tester bist.
+7. ~~**TestFlight-Auslöser**~~ entschieden: bei jedem Push auf `main` (Entscheidung 50). Noch offen: einen
+   übersprungenen Upload sichtbar machen (Hinweis in der Job-Zusammenfassung). Empfehlung: ja, damit ein grüner
+   Lauf ohne Upload nicht wie ein erfolgreicher Upload aussieht.
 
 ## 10. Gauntlet-Loop: Umsetzung der restlichen Meilensteine
 

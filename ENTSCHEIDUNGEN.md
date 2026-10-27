@@ -2,7 +2,7 @@
 
 Stand: 27.10.2026. Zusammengetragen aus allen ClaudeKitchen-Sessions in der Cloud und auf dem Mac (Remote Control), dazu aus `PLAN.md` und der Git-Historie.
 
-- Die nummerierte, verbindliche Liste steht in `PLAN.md` §9 (Nr. 1 bis 49). Sie wird hier nach Themen geordnet und nur kurz genannt.
+- Die nummerierte, verbindliche Liste steht in `PLAN.md` §9 (Nr. 1 bis 50). Sie wird hier nach Themen geordnet und nur kurz genannt.
 - Ausführlich stehen hier die Entscheidungen, die nur in Sessions fielen und nie in `PLAN.md` landeten. Sie sind mit **(neu)** markiert.
 - Quellen nennt die Spalte „Session“, die Kürzel sind am Ende erklärt.
 - „Loop“ heißt: Claude hat im Gauntlet-Loop selbst entschieden. Solche Entscheidungen sind umkehrbar.
@@ -170,7 +170,7 @@ Aus `PLAN.md` §9 „Offen“, ergänzt um den Stand aus den Sessions.
 4. **BLS-4.0-Lizenz:** offen. Bis dahin gilt USDA.
 5. **Authentizität prüfen:** offen. Empfehlung: Der Nutzer prüft beim ersten Kochen.
 6. **Parallele Timer M13:** offen. Empfehlung: (a), also M13a und M13b bauen.
-7. Upload nur bei Tags statt bei jedem Push, und ein übersprungener Upload soll sichtbar werden. Steht jetzt als offene Frage 7 in `PLAN.md` (TFL).
+7. **TestFlight-Auslöser:** entschieden, bei jedem Push auf `main` (`PLAN.md` Nr. 50, 27.10.). Offen bleibt, einen übersprungenen Upload sichtbar zu machen (TFL).
 8. **(neu)** Sollen die Netzwerk-Freigaben für die Supermärkte wieder entfernt werden? Unbeantwortet (SUP).
 
 ## Quellen (Sessions)
