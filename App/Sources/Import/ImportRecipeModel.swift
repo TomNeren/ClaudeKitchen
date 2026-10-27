@@ -108,7 +108,7 @@ final class ImportRecipeModel {
         }
     }
 
-    private static func message(for error: Error) -> String {
+    static func message(for error: Error) -> String {
         switch error {
         case ClaudeClient.ClientError.missingKey:
             return "Kein API-Schlüssel hinterlegt. Trag ihn in den Einstellungen ein."

@@ -26,6 +26,25 @@ struct ClaudeClient {
         return try ClaudeRecipeImport.recipe(fromResponse: data, status: response.statusCode, id: id)
     }
 
+    /// Asks Claude for a variant of `recipe` that answers `feedback`, checked against `profile` and the food catalog.
+    func improvement(
+        of recipe: Recipe, feedback: RecipeFeedback, variantID: RecipeID, profile: DeviceProfile = .omniCook
+    ) async throws -> RecipeImprovement {
+        guard let key = APIKeyStore.load() else { throw ClientError.missingKey }
+        var request = URLRequest(url: ClaudeRecipeImport.endpoint)
+        request.httpMethod = "POST"
+        request.timeoutInterval = 180
+        for (name, value) in ClaudeRecipeImport.headers {
+            request.setValue(value, forHTTPHeaderField: name)
+        }
+        request.setValue(key, forHTTPHeaderField: "x-api-key")
+        request.httpBody = try ClaudeRecipeImprovement.requestBody(
+            recipe: recipe, feedback: feedback, variantID: variantID, profile: profile)
+        let (data, response) = try await load(request)
+        return try ClaudeRecipeImprovement.improvement(
+            fromResponse: data, status: response.statusCode, original: recipe, variantID: variantID, profile: profile)
+    }
+
     /// Downloads a recipe page over HTTPS and reduces it to text, decoding with the page's own charset.
     func pageText(at url: URL) async throws -> String {
         guard url.scheme == "https" else { throw ClientError.insecureLink }

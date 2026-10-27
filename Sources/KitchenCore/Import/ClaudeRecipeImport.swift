@@ -71,6 +71,15 @@ public enum ClaudeRecipeImport {
     }
 
     static func draft(fromResponse data: Data, status: Int = 200) throws -> RecipeDraft {
+        let text = try text(fromResponse: data, status: status)
+        guard let draft = try? JSONDecoder().decode(RecipeDraft.self, from: Data(text.utf8)) else {
+            throw ResponseError.missingRecipe
+        }
+        return draft
+    }
+
+    /// The text block of a Messages API response, after checking status, API errors and the stop reason.
+    static func text(fromResponse data: Data, status: Int = 200) throws -> String {
         guard let response = try? JSONDecoder().decode(Response.self, from: data) else {
             throw (200..<300).contains(status) ? ResponseError.missingRecipe : ResponseError.http(status: status)
         }
@@ -86,22 +95,40 @@ public enum ClaudeRecipeImport {
         default:
             break
         }
-        guard let text = response.content?.first(where: { $0.type == "text" })?.text,
-            let draft = try? JSONDecoder().decode(RecipeDraft.self, from: Data(text.utf8))
-        else {
+        guard let text = response.content?.first(where: { $0.type == "text" })?.text else {
             throw ResponseError.missingRecipe
         }
-        return draft
+        return text
     }
 
     /// What the model needs to know about the device. Every number comes from `profile`.
     public static func systemPrompt(for profile: DeviceProfile) -> String {
+        """
+        Du wandelst Rezepte in Schritt-für-Schritt-Anleitungen für den \(profile.name) um, einen Multikocher mit \
+        Heizung, Messer und Waage. Antworte nur mit dem JSON nach Schema.
+
+        \(deviceSection(for: profile))
+
+        Regeln:
+        - Mengen mit unit \(units.joined(separator: ", ")); Stückzahlen ohne passende Einheit als Stk; \
+        "nach Geschmack" als quantity und unit null.
+        - scales false für Zutaten, die bei mehr Portionen gleich bleiben (Lorbeerblatt, Wasser für den Dampf).
+        - Pro Schritt eine Handlung. ingredientIndexes nennt die Zutaten, die in diesem Schritt hinzukommen, auch \
+        in den Dampfaufsatz, als Positionen in der Liste ingredients, gezählt ab 0 (die erste Zutat ist 0).
+        - freshPot true für einen Schritt, der in einem leeren, sauberen Topf neu beginnt, zum Beispiel eine \
+        Beilage nach dem Hauptgericht.
+        - setting nur, wenn am Gerät etwas einzustellen ist; Zerkleinern als kurzer Schritt mit hoher Stufe \
+        und wenigen Sekunden, Andünsten mit Linkslauf.
+        - Was das Gerät nicht kann (Backofen, Pfanne), als Schritt ohne setting mit Hinweis in note.
+        - Texte auf Deutsch, kurz und im Imperativ. tag wie "Mediterran · Ofen" mit Mittelpunkt.
+        """
+    }
+
+    /// The device limits as prompt lines. Every number comes from `profile`.
+    static func deviceSection(for profile: DeviceProfile) -> String {
         let accessories = profile.ownedAccessories.map(\.rawValue).sorted().joined(separator: ", ")
         let fill = String(format: "%.1f", profile.maxFillLiters).replacingOccurrences(of: ".", with: ",")
         return """
-            Du wandelst Rezepte in Schritt-für-Schritt-Anleitungen für den \(profile.name) um, einen Multikocher mit \
-            Heizung, Messer und Waage. Antworte nur mit dem JSON nach Schema.
-
             Gerät:
             - Temperatur \(profile.temperatureRange.lowerBound) bis \(profile.temperatureRange.upperBound) °C, \
             in ganzen Grad.
@@ -113,40 +140,27 @@ public enum ClaudeRecipeImport {
             - Zubehör vorhanden: \(accessories). Dampfgaren nur mit program "steam", steam: true, ohne Stufe und \
             mit accessory "steamer".
             - Programme: \(Program.allCases.map(\.rawValue).joined(separator: ", ")).
-
-            Regeln:
-            - Mengen mit unit \(units.joined(separator: ", ")); Stückzahlen ohne passende Einheit als Stk; \
-            "nach Geschmack" als quantity und unit null.
-            - scales false für Zutaten, die bei mehr Portionen gleich bleiben (Lorbeerblatt, Wasser für den Dampf).
-            - Pro Schritt eine Handlung. ingredientIndexes nennt die Zutaten, die in diesem Schritt hinzukommen, auch \
-            in den Dampfaufsatz, als Positionen in der Liste ingredients, gezählt ab 0 (die erste Zutat ist 0).
-            - freshPot true für einen Schritt, der in einem leeren, sauberen Topf neu beginnt, zum Beispiel eine \
-            Beilage nach dem Hauptgericht.
-            - setting nur, wenn am Gerät etwas einzustellen ist; Zerkleinern als kurzer Schritt mit hoher Stufe \
-            und wenigen Sekunden, Andünsten mit Linkslauf.
-            - Was das Gerät nicht kann (Backofen, Pfanne), als Schritt ohne setting mit Hinweis in note.
-            - Texte auf Deutsch, kurz und im Imperativ. tag wie "Mediterran · Ofen" mit Mittelpunkt.
             """
     }
 
-    private static func nullable(_ value: JSONValue) -> JSONValue {
+    static func nullable(_ value: JSONValue) -> JSONValue {
         .object([("anyOf", .array([value, .object([("type", .string("null"))])]))])
     }
 
-    private static func type(_ name: String) -> JSONValue {
+    static func type(_ name: String) -> JSONValue {
         .object([("type", .string(name))])
     }
 
-    private static func enumeration(_ values: [String]) -> JSONValue {
+    static func enumeration(_ values: [String]) -> JSONValue {
         .object([("type", .string("string")), ("enum", .array(values.map(JSONValue.string)))])
     }
 
-    private static func array(of items: JSONValue) -> JSONValue {
+    static func array(of items: JSONValue) -> JSONValue {
         .object([("type", .string("array")), ("items", items)])
     }
 
     /// An object schema whose properties are all required, in the given order, with no extras.
-    private static func object(_ properties: [(String, JSONValue)]) -> JSONValue {
+    static func object(_ properties: [(String, JSONValue)]) -> JSONValue {
         .object([
             ("type", .string("object")),
             ("properties", .object(properties)),
@@ -191,7 +205,7 @@ public enum ClaudeRecipeImport {
         ])
     }
 
-    private struct Response: Decodable {
+    struct Response: Decodable {
         struct Block: Decodable {
             var type: String
             var text: String?
