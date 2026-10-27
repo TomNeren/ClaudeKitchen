@@ -10,6 +10,10 @@ struct RecipeDetailView: View {
     private let isOwn: Bool
     private let onEdit: (() -> Void)?
     private let onAddToShopping: ((_ servings: Int, _ goal: RewriteGoalID?) -> Void)?
+    /// Opens "Mit Claude verbessern"; nil hides the button (no feedback worth sending, or no API key).
+    private let onImprove: (() -> Void)?
+    /// For a variant: the name of the recipe it came from and how to open it.
+    private let original: (name: String, open: () -> Void)?
     /// True once the recipe is in the shopping plan, from the library or after tapping the button here.
     @State private var isPlanned: Bool
 
@@ -17,12 +21,15 @@ struct RecipeDetailView: View {
     init(
         recipe: Recipe, isOwn: Bool = false, onEdit: (() -> Void)? = nil,
         isPlanned: Bool = false, onAddToShopping: ((_ servings: Int, _ goal: RewriteGoalID?) -> Void)? = nil,
+        onImprove: (() -> Void)? = nil, original: (name: String, open: () -> Void)? = nil,
         onStartCooking: @escaping (_ servings: Int, _ goal: RewriteGoalID?) -> Void
     ) {
         self.isOwn = isOwn
         self.onEdit = onEdit
         self._isPlanned = State(initialValue: isPlanned)
         self.onAddToShopping = onAddToShopping
+        self.onImprove = onImprove
+        self.original = original
         self.model = RecipeDetailModel(recipe: recipe)
         self.onStartCooking = onStartCooking
     }
@@ -32,6 +39,9 @@ struct RecipeDetailView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 28) {
                 hero
+                if original != nil || onImprove != nil {
+                    variantLinks
+                }
                 if let variant = model.variant {
                     VariantSection(variant: variant, original: model.recipe, profile: model.profile)
                 }
@@ -129,6 +139,26 @@ struct RecipeDetailView: View {
                 }
             }
         }
+    }
+
+    /// Link back to the original of a variant, and the entry to improving the recipe with Claude.
+    private var variantLinks: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if let original {
+                Button(action: original.open) {
+                    Label("Variante von „\(original.name)“", systemImage: "arrow.uturn.backward")
+                }
+                .buttonStyle(.borderless)
+            }
+            if let onImprove {
+                Button(action: onImprove) {
+                    Label("Mit Claude verbessern", systemImage: "sparkles")
+                }
+                .buttonStyle(.bordered)
+                .tint(Palette.accent(for: model.recipe.id))
+            }
+        }
+        .padding(.horizontal, 20)
     }
 
     private var heroMeta: some View {

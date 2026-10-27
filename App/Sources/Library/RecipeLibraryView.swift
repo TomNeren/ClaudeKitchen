@@ -5,12 +5,17 @@ import SwiftUI
 struct RecipeLibraryView: View {
     @State private var model = RecipeLibraryModel()
     @State private var shopping = ShoppingModel()
+    @State private var cookLog = CookLogModel()
+    @State private var rating: RatingRequest?
     @State private var isShopping = false
     @State private var path: [Route] = []
     @State private var isImporting = false
     @State private var isShowingSettings = false
     @State private var editing: EditorRequest?
+    @State private var improving: ImproveRequest?
     @Namespace private var transition
+    /// The tile or card the open recipe zooms out of.
+    @State private var zoomSource: ZoomSource?
 
     init() {}
 
@@ -18,11 +23,17 @@ struct RecipeLibraryView: View {
         NavigationStack(path: $path) {
             let recipes = model.visibleRecipes
             ScrollView {
+                if model.query.isEmpty, !recipes.isEmpty {
+                    RecipeImageBand(recipes: recipes, cookLog: cookLog.log, transition: transition, onOpen: open)
+                        .padding(.bottom, 16)
+                }
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 320), spacing: 16)], spacing: 16) {
                     ForEach(recipes) { recipe in
-                        NavigationLink(value: Route.recipe(recipe.id)) {
-                            RecipeCard(recipe: recipe)
-                                .matchedTransitionSource(id: recipe.id, in: transition)
+                        Button {
+                            open(.card(recipe.id))
+                        } label: {
+                            RecipeCard(recipe: recipe, cookLog: cookLog.log)
+                                .matchedTransitionSource(id: ZoomSource.card(recipe.id), in: transition)
                         }
                         .buttonStyle(.plain)
                         .contextMenu {
@@ -86,13 +97,40 @@ struct RecipeLibraryView: View {
                     await save(recipe, copiedFrom: request.copiedFrom)
                 }
             }
+            .sheet(item: $improving) { request in
+                ImproveRecipeSheet(model: request.model) { await saveVariant($0) }
+            }
+            .sheet(item: $rating) { request in
+                CookRatingSheet(recipeName: request.name) { stars, note in
+                    cookLog.rate(request.recipe, entry: request.entry, rating: stars, note: note)
+                }
+            }
             .task {
+                await cookLog.load()
                 await model.loadOwn()
                 await shopping.load()
                 shopping.update(recipes: model.recipes)
             }
             .onChange(of: model.recipes) { shopping.update(recipes: model.recipes) }
         }
+    }
+
+    /// Nil unless the cook left a note or a rating of 3 or less, and an API key is stored.
+    private func improveAction(for recipe: Recipe) -> (() -> Void)? {
+        let feedback = RecipeFeedback(log: cookLog.log, recipe: recipe.id)
+        guard feedback.isActionable, APIKeyStore.hasKey else { return nil }
+        return {
+            improving = ImproveRequest(
+                model: ImproveRecipeModel(
+                    original: recipe, feedback: feedback, takenIDs: Set(model.recipes.map(\.id))))
+        }
+    }
+
+    /// Saves a variant from Claude as an own recipe and opens it.
+    private func saveVariant(_ variant: Recipe) async -> Bool {
+        guard await model.save(variant) else { return false }
+        path.append(.recipe(variant.id))
+        return true
     }
 
     private func save(_ recipe: Recipe, copiedFrom original: RecipeID?) async -> Bool {
@@ -125,6 +163,17 @@ struct RecipeLibraryView: View {
         }
     }
 
+    private func open(_ source: ZoomSource) {
+        zoomSource = source
+        path.append(.recipe(source.recipeID))
+    }
+
+    /// The tapped tile or card; recipes opened from inside another recipe zoom from their list card.
+    private func zoomSource(for id: RecipeID) -> ZoomSource {
+        if let zoomSource, zoomSource.recipeID == id { return zoomSource }
+        return .card(id)
+    }
+
     @ViewBuilder
     private func destination(for route: Route) -> some View {
         switch route {
@@ -134,11 +183,17 @@ struct RecipeLibraryView: View {
                     recipe: recipe, isOwn: model.isOwn(id),
                     onEdit: { editing = model.editorRequest(for: id) },
                     isPlanned: shopping.isPlanned(id),
-                    onAddToShopping: { shopping.add(recipe, servings: $0, goal: $1) }
+                    onAddToShopping: { shopping.add(recipe, servings: $0, goal: $1) },
+                    onImprove: improveAction(for: recipe),
+                    original: recipe.variantOf.flatMap { originalID in
+                        model.recipe(originalID).map { original in
+                            (name: original.name, open: { path.append(.recipe(originalID)) })
+                        }
+                    }
                 ) { servings, goal in path.append(.cooking(id, servings: servings, goal: goal)) }
                 // A saved change gives the screen a fresh model.
                 .id(recipe)
-                .navigationTransition(.zoom(sourceID: id, in: transition))
+                .navigationTransition(.zoom(sourceID: zoomSource(for: id), in: transition))
             }
         case .cooking(let id, let servings, let goal):
             if let recipe = model.recipe(id) {
@@ -147,11 +202,28 @@ struct RecipeLibraryView: View {
                 CookingView(recipe: cooked, servings: servings) {
                     // Books what the recipe used out of the pantry; the shopping screen offers undo.
                     shopping.cooked(cooked, servings: servings)
+                    // The log keeps the original recipe id, so a health variant counts for its source.
+                    let entry = cookLog.recordCooked(recipe.id)
+                    rating = RatingRequest(recipe: recipe.id, name: recipe.name, entry: entry)
                     path.removeAll()
                 }
             }
         }
     }
+}
+
+/// A running "Mit Claude verbessern" sheet.
+private struct ImproveRequest: Identifiable {
+    let model: ImproveRecipeModel
+    let id = UUID()
+}
+
+/// Which finished cooking session the rating sheet is about.
+private struct RatingRequest: Identifiable {
+    let recipe: RecipeID
+    let name: String
+    let entry: UUID
+    var id: UUID { entry }
 }
 
 /// Toolbar menu that narrows the library to one cuisine. The filled icon shows that a filter is active.

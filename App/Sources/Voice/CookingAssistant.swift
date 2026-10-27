@@ -18,7 +18,7 @@ enum CookingAssistant {
         let model = LanguageModelSession(instructions: instructions(for: session, device: device))
         do {
             return try await model.respond(to: question).content
-        } catch let error as LanguageModelSession.GenerationError {
+        } catch let error as LanguageModelError {
             switch error {
             case .guardrailViolation, .refusal: return "Darauf kann ich nicht antworten."
             default: return "Das konnte ich gerade nicht beantworten."

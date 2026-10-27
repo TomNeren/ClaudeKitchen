@@ -179,6 +179,13 @@ Alle Zitate prüft `Scripts/check_evidence_quotes.py`. Damit ändern Blutdruck (
 - **Grenze:** Ob ein Rezept authentisch ist, kann Claude nicht belegen, nur plausibel machen. Jedes Rezept
   startet mit `verified: false` und einer Prüfliste (Gewürze, Technik), die du oder jemand aus der jeweiligen
   Küche abhaken kann.
+- **Qualitätsprüfung:** `RecipeQualityTests` verlangt für jedes mitgelieferte Rezept `origin` mit Region,
+  Referenzen und Prüfliste, `verified: false`, ein Tag „<Küche> · <Art>“ passend zur Küche, 4 bis 10 Schritte mit
+  20 bis 160 Zeichen, keine Gedankenstriche und kein doppeltes Gericht. Kichererbsen-Spinat-Curry und
+  Linsen-Eintopf tragen jetzt Herkunft und eine Prüfliste, die ihre Abwandlungen offen nennt. Der Ingwer-Lachs bleibt
+  ein eigenes Rezept ohne Herkunft: Er steht als einziger in `ownCreations` im Test, braucht keine Referenzen und
+  darf kein Küchen-Adjektiv im Tag tragen. Neue Rezepte entstehen mit `Prompts/rezepte-erweitern.md` und kommen
+  nie in diese Liste.
 
 ### 3d. Einkauf und Vorrat
 
@@ -575,7 +582,7 @@ Getroffen (2026-10-25):
     Konto-, Adress- oder Zahlungsdaten, keine Captchas lösen, sondern anhalten. Artikel mit unbekanntem Vorrat stehen
     unter „Erst fragen“. Am Ende eine Tabelle mit Produkt, Menge, Preis und Fehlendem.
 40. (deine Entscheidung) **TestFlight über das Schulkonto:** Du verwaltest das Entwicklerkonto der Schule und bist
-    der einzige Nutzer. Die Bundle-ID `de.tomneren.ClaudeKitchen` hängt nicht an der Schule; ein späterer Umzug auf ein
+    der einzige Nutzer. Die Bundle-ID `com.tomren.claudekitchen` hängt nicht an der Schule; ein späterer Umzug auf ein
     eigenes Konto geht per App-Transfer. Der Workflow `testflight.yml` lädt jeden Stand von `main` hoch, nie Pull
     Requests; die Zugangsdaten liegen im GitHub-Environment `testflight`, das nur `main` nutzen darf. Ohne sie wird
     der Upload übersprungen. Einrichtung: `App/TESTFLIGHT.md`.
