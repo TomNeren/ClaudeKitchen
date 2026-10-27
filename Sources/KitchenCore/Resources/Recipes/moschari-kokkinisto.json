@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "id": "moschari-kokkinisto",
+  "name": "Moschari kokkinisto",
+  "tag": "Griechisch · Rind in Tomatensauce mit Nudeln",
+  "baseServings": 4,
+  "totalMinutes": 160,
+  "verified": false,
+  "origin": { "cuisine": "europe", "region": "Griechenland" },
+  "references": [
+    { "title": "Opa (S. 99)", "author": "Liz Lazarides White" }
+  ],
+  "authenticityChecks": [
+    "Rind in Würfeln, geschmort in Tomate mit Zimt und Lorbeer, nicht scharf gewürzt",
+    "Das Fleisch ist gabelzart und die Sauce dick eingekocht",
+    "Mit kurzen Nudeln (Hilopites oder Makkaroni) und geriebenem Kefalotyri serviert"
+  ],
+  "ingredients": [
+    {
+      "id": "rind",
+      "name": "Rindfleisch, Schmorfleisch",
+      "food": "beef-stew",
+      "quantity": 700,
+      "unit": "g",
+      "note": "in 4-cm-Würfeln, aus Schulter oder Wade"
+    },
+    {
+      "id": "zwiebel",
+      "name": "Zwiebel",
+      "food": "onion",
+      "quantity": 1,
+      "unit": "Stk",
+      "note": "halbiert"
+    },
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 3, "unit": "Zehen" },
+    { "id": "olivenoel", "name": "Olivenöl", "food": "olive-oil", "quantity": 4, "unit": "EL" },
+    {
+      "id": "tomatenmark",
+      "name": "Tomatenmark",
+      "food": "tomato-paste",
+      "quantity": 1,
+      "unit": "EL"
+    },
+    {
+      "id": "tomaten",
+      "name": "Tomaten aus der Dose, gehackt",
+      "food": "canned-tomatoes",
+      "quantity": 400,
+      "unit": "g"
+    },
+    {
+      "id": "wasser",
+      "name": "Wasser",
+      "food": "water",
+      "quantity": 250,
+      "unit": "g",
+      "note": "heiß"
+    },
+    {
+      "id": "lorbeer",
+      "name": "Lorbeerblatt",
+      "food": "bay-leaf",
+      "quantity": 2,
+      "unit": "Stk",
+      "scales": false,
+      "eaten": false
+    },
+    {
+      "id": "zimt",
+      "name": "Zimtstange",
+      "food": "cinnamon",
+      "quantity": 1,
+      "unit": "Stk",
+      "scales": false,
+      "eaten": false
+    },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    { "id": "pfeffer", "name": "Schwarzer Pfeffer", "food": "black-pepper" },
+    {
+      "id": "nudeln",
+      "name": "Nudeln, kurz",
+      "food": "pasta",
+      "quantity": 240,
+      "unit": "g",
+      "note": "Makkaroni oder Hilopites"
+    },
+    {
+      "id": "nudelwasser",
+      "name": "Wasser für die Nudeln",
+      "food": "water",
+      "quantity": 1400,
+      "unit": "g",
+      "note": "heiß"
+    },
+    {
+      "id": "salz-nudeln",
+      "name": "Salz für das Nudelwasser",
+      "food": "salt",
+      "quantity": 10,
+      "unit": "g"
+    },
+    {
+      "id": "kaese",
+      "name": "Kefalotyri oder Parmesan",
+      "food": "parmesan",
+      "quantity": 40,
+      "unit": "g",
+      "note": "gerieben, zum Servieren"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "phase": "Hacken",
+      "text": "Zwiebel und Knoblauch in den Topf geben und zerkleinern.",
+      "ingredientIDs": [
+        "zwiebel",
+        "knoblauch"
+      ],
+      "setting": { "speed": 5, "seconds": 4 }
+    },
+    {
+      "id": "s2",
+      "phase": "Anbraten",
+      "text": "Olivenöl und Fleisch zugeben und rundum anbraten.",
+      "note": "Ohne Messbecher. Linkslauf rührt das Fleisch schonend um. Es soll Farbe nehmen; die Bräunung ist im vollen Topf nur leicht.",
+      "ingredientIDs": [
+        "olivenoel",
+        "rind"
+      ],
+      "setting": { "heat": 150, "speed": 1, "reverse": true, "seconds": 600 }
+    },
+    {
+      "id": "s3",
+      "phase": "Mark",
+      "text": "Tomatenmark zugeben und kurz mitrösten.",
+      "ingredientIDs": [
+        "tomatenmark"
+      ],
+      "setting": { "heat": 110, "speed": 1, "reverse": true, "seconds": 90 }
+    },
+    {
+      "id": "s4",
+      "phase": "Schmoren",
+      "text": "Tomaten, heißes Wasser, Lorbeer, Zimtstange und Pfeffer zugeben und sanft schmoren.",
+      "note": "Messbecher einsetzen.",
+      "ingredientIDs": [
+        "tomaten",
+        "wasser",
+        "lorbeer",
+        "zimt",
+        "pfeffer"
+      ],
+      "setting": { "heat": 95, "speed": 1, "reverse": true, "seconds": 4800 }
+    },
+    {
+      "id": "s5",
+      "phase": "Einkochen",
+      "text": "Salzen, Lorbeer und Zimtstange entfernen und ohne Messbecher einkochen, bis die Sauce dick ist.",
+      "note": "Das Fleisch muss ganz zart sein und darf nicht mehr zäh sein. Ist es noch fest, mit Messbecher weitere 15 Minuten schmoren.",
+      "ingredientIDs": [
+        "salz"
+      ],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 1200 }
+    },
+    {
+      "id": "s6",
+      "phase": "Nudelwasser",
+      "text": "Fleisch mit Sauce in eine vorgewärmte Schüssel umfüllen und abdecken. Topf ausspülen, heißes Wasser und Salz einfüllen und aufkochen.",
+      "note": "Ohne Messbecher.",
+      "ingredientIDs": [
+        "nudelwasser",
+        "salz-nudeln"
+      ],
+      "setting": { "heat": 100, "seconds": 420 },
+      "freshPot": true
+    },
+    {
+      "id": "s7",
+      "phase": "Nudeln",
+      "text": "Nudeln zugeben und nach Packungsangabe bissfest garen.",
+      "note": "Probieren und bei Bedarf eine Minute verlängern.",
+      "ingredientIDs": [
+        "nudeln"
+      ],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 600 }
+    },
+    {
+      "id": "s8",
+      "phase": "Anrichten",
+      "text": "Nudeln abgießen und mit Fleisch und Sauce anrichten. Mit Käse bestreuen.",
+      "ingredientIDs": [
+        "kaese"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "id": "fakes",
+  "name": "Fakes",
+  "tag": "Griechisch · Linsensuppe",
+  "baseServings": 4,
+  "totalMinutes": 70,
+  "verified": false,
+  "origin": { "cuisine": "europe", "region": "Griechenland" },
+  "references": [
+    { "title": "Opa (S. 34)", "author": "Liz Lazarides White" }
+  ],
+  "authenticityChecks": [
+    "Braune Linsen, nicht eingeweicht, mit Lorbeer, Knoblauch und etwas Tomate",
+    "Zum Schluss ein Schuss Rotweinessig und rohes Olivenöl am Tisch",
+    "Dick und löffelfest, nicht dünn"
+  ],
+  "ingredients": [
+    {
+      "id": "linsen",
+      "name": "Braune Linsen",
+      "food": "brown-lentils",
+      "quantity": 250,
+      "unit": "g",
+      "note": "verlesen und abgespült"
+    },
+    {
+      "id": "zwiebel",
+      "name": "Zwiebel",
+      "food": "onion",
+      "quantity": 1,
+      "unit": "Stk",
+      "note": "halbiert"
+    },
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 3, "unit": "Zehen" },
+    { "id": "karotte", "name": "Karotte", "food": "carrot", "quantity": 1, "unit": "Stk" },
+    { "id": "olivenoel", "name": "Olivenöl", "food": "olive-oil", "quantity": 4, "unit": "EL" },
+    {
+      "id": "tomatenmark",
+      "name": "Tomatenmark",
+      "food": "tomato-paste",
+      "quantity": 1,
+      "unit": "EL"
+    },
+    {
+      "id": "oregano",
+      "name": "Oregano, getrocknet",
+      "food": "oregano-dried",
+      "quantity": 1,
+      "unit": "TL"
+    },
+    {
+      "id": "lorbeer",
+      "name": "Lorbeerblatt",
+      "food": "bay-leaf",
+      "quantity": 2,
+      "unit": "Stk",
+      "scales": false,
+      "eaten": false
+    },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 1100, "unit": "g" },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    { "id": "pfeffer", "name": "Schwarzer Pfeffer", "food": "black-pepper" },
+    {
+      "id": "essig",
+      "name": "Rotweinessig",
+      "food": "red-wine-vinegar",
+      "quantity": 2,
+      "unit": "EL",
+      "note": "zum Servieren"
+    },
+    {
+      "id": "oel-servieren",
+      "name": "Olivenöl",
+      "food": "olive-oil",
+      "quantity": 1,
+      "unit": "EL",
+      "note": "zum Servieren"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "phase": "Hacken",
+      "text": "Zwiebel, Knoblauch und Karotte in den Topf geben und zerkleinern.",
+      "ingredientIDs": [
+        "zwiebel",
+        "knoblauch",
+        "karotte"
+      ],
+      "setting": { "speed": 5, "seconds": 4 }
+    },
+    {
+      "id": "s2",
+      "phase": "Anschwitzen",
+      "text": "Olivenöl zugeben und das Gemüse weich dünsten.",
+      "note": "Ohne Messbecher.",
+      "ingredientIDs": [
+        "olivenoel"
+      ],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 300 }
+    },
+    {
+      "id": "s3",
+      "phase": "Mark",
+      "text": "Tomatenmark und Oregano zugeben und kurz mitrösten.",
+      "ingredientIDs": [
+        "tomatenmark",
+        "oregano"
+      ],
+      "setting": { "heat": 110, "speed": 1, "reverse": true, "seconds": 90 }
+    },
+    {
+      "id": "s4",
+      "phase": "Kochen",
+      "text": "Linsen, Lorbeer und Wasser zugeben und köcheln, bis die Linsen weich sind.",
+      "note": "Messbecher einsetzen. Eine Linse zerdrücken: Sie soll weich sein, aber nicht zerfallen. Sonst 10 Minuten verlängern, bei Bedarf noch einmal starten.",
+      "ingredientIDs": [
+        "linsen",
+        "lorbeer",
+        "wasser"
+      ],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 2700 }
+    },
+    {
+      "id": "s5",
+      "phase": "Abschmecken",
+      "text": "Lorbeer entfernen, salzen und pfeffern. Ohne Messbecher etwas einkochen, bis die Suppe dicklich ist.",
+      "note": "Erst jetzt salzen.",
+      "ingredientIDs": [
+        "salz",
+        "pfeffer"
+      ],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 600 }
+    },
+    {
+      "id": "s6",
+      "phase": "Anrichten",
+      "text": "Suppe in Schalen füllen, mit Essig und rohem Olivenöl beträufeln und mit Brot servieren.",
+      "ingredientIDs": [
+        "essig",
+        "oel-servieren"
+      ]
+    }
+  ]
+}

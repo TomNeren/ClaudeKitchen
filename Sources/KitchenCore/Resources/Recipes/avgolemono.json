@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "id": "avgolemono",
+  "name": "Avgolemono",
+  "tag": "Griechisch · Hühnersuppe mit Ei und Zitrone",
+  "baseServings": 4,
+  "totalMinutes": 70,
+  "verified": false,
+  "origin": { "cuisine": "europe", "region": "Griechenland" },
+  "references": [
+    { "title": "Opa (S. 37)", "author": "Liz Lazarides White" }
+  ],
+  "authenticityChecks": [
+    "Klare Hühnerbrühe mit wenig Reis, nicht eintopfartig dick",
+    "Ei und Zitrone werden mit heißer Brühe temperiert und binden die Suppe cremig, ohne Mehl und Sahne",
+    "Nach dem Binden nicht mehr kochen lassen, sonst gerinnt das Ei"
+  ],
+  "ingredients": [
+    {
+      "id": "huhn",
+      "name": "Hähnchenschenkel, ohne Haut",
+      "food": "chicken-thigh",
+      "quantity": 450,
+      "unit": "g"
+    },
+    {
+      "id": "zwiebel",
+      "name": "Zwiebel",
+      "food": "onion",
+      "quantity": 1,
+      "unit": "Stk",
+      "note": "halbiert"
+    },
+    {
+      "id": "karotte",
+      "name": "Karotte",
+      "food": "carrot",
+      "quantity": 1,
+      "unit": "Stk",
+      "note": "geschält"
+    },
+    {
+      "id": "lorbeer",
+      "name": "Lorbeerblatt",
+      "food": "bay-leaf",
+      "quantity": 1,
+      "unit": "Stk",
+      "scales": false,
+      "eaten": false
+    },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 1100, "unit": "g" },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    {
+      "id": "reis",
+      "name": "Reis, Mittel- oder Langkorn",
+      "food": "white-rice",
+      "quantity": 70,
+      "unit": "g"
+    },
+    { "id": "eier", "name": "Eier", "food": "egg", "quantity": 2, "unit": "Stk" },
+    {
+      "id": "zitrone",
+      "name": "Zitrone",
+      "food": "lemon",
+      "quantity": 1,
+      "unit": "Stk",
+      "note": "Saft, etwa 50 ml; nach Geschmack mehr"
+    },
+    { "id": "pfeffer", "name": "Schwarzer Pfeffer", "food": "black-pepper" }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "phase": "Brühe",
+      "text": "Hähnchen, halbierte Zwiebel, Karotte, Lorbeer und Wasser in den Topf geben und sanft kochen.",
+      "note": "Messbecher einsetzen. Entstehenden Schaum abschöpfen. Das Hähnchen muss ganz durchgegart sein.",
+      "ingredientIDs": [
+        "huhn",
+        "zwiebel",
+        "karotte",
+        "lorbeer",
+        "wasser"
+      ],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 1800 }
+    },
+    {
+      "id": "s2",
+      "phase": "Herausnehmen",
+      "text": "Hähnchen, Zwiebel, Karotte und Lorbeer herausnehmen. Hähnchen zupfen, Karotte würfeln, beides beiseitestellen. Zwiebel und Lorbeer wegwerfen."
+    },
+    {
+      "id": "s3",
+      "phase": "Reis",
+      "text": "Reis und Salz in die Brühe geben und weich garen.",
+      "note": "Messbecher einsetzen.",
+      "ingredientIDs": [
+        "reis",
+        "salz"
+      ],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 840 }
+    },
+    {
+      "id": "s4",
+      "phase": "Abkühlen",
+      "text": "Hitze ausschalten und die Suppe zwei Minuten ruhen lassen, bis sie nicht mehr sprudelt.",
+      "setting": { "seconds": 120 }
+    },
+    {
+      "id": "s5",
+      "phase": "Ei und Zitrone",
+      "text": "Eier in einer Schüssel schaumig schlagen, Zitronensaft zugeben. Dann zwei Kellen heiße Brühe löffelweise unter ständigem Schlagen einrühren.",
+      "note": "Die Brühe langsam zugeben, sonst gerinnt das Ei. Das Temperieren schützt vor Flocken.",
+      "ingredientIDs": [
+        "eier",
+        "zitrone"
+      ]
+    },
+    {
+      "id": "s6",
+      "phase": "Binden",
+      "text": "Ei-Zitronen-Mischung, Hähnchenstücke und Karottenwürfel in den Topf geben, unterrühren und mit Pfeffer abschmecken.",
+      "note": "Ohne Messbecher. Nicht über 80 °C erhitzen und nicht kochen lassen. Bei 80 °C ist das Ei durchgegart.",
+      "ingredientIDs": [
+        "huhn",
+        "pfeffer"
+      ],
+      "setting": { "heat": 80, "speed": 1, "reverse": true, "seconds": 180 }
+    },
+    {
+      "id": "s7",
+      "phase": "Anrichten",
+      "text": "Sofort servieren. Nach Geschmack mit mehr Zitronensaft, Salz und Pfeffer abschmecken.",
+      "note": "Nicht aufwärmen: Die Suppe kann beim erneuten Erhitzen gerinnen."
+    }
+  ]
+}

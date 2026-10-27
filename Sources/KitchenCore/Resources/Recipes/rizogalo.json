@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "id": "rizogalo",
+  "name": "Rizogalo",
+  "tag": "Griechisch · Milchreis mit Zimt",
+  "baseServings": 4,
+  "totalMinutes": 50,
+  "verified": false,
+  "origin": { "cuisine": "europe", "region": "Griechenland" },
+  "references": [
+    { "title": "Opa (S. 118)", "author": "Liz Lazarides White" }
+  ],
+  "authenticityChecks": [
+    "Rundkornreis, langsam in Milch gegart, ohne Ei und ohne Sahne",
+    "Cremig und leicht fließend, er dickt beim Abkühlen noch nach",
+    "Mit Zimt bestreut, warm oder kalt"
+  ],
+  "ingredients": [
+    {
+      "id": "reis",
+      "name": "Rundkornreis",
+      "food": "short-grain-rice",
+      "quantity": 90,
+      "unit": "g"
+    },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 250, "unit": "g" },
+    { "id": "salz", "name": "Salz", "food": "salt", "note": "eine Prise" },
+    { "id": "milch", "name": "Vollmilch", "food": "milk", "quantity": 750, "unit": "g" },
+    { "id": "zucker", "name": "Zucker", "food": "sugar", "quantity": 70, "unit": "g" },
+    {
+      "id": "zimtstange",
+      "name": "Zimtstange",
+      "food": "cinnamon",
+      "quantity": 1,
+      "unit": "Stk",
+      "scales": false,
+      "eaten": false
+    },
+    {
+      "id": "zitrone",
+      "name": "Zitronenschale",
+      "food": "lemon",
+      "quantity": 0.5,
+      "unit": "Stk",
+      "note": "in breiten Streifen geschält",
+      "eaten": false
+    },
+    {
+      "id": "zimt",
+      "name": "Zimt, gemahlen",
+      "food": "cinnamon",
+      "quantity": 1,
+      "unit": "TL",
+      "note": "zum Bestreuen"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "phase": "Reis",
+      "text": "Reis, Wasser und eine Prise Salz in den Topf geben und den Reis halb gar kochen.",
+      "note": "Messbecher einsetzen.",
+      "ingredientIDs": [
+        "reis",
+        "wasser",
+        "salz"
+      ],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 600 }
+    },
+    {
+      "id": "s2",
+      "phase": "Milch",
+      "text": "Milch, Zucker, Zimtstange und Zitronenschale zugeben und sanft garen, bis der Reis weich und der Brei cremig ist.",
+      "note": "Ohne Messbecher, damit die Milch nicht überkocht. Die Milch nicht sprudelnd kochen lassen, sie brennt sonst an.",
+      "ingredientIDs": [
+        "milch",
+        "zucker",
+        "zimtstange",
+        "zitrone"
+      ],
+      "setting": { "heat": 95, "speed": 1, "reverse": true, "seconds": 1500 }
+    },
+    {
+      "id": "s3",
+      "phase": "Ruhen",
+      "text": "Zimtstange und Zitronenschale herausnehmen und den Milchreis ohne Hitze fünf Minuten ruhen lassen.",
+      "setting": { "seconds": 300 }
+    },
+    {
+      "id": "s4",
+      "phase": "Anrichten",
+      "text": "In Schalen füllen und mit Zimt bestreuen. Warm oder gekühlt servieren.",
+      "note": "Beim Abkühlen wird der Milchreis fester. Zu fest geratener Brei lässt sich mit einem Schuss Milch auflockern.",
+      "ingredientIDs": [
+        "zimt"
+      ]
+    }
+  ]
+}

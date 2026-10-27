@@ -20,10 +20,11 @@ struct RecipeSearchTests {
     }
 
     @Test func matchesNameTagAndIngredientsIgnoringCaseAndDiacritics() {
-        #expect(Set(ids("LINSEN")) == ["zitronen-linsen-eintopf", "mercimek-corbasi", "mujaddara"])
+        #expect(Set(ids("LINSEN")) == ["zitronen-linsen-eintopf", "mercimek-corbasi", "mujaddara", "fakes"])
         #expect(ids("mercimek corbasi") == ["mercimek-corbasi"])
         #expect(ids("ÇORBASI") == ["mercimek-corbasi"])
-        #expect(Set(ids("dampf")) == ["ingwer-lachs-pak-choi", "gedaempfter-wolfsbarsch"])
+        #expect(
+            Set(ids("dampf")) == ["ingwer-lachs-pak-choi", "gedaempfter-wolfsbarsch", "garides-ladolemono"])
         #expect(
             Set(ids("kokosmilch")) == [
                 "kichererbsen-spinat-curry", "gaeng-keow-wan-gai", "tom-kha-gai", "sayur-lodeh",
