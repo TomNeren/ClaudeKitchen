@@ -20,15 +20,21 @@ public enum AgentBrief {
             "1. Lies zuerst die ganze Liste. Liegt schon etwas im Warenkorb, frag mich, ob es bleiben soll.",
             "2. Lege nur Artikel in den Warenkorb. Geh nicht zur Kasse, bestelle und bezahle nicht, und ändere keine "
                 + "Konto-, Adress- oder Zahlungsdaten.",
-            "3. Suche mit dem angegebenen Suchbegriff. Nimm ein übliches Produkt und die kleinste Packung, die die "
-                + "Menge deckt. Obst und Gemüse nach Stückzahl, wenn der Shop das anbietet.",
-            "4. Bei „1 Packung“ und „kleinste Packung“ reicht die kleinste Packung.",
-            "5. Findest du nichts Passendes, leg nichts Falsches hinein. Merk dir den Artikel und nenne mir am Ende "
-                + "eine naheliegende Alternative.",
-            "6. Artikel unter „Erst fragen“ legst du nur hinein, wenn ich zustimme.",
-            "7. Löse keine Captchas oder Sicherheitsabfragen. Erscheint eine, hör auf und sag mir Bescheid.",
-            "8. Zum Schluss: eine Tabelle mit Artikel, gewähltem Produkt, Menge und Preis, dann die Summe und alles, "
-                + "was gefehlt hat.",
+            "3. Frag mich gleich am Anfang in einer einzigen Frage, welche Artikel unter „Erst fragen“ du einlegen "
+                + "sollst. Wähle ich nichts aus, legst du keinen davon hinein.",
+            "4. Suche mit dem angegebenen Suchbegriff. Nimm ein übliches Produkt und die kleinste Packung, die die "
+                + "Menge deckt. Ist eine größere Packung billiger, nimm die billigere. Obst und Gemüse nach "
+                + "Stückzahl, wenn der Shop das anbietet.",
+            "5. Bei „1 Packung“ und „kleinste Packung“ reicht die kleinste Packung.",
+            "6. Prüfe vor jedem Klick, dass der Button zum gewählten Produkt und zur richtigen Packungsgröße gehört. "
+                + "Bei vielen Treffern such mit dem vollen Produktnamen, bis nur wenige übrig sind.",
+            "7. Findest du nichts Passendes, leg nichts Falsches hinein. Such eine naheliegende Alternative (bei Fisch "
+                + "und Fleisch ist Tiefkühlware in Ordnung) und schlag sie mir mit Menge und Preis vor. Hinein kommt "
+                + "sie erst, wenn ich zustimme.",
+            "8. Löse keine Captchas oder Sicherheitsabfragen. Erscheint eine, hör auf und sag mir Bescheid.",
+            "9. Zum Schluss öffne den Warenkorb und gleiche ihn mit deiner Auswahl ab: jeder Artikel genau einmal, "
+                + "richtige Größe, Summe stimmt. Dann eine Tabelle mit Artikel, gewähltem Produkt, Menge und Preis, "
+                + "die Summe und alles, was gefehlt hat.",
         ]
         if !buy.isEmpty {
             lines += ["", "Einkaufen:"]
