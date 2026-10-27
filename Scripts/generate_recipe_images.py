@@ -51,6 +51,14 @@ STYLE_TEMPLATE = (
     "No text, no hands, no logos, no cutlery clutter."
 )
 
+# Dishes whose ingredient list misleads the model; these details replace the ingredient line.
+DETAILS_OVERRIDE = {
+    "avgolemono": (
+        "An opaque, creamy, pale yellow soup thickened with egg and lemon, velvety and not clear, "
+        "with soft rice grains and shredded chicken, a lemon wedge and a little dill on the side. "
+    ),
+}
+
 # Pantry staples that do not help the picture.
 SKIP_INGREDIENT = re.compile(r"(öl|salz|pfeffer|wasser|brühe|zucker|mehl)\b", re.IGNORECASE)
 
@@ -67,6 +75,7 @@ def build_prompt(recipe):
         if name and not SKIP_INGREDIENT.search(name) and name not in names:
             names.append(name)
     details = "Visible ingredients: " + ", ".join(names[:6]) + ". " if names else ""
+    details = DETAILS_OVERRIDE.get(recipe["id"], details)
     return STYLE_TEMPLATE.format(dish=dish, details=details)
 
 
