@@ -73,6 +73,17 @@ final class ImportRecipeModel {
         conversion = nil
     }
 
+    /// The converted recipe while the preview is shown, for example to open it in the editor.
+    var previewRecipe: Recipe? {
+        if case .preview(let recipe, _) = phase { recipe } else { nil }
+    }
+
+    /// True when the preview has errors that block saving; the editor can fix them.
+    var previewHasErrors: Bool {
+        guard case .preview(_, let issues) = phase else { return false }
+        return issues.contains { $0.severity == .error }
+    }
+
     func save() async -> Bool {
         guard canSave, case .preview(let recipe, _) = phase else { return false }
         do {
@@ -80,6 +91,18 @@ final class ImportRecipeModel {
             return true
         } catch {
             phase = .failed("Speichern fehlgeschlagen: \(error.localizedDescription)")
+            return false
+        }
+    }
+
+    /// Saves the recipe as changed in the editor. Returns false when it still has errors or writing failed; the
+    /// editor then stays open with the changes, and the preview keeps Claude's version.
+    func saveEdited(_ recipe: Recipe) async -> Bool {
+        guard !profile.validate(recipe).contains(where: { $0.severity == .error }) else { return false }
+        do {
+            try await store.save(recipe)
+            return true
+        } catch {
             return false
         }
     }

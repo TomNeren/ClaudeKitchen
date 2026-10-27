@@ -5,6 +5,9 @@ import SwiftUI
 struct ImportRecipeView: View {
     @State private var model: ImportRecipeModel
     @Environment(\.dismiss) private var dismiss
+    /// Claude's recipe open in the editor, before anything is saved.
+    @State private var editing: Recipe?
+    @State private var savedFromEditor = false
     private let onSaved: @MainActor () -> Void
 
     init(model: ImportRecipeModel = ImportRecipeModel(), onSaved: @escaping @MainActor () -> Void) {
@@ -24,10 +27,23 @@ struct ImportRecipeView: View {
                     ToolbarItem(placement: .confirmationAction) { primaryAction }
                     if case .preview = model.phase {
                         ToolbarItem(placement: .bottomBar) {
-                            Button("Zurück zum Text", systemImage: "pencil") { model.edit() }
+                            Button("Zurück zum Text", systemImage: "text.alignleft") { model.edit() }
+                        }
+                        ToolbarSpacer(.flexible, placement: .bottomBar)
+                        ToolbarItem(placement: .bottomBar) {
+                            Button("Bearbeiten", systemImage: "pencil") { editing = model.previewRecipe }
+                                .buttonStyle(.glassProminent)
                         }
                     }
                 }
+        }
+        // Sichern in the editor stores the recipe; once the editor is gone, the import closes too.
+        .sheet(item: $editing, onDismiss: finishIfSaved) { recipe in
+            RecipeEditorView(recipe: recipe, isNew: true, title: "Import bearbeiten") { edited in
+                let saved = await model.saveEdited(edited)
+                if saved { savedFromEditor = true }
+                return saved
+            }
         }
         .onAppear { model.refreshKey() }
         // Closing the sheet stops a running conversion, so no paid request runs on unseen.
@@ -44,7 +60,7 @@ struct ImportRecipeView: View {
             ProgressView(label)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .preview(let recipe, let issues):
-            ImportPreview(recipe: recipe, issues: issues)
+            ImportPreview(recipe: recipe, issues: issues, blocksSaving: model.previewHasErrors)
         case .failed(let message):
             ContentUnavailableView {
                 Label("Import nicht möglich", systemImage: "exclamationmark.triangle")
@@ -54,6 +70,12 @@ struct ImportRecipeView: View {
                 Button("Zurück zum Text") { model.edit() }
             }
         }
+    }
+
+    private func finishIfSaved() {
+        guard savedFromEditor else { return }
+        onSaved()
+        dismiss()
     }
 
     @ViewBuilder
@@ -121,6 +143,7 @@ private struct EditingForm: View {
 private struct ImportPreview: View {
     let recipe: Recipe
     let issues: [ValidationIssue]
+    let blocksSaving: Bool
 
     var body: some View {
         List {
@@ -140,7 +163,7 @@ private struct ImportPreview: View {
                 }
             }
             if !issues.isEmpty {
-                Section("Prüfung") {
+                Section {
                     ForEach(issues, id: \.self) { issue in
                         Label(
                             IssueText.text(for: issue, in: recipe),
@@ -148,6 +171,14 @@ private struct ImportPreview: View {
                                 ? "xmark.octagon.fill" : "exclamationmark.triangle.fill"
                         )
                         .foregroundStyle(issue.severity == .error ? Color.red : Palette.accent)
+                    }
+                } header: {
+                    Text("Prüfung")
+                } footer: {
+                    if blocksSaving {
+                        Text(
+                            "So lässt es sich nicht speichern. Über „Bearbeiten“ unten korrigierst du die Werte direkt."
+                        )
                     }
                 }
             }
@@ -190,7 +221,8 @@ private struct ImportPreview: View {
 #Preview("Vorschau") {
     if let recipe = Recipe.fixtures.first {
         NavigationStack {
-            ImportPreview(recipe: recipe, issues: DeviceProfile.omniCook.validate(recipe, servings: 12))
+            ImportPreview(
+                recipe: recipe, issues: DeviceProfile.omniCook.validate(recipe, servings: 12), blocksSaving: false)
         }
     }
 }

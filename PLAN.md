@@ -482,7 +482,7 @@ Kochmodus, Trefferflächen mindestens 44 pt, VoiceOver liest Geräteeinstellung 
 | M9 | Erledigt: M9a (PR #18), M9b (PR #19), M9c (PR #20). Gesund umschreiben: Tauschregeln, `HealthyVariant`, Gruppenprofil, Ziele Ausgewogen, Blutdruck, Abnehmen, Low Carb; in der App Umschalter Original/Variante mit Zielwahl, Änderungsliste und Quellen | Invarianten-Tests: Würzen unverändert, Variante besteht `validate` |
 | M10 | Erledigt: M10a (PR #21), M10b Indien (PR #22), M10c Thailand (PR #23), M10d Südostasien (PR #24), M10e China (PR #25), M10f Japan und Korea (PR #26), M10g Türkei und Levante (PR #27), M10h Georgien (PR #28), M10i Europa (PR #29). M10j Mexiko und Peru im Review. Rezeptbestand: `origin`, `references`, `variantOf`, Ziel 27 traditionelle Rezepte aus neun Küchenräumen, Stand 29 aus allen neun (Indien und Europa mit je vier, weil das Kichererbsen-Curry und der Linsen-Eintopf von Ikaria dazuzählen), Ziel erreicht (ohne das eigene Lachsrezept); Bibliothek filtert nach Küche | Alle bestehen `validate` und sind vollständig zugeordnet |
 | M11 | Erledigt: M11a0 Zuordnung über Namen (PR #32). M11a Logik (PR #33). M11b1 App mit Plan, Liste, Vorrat und Abbuchen (PR #34). M11b2 Export nach Erinnerungen (PR #35). „Erkannt als“ (PR #36). Vegetarisch als Standard (PR #37). Einkaufs-Agent im Review. Einkauf und Vorrat: Bedarf minus Vorrat, Mindestbestand, Abbuchen nach dem Kochen, Export nach Erinnerungen und Teilen (Abschnitt 3d) | Logik-Tests in KitchenCore; Export am Gerät laut Prüfliste |
-| M12 | (v2) Sprachprotokoll, Ersatzlisten für alle Rezepte, Rezept-Editor (PR #13, unabhängig von M8 bis M11) | In Arbeit: Protokoll in den Einstellungen, Editor für eigene Rezepte und Kopien; Bedienung am Handy offen laut Geräte-Prüfliste |
+| M12 | (v2) Sprachprotokoll, Ersatzlisten für alle Rezepte, Rezept-Editor für das Handy, Import vor dem Speichern bearbeiten | Erledigt (PR #13); Import-Bearbeiten in Arbeit; Bedienung am Handy offen laut Geräte-Prüfliste |
 | M13 | Parallele Timer (Abschnitt 3e): höchstens ein Gerätetimer, dazu bis zu 4 Nebentimer für Herd, Ofen und Arbeitsfläche. M13a KitchenCore, M13b App (Alarme abgleichen, Timer-Liste, Live Activity, Siri), M13c Editor und Import | Tests: zweiter Gerätetimer abgelehnt; Gerätetimer und Nebentimer laufen und enden unabhängig; ein Tick beendet mehrere und zählt jeden; Zurücksetzen trifft nur den aktuellen Schritt; Entscheidung 10 gilt weiter; altes Rezept-JSON dekodiert unverändert; `validate` lehnt Schritt mit beiden Timern ab. Am Gerät laut Prüfliste |
 
 ## 9. Entscheidungen
@@ -579,6 +579,7 @@ Getroffen (2026-10-25):
     eigenes Konto geht per App-Transfer. Der Workflow `testflight.yml` lädt jeden Stand von `main` hoch, nie Pull
     Requests; die Zugangsdaten liegen im GitHub-Environment `testflight`, das nur `main` nutzen darf. Ohne sie wird
     der Upload übersprungen. Einrichtung: `App/TESTFLIGHT.md`.
+41. (deine Entscheidung) **Import vor dem Speichern bearbeiten:** In der Import-Vorschau öffnet „Bearbeiten“ Claudes Rezept im Editor. „Sichern“ dort speichert und schließt den Import, „Abbrechen“ führt zurück zur Vorschau. So lassen sich auch Fehler beheben, die das Speichern blockieren, statt neu zu importieren (kostet keinen weiteren API-Aufruf).
 
 Offen (mit Empfehlung):
 1. **Rezeptbilder:** eigene Fotos, KI-generiert (Skill gemini-image-gen) oder zunächst nur MeshGradient.
@@ -707,3 +708,4 @@ Fehlerliste.
 - [ ] M12: Editor mit einer Hand am iPhone: Tastatur verdeckt nichts Wichtiges, Sortieren und Wischen zum Löschen funktionieren, Abbrechen fragt bei Änderungen nach
 - [ ] M12: Zutaten per Schnellzeile („200 g Rote Linsen“, „½ TL Kurkuma“, „Salz“) und per eingefügter Liste aus einem Webrezept; Ergebnis stimmt
 - [ ] M12: Schnellwahl für 120 °C, Stufe 5 und 3 Min mit je einem Tipp; Haptik beim Wählen; Schritt duplizieren per Wischen
+- [ ] M12: Import aus Text, in der Vorschau „Bearbeiten“, eine Menge und eine Temperatur ändern, sichern: das geänderte Rezept steht oben in der Bibliothek; Abbrechen führt unverändert zur Vorschau zurück
