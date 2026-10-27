@@ -1,10 +1,10 @@
 # ClaudeKitchen: Status
 
-Stand: 27.10.2026, `main` auf `fc2beb2` (Merge von PR #44). Zusammengetragen aus allen ClaudeKitchen-Sessions (Cloud und lokal), der Git-Historie und GitHub. Entscheidungen stehen in `ENTSCHEIDUNGEN.md`, der Plan steht in `PLAN.md`.
+Stand: 27.10.2026, `main` auf `ec59ef6` (Merge von PR #40). Zusammengetragen aus allen ClaudeKitchen-Sessions (Cloud und lokal), der Git-Historie und GitHub. Entscheidungen stehen in `ENTSCHEIDUNGEN.md`, der Plan steht in `PLAN.md`.
 
 ## Kurzfassung
 
-- **Code:** Die Meilensteine M0 bis M12 sind gemergt. Dazu kommen die Startseite mit Bildband, das Kochprotokoll und „Mit Claude verbessern“. M13 (parallele Timer) ist nur geplant.
+- **Code:** Die Meilensteine M0 bis M12 sind gemergt, einschließlich „Import vor dem Speichern bearbeiten“ (#40). Dazu kommen die Startseite mit Bildband, das Kochprotokoll und „Mit Claude verbessern“. M13 (parallele Timer) ist nur geplant.
 - **Qualität:** 244 Tests in 32 Suiten sind grün (unter Linux am 27.10. nachgeprüft). Auf `main` sind die CI-Jobs `kitchencore-linux` und `app-ios` grün.
 - **Inhalt:** 30 Rezepte aus neun Küchenräumen plus ein eigenes Rezept. Alle 30 haben ein Foto (BFL).
 - **Gerät:** Nichts ist bisher am iPhone geprüft. Die Geräte-Prüfliste in `PLAN.md` §10 ist komplett offen.
@@ -33,7 +33,7 @@ Stand: 27.10.2026, `main` auf `fc2beb2` (Merge von PR #44). Zusammengetragen aus
 | | iOS-27-Deprecations im Sprachcode | erledigt | #42 |
 | | Rezept-Wächter und Prompt für 90 Rezepte | erledigt | #43 |
 | | Startseite mit Bildband, Kochprotokoll, Verbessern mit Claude | erledigt | #44 |
-| | Import vor dem Speichern bearbeiten | **offen, Draft** | #40 |
+| | Import vor dem Speichern bearbeiten | erledigt | #40 |
 
 `PLAN.md` §8 hinkt hinterher:
 
@@ -43,7 +43,7 @@ Stand: 27.10.2026, `main` auf `fc2beb2` (Merge von PR #44). Zusammengetragen aus
 
 ## Offene Pull Requests
 
-- **[TomNeren/ClaudeKitchen#40](https://github.com/TomNeren/ClaudeKitchen/pull/40)** „Import: Rezept vor dem Speichern bearbeiten“. Der PR ist ein Draft und war am 27.10. um 07:10 grün. Er wartet auf ein „merge“. Seitdem sind #41 bis #44 auf `main` gelandet, also vor dem Merge den Stand von `main` hineinholen und die CI neu laufen lassen.
+Keine außer diesem Doku-PR. PR #40 wurde am 27.10. mit dem aktuellen `main` zusammengeführt, CI grün, gemergt als `ec59ef6`.
 
 ## Wartet auf dich
 
@@ -141,12 +141,11 @@ Es gibt keine Import-Zyklen.
 
 Auffällig ist die Gruppe „App-Modelle und Dienste“ mit einem Zusammenhalt von 0,06. Die App-Modelle teilen wenig, ihr gemeinsamer Nenner sind KitchenCore und Foundation. Das passt zur Architektur, die Logik in KitchenCore und dünne Screen-Modelle vorsieht.
 
-Aktualisieren mit `graphify update .` (ohne Sprachmodell, nur Code).
+Der Graph zeigt den Stand von `fc2beb2` (vor PR #40, der vier Dateien in Editor und Import ändert). `graphify update .` aktualisiert den Code ohne Sprachmodell, vergibt die Gruppennamen dabei aber neu nach Nummer, sodass Namen und Inhalte auseinanderlaufen können. Sauberer ist ein voller Neuaufbau mit `/graphify`.
 
 ## Vorschläge
 
-1. **PR #40 zuerst:** aktualisieren und mergen, bevor neue Arbeit auf Import und Editor aufsetzt.
-2. **Ein Kochabend am Gerät** bringt mehr als jeder weitere Meilenstein. Fast alles Offene hängt an der Geräte-Prüfliste.
-3. **TestFlight-Secrets eintragen:** Erst dann landet jeder Stand automatisch auf dem iPhone, und Schritt 2 wird billig.
-4. **`PLAN.md` §8 und §9 „Offen“** auf diesen Stand bringen. Dann bleibt eine einzige Wahrheit statt dreier Dateien. `STATUS.md` kann bei jedem Merge mitgepflegt werden (Stufe G5 im Gauntlet).
-5. **Rezeptstapel:** Mit den 90 Rezepten erst beginnen, wenn mindestens drei Bestandsrezepte am Gerät geprüft sind. Sonst vervielfachen sich Fehler in Zeiten und Stufen.
+1. **Ein Kochabend am Gerät** bringt mehr als jeder weitere Meilenstein. Fast alles Offene hängt an der Geräte-Prüfliste.
+2. **TestFlight-Secrets eintragen:** Erst dann landet jeder Stand automatisch auf dem iPhone, und ein Kochabend wird billig.
+3. **`PLAN.md` §8 und §9 „Offen“** auf diesen Stand bringen. Dann bleibt eine einzige Wahrheit statt dreier Dateien. `STATUS.md` kann bei jedem Merge mitgepflegt werden (Stufe G5 im Gauntlet).
+4. **Rezeptstapel:** Mit den 90 Rezepten erst beginnen, wenn mindestens drei Bestandsrezepte am Gerät geprüft sind. Sonst vervielfachen sich Fehler in Zeiten und Stufen.

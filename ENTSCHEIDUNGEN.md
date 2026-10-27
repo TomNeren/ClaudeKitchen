@@ -86,7 +86,7 @@ Alle aus APP, vom 25.10., Einzelheiten in `PLAN.md` §9.
 | 25.10. | Kein Editor in M6 (Nr. 19). | Überholt durch M12. | APP |
 | 25.10. | Rezept-Editor für das Handy (Nr. 31). | | APP |
 | 26.10. | **(neu)** Editor zeigt „Erkannt als“ und korrigiert das Lebensmittel einer Zutat (PR #36). | | GRD |
-| 27.10. | **(neu)** Ein importiertes Rezept lässt sich vor dem Speichern bearbeiten (PR #40). | Der PR ist noch offen. | APP |
+| 27.10. | Ein importiertes Rezept lässt sich vor dem Speichern bearbeiten (PR #40, `PLAN.md` §9 Nr. 41). | Behebt Fehler, die das Speichern blockieren, ohne neuen API-Aufruf. | APP |
 | 27.10. | **(neu)** „Mit Claude verbessern“ (Phase 2) wird voll gebaut. Eine Variante muss `DeviceProfile.validate`, die Zutatenprüfung und den Lebensmittelkatalog bestehen. Der Nutzer speichert oder verwirft sie. | | LP2 |
 | 27.10. | **(neu)** Phase 2 bleibt im PR der Startseite, als eigener Commit. | Verworfen: eigener Branch. Der Code ist getestet und ohne API-Schlüssel unsichtbar. | SBF |
 
