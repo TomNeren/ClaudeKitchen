@@ -12,6 +12,7 @@ struct RecipeLibraryView: View {
     @State private var isImporting = false
     @State private var isShowingSettings = false
     @State private var editing: EditorRequest?
+    @State private var improving: ImproveRequest?
     @Namespace private var transition
     /// The tile or card the open recipe zooms out of.
     @State private var zoomSource: ZoomSource?
@@ -96,6 +97,9 @@ struct RecipeLibraryView: View {
                     await save(recipe, copiedFrom: request.copiedFrom)
                 }
             }
+            .sheet(item: $improving) { request in
+                ImproveRecipeSheet(model: request.model) { await saveVariant($0) }
+            }
             .sheet(item: $rating) { request in
                 CookRatingSheet(recipeName: request.name) { stars, note in
                     cookLog.rate(request.recipe, entry: request.entry, rating: stars, note: note)
@@ -109,6 +113,24 @@ struct RecipeLibraryView: View {
             }
             .onChange(of: model.recipes) { shopping.update(recipes: model.recipes) }
         }
+    }
+
+    /// Nil unless the cook left a note or a rating of 3 or less, and an API key is stored.
+    private func improveAction(for recipe: Recipe) -> (() -> Void)? {
+        let feedback = RecipeFeedback(log: cookLog.log, recipe: recipe.id)
+        guard feedback.isActionable, APIKeyStore.hasKey else { return nil }
+        return {
+            improving = ImproveRequest(
+                model: ImproveRecipeModel(
+                    original: recipe, feedback: feedback, takenIDs: Set(model.recipes.map(\.id))))
+        }
+    }
+
+    /// Saves a variant from Claude as an own recipe and opens it.
+    private func saveVariant(_ variant: Recipe) async -> Bool {
+        guard await model.save(variant) else { return false }
+        path.append(.recipe(variant.id))
+        return true
     }
 
     private func save(_ recipe: Recipe, copiedFrom original: RecipeID?) async -> Bool {
@@ -161,7 +183,13 @@ struct RecipeLibraryView: View {
                     recipe: recipe, isOwn: model.isOwn(id),
                     onEdit: { editing = model.editorRequest(for: id) },
                     isPlanned: shopping.isPlanned(id),
-                    onAddToShopping: { shopping.add(recipe, servings: $0, goal: $1) }
+                    onAddToShopping: { shopping.add(recipe, servings: $0, goal: $1) },
+                    onImprove: improveAction(for: recipe),
+                    original: recipe.variantOf.flatMap { originalID in
+                        model.recipe(originalID).map { original in
+                            (name: original.name, open: { path.append(.recipe(originalID)) })
+                        }
+                    }
                 ) { servings, goal in path.append(.cooking(id, servings: servings, goal: goal)) }
                 // A saved change gives the screen a fresh model.
                 .id(recipe)
@@ -182,6 +210,12 @@ struct RecipeLibraryView: View {
             }
         }
     }
+}
+
+/// A running "Mit Claude verbessern" sheet.
+private struct ImproveRequest: Identifiable {
+    let model: ImproveRecipeModel
+    let id = UUID()
 }
 
 /// Which finished cooking session the rating sheet is about.
