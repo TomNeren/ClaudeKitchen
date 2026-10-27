@@ -9,6 +9,8 @@ final class ImportRecipeModel {
         case editing
         case working(String)
         case preview(Recipe, issues: [ValidationIssue])
+        /// Stored from the editor; the preview is gone, so Claude's version cannot be saved over the edits.
+        case saved
         case failed(String)
     }
 
@@ -20,16 +22,19 @@ final class ImportRecipeModel {
 
     private let client: ClaudeClient
     private let store: any RecipeStore
-    private let profile: DeviceProfile
+    let profile: DeviceProfile
+    private let catalog: FoodCatalog?
     private var conversion: Task<Void, Never>?
 
     init(
         client: ClaudeClient = ClaudeClient(), store: any RecipeStore = FileRecipeStore.shared,
-        profile: DeviceProfile = .omniCook, hasKey: Bool = APIKeyStore.hasKey
+        profile: DeviceProfile = .omniCook, catalog: FoodCatalog? = FoodCatalog.shared,
+        hasKey: Bool = APIKeyStore.hasKey
     ) {
         self.client = client
         self.store = store
         self.profile = profile
+        self.catalog = catalog
         self.hasKey = hasKey
     }
 
@@ -78,12 +83,6 @@ final class ImportRecipeModel {
         if case .preview(let recipe, _) = phase { recipe } else { nil }
     }
 
-    /// True when the preview has errors that block saving; the editor can fix them.
-    var previewHasErrors: Bool {
-        guard case .preview(_, let issues) = phase else { return false }
-        return issues.contains { $0.severity == .error }
-    }
-
     func save() async -> Bool {
         guard canSave, case .preview(let recipe, _) = phase else { return false }
         do {
@@ -95,12 +94,12 @@ final class ImportRecipeModel {
         }
     }
 
-    /// Saves the recipe as changed in the editor. Returns false when it still has errors or writing failed; the
-    /// editor then stays open with the changes, and the preview keeps Claude's version.
+    /// Saves the recipe as changed in the editor, which checked it against the same profile. Returns false when
+    /// writing failed; the editor then stays open with the changes.
     func saveEdited(_ recipe: Recipe) async -> Bool {
-        guard !profile.validate(recipe).contains(where: { $0.severity == .error }) else { return false }
         do {
             try await store.save(recipe)
+            phase = .saved
             return true
         } catch {
             return false
@@ -121,8 +120,10 @@ final class ImportRecipeModel {
             }
             phase = .working("Claude bereitet das Rezept auf")
             let id = RecipeID("eigen-\(UUID().uuidString.prefix(8).lowercased())")
-            let recipe = try await client.recipe(for: source, id: id, profile: profile)
+            let converted = try await client.recipe(for: source, id: id, profile: profile)
             try Task.checkCancellation()
+            // Foods as the editor assigns them, so preview, editor and the saved recipe agree on every check.
+            let recipe = catalog.map { converted.assigningFoods(from: $0) } ?? converted
             phase = .preview(recipe, issues: profile.validate(recipe))
         } catch is CancellationError {
             phase = .editing

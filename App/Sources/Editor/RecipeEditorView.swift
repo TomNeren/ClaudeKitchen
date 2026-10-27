@@ -18,9 +18,12 @@ struct RecipeEditorView: View {
     private let title: String?
 
     /// `title` replaces the default "Neues Rezept" / "Rezept bearbeiten", for example for an import.
-    init(recipe: Recipe, isNew: Bool, title: String? = nil, onSave: @escaping (Recipe) async -> Bool) {
+    init(
+        recipe: Recipe, isNew: Bool, title: String? = nil, profile: DeviceProfile = .omniCook,
+        onSave: @escaping (Recipe) async -> Bool
+    ) {
         self.title = title
-        self.model = RecipeEditorModel(recipe: recipe, isNew: isNew)
+        self.model = RecipeEditorModel(recipe: recipe, isNew: isNew, profile: profile)
         self.onSave = onSave
     }
 
