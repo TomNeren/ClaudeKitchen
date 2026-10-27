@@ -13,3 +13,7 @@ App/Widgets/Info.plist
 
 # Personal signing team for device builds (see App/Config/Signing.xcconfig)
 App/Config/Local.xcconfig
+
+# graphify: local cache and interpreter path
+graphify-out/cache/
+graphify-out/.graphify_python

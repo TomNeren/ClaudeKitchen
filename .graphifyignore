@@ -1,0 +1,5 @@
+.claude/
+.build/
+graphify-out/
+App/Sources/Assets.xcassets/
+Sources/KitchenCore/Resources/
