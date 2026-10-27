@@ -3,7 +3,7 @@ import Security
 
 /// The Anthropic API key, kept only in the Keychain of this device (never in the repository or in UserDefaults).
 enum APIKeyStore {
-    private static let service = "de.tomneren.ClaudeKitchen.anthropic"
+    private static let service = "com.tomren.claudekitchen.anthropic"
     private static let account = "api-key"
 
     private static var query: [String: Any] {
