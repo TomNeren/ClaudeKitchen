@@ -2,7 +2,7 @@
 
 Stand: 27.10.2026. Zusammengetragen aus allen ClaudeKitchen-Sessions in der Cloud und auf dem Mac (Remote Control), dazu aus `PLAN.md` und der Git-Historie.
 
-- Die nummerierte, verbindliche Liste steht in `PLAN.md` §9 (Nr. 1 bis 40). Sie wird hier nach Themen geordnet und nur kurz genannt.
+- Die nummerierte, verbindliche Liste steht in `PLAN.md` §9 (Nr. 1 bis 49). Sie wird hier nach Themen geordnet und nur kurz genannt.
 - Ausführlich stehen hier die Entscheidungen, die nur in Sessions fielen und nie in `PLAN.md` landeten. Sie sind mit **(neu)** markiert.
 - Quellen nennt die Spalte „Session“, die Kürzel sind am Ende erklärt.
 - „Loop“ heißt: Claude hat im Gauntlet-Loop selbst entschieden. Solche Entscheidungen sind umkehrbar.
@@ -164,13 +164,13 @@ Alle vom 27.10.
 
 Aus `PLAN.md` §9 „Offen“, ergänzt um den Stand aus den Sessions.
 
-1. **Rezeptbilder:** erledigt, mit BFL (Abschnitt 10). `PLAN.md` sollte das nachtragen.
-2. **Rezeptquelle langfristig:** faktisch beides, kuratierte JSON-Dateien plus Import. Dazu kommt der Prompt für 90 Rezepte.
-3. **Signing:** faktisch entschieden mit dem Schulkonto (Nr. 40).
+1. **Rezeptbilder:** entschieden, BFL-Fotos (`PLAN.md` Nr. 46).
+2. **Rezeptquelle langfristig:** entschieden, beides: kuratierte JSON-Dateien in Stapeln (Nr. 45) und Import (Nr. 17).
+3. **Signing:** entschieden, Schulkonto (Nr. 40) und `Local.xcconfig` (Nr. 44).
 4. **BLS-4.0-Lizenz:** offen. Bis dahin gilt USDA.
 5. **Authentizität prüfen:** offen. Empfehlung: Der Nutzer prüft beim ersten Kochen.
 6. **Parallele Timer M13:** offen. Empfehlung: (a), also M13a und M13b bauen.
-7. **(neu)** Upload nur bei Tags statt bei jedem Push, und ein übersprungener Upload soll sichtbar werden. Vorgeschlagen, unbeantwortet (TFL).
+7. Upload nur bei Tags statt bei jedem Push, und ein übersprungener Upload soll sichtbar werden. Steht jetzt als offene Frage 7 in `PLAN.md` (TFL).
 8. **(neu)** Sollen die Netzwerk-Freigaben für die Supermärkte wieder entfernt werden? Unbeantwortet (SUP).
 
 ## Quellen (Sessions)

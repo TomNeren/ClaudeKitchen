@@ -1,10 +1,10 @@
 # ClaudeKitchen: Status
 
-Stand: 27.10.2026, `main` auf `ec59ef6` (Merge von PR #40). Zusammengetragen aus allen ClaudeKitchen-Sessions (Cloud und lokal), der Git-Historie und GitHub. Entscheidungen stehen in `ENTSCHEIDUNGEN.md`, der Plan steht in `PLAN.md`.
+Stand: 27.10.2026, `main` auf `35c3cfe` (Merge von PR #46). Zusammengetragen aus allen ClaudeKitchen-Sessions (Cloud und lokal), der Git-Historie und GitHub. Entscheidungen stehen in `ENTSCHEIDUNGEN.md`, der Plan steht in `PLAN.md`.
 
 ## Kurzfassung
 
-- **Code:** Die Meilensteine M0 bis M12 sind gemergt, einschließlich „Import vor dem Speichern bearbeiten“ (#40). Dazu kommen die Startseite mit Bildband, das Kochprotokoll und „Mit Claude verbessern“. M13 (parallele Timer) ist nur geplant.
+- **Code:** Die Meilensteine M0 bis M12 sind gemergt, einschließlich „Import vor dem Speichern bearbeiten“ (#40). Dazu kommen M14 (Startseite mit Bildband, Kochprotokoll, „Mit Claude verbessern“) und der nach dem REWE-Test geschärfte Einkaufsauftrag (#46). M13 (parallele Timer) ist nur geplant.
 - **Qualität:** 244 Tests in 32 Suiten sind grün (unter Linux am 27.10. nachgeprüft). Auf `main` sind die CI-Jobs `kitchencore-linux` und `app-ios` grün.
 - **Inhalt:** 30 Rezepte aus neun Küchenräumen plus ein eigenes Rezept. Alle 30 haben ein Foto (BFL).
 - **Gerät:** Nichts ist bisher am iPhone geprüft. Die Geräte-Prüfliste in `PLAN.md` §10 ist komplett offen.
@@ -32,14 +32,11 @@ Stand: 27.10.2026, `main` auf `ec59ef6` (Merge von PR #40). Zusammengetragen aus
 | | TestFlight-Workflow, Bundle-ID, nur iPhone und iPad | erledigt | #39, #41 |
 | | iOS-27-Deprecations im Sprachcode | erledigt | #42 |
 | | Rezept-Wächter und Prompt für 90 Rezepte | erledigt | #43 |
-| | Startseite mit Bildband, Kochprotokoll, Verbessern mit Claude | erledigt | #44 |
+| M14 | Startseite mit Bildband, Kochprotokoll, Verbessern mit Claude | erledigt | #44 |
+| | Einkaufsauftrag nach REWE-Test geschärft | erledigt | #46 |
 | | Import vor dem Speichern bearbeiten | erledigt | #40 |
 
-`PLAN.md` §8 hinkt hinterher:
-
-- M10j und der Einkaufs-Agent stehen noch als „im Review“.
-- M12 steht als „In Arbeit“, obwohl alles gemergt ist.
-- Die offene Entscheidung zu Rezeptbildern ist inzwischen entschieden.
+`PLAN.md` §8 und §9 sind auf diesem Stand (Entscheidungen 42 bis 49, offene Fragen 1 bis 3 als entschieden markiert, neue offene Frage 7).
 
 ## Offene Pull Requests
 
@@ -75,7 +72,7 @@ Neu dazugekommen ist:
 ### Sonstiges
 
 - **Rückmeldung:** Das Sprachprotokoll nach ein paar Kochvorgängen teilen, damit die Regeln aus Entscheidung 20 nachgeschärft werden können.
-- **Einkaufs-Agent:** bei REWE und einem zweiten Shop testen.
+- **Einkaufs-Agent:** Der REWE-Test ist gelaufen (Regeln in #46 geschärft), ein zweiter Shop steht aus.
 - **Antworten von außen:** TOKIT (Herstelleranfrage) und REWE (E-Mail) stehen aus.
 - **Entscheidungen:** Siehe `ENTSCHEIDUNGEN.md` §13. Am dringendsten ist M13 (parallele Timer).
 
@@ -147,5 +144,5 @@ Der Graph zeigt den Stand von `fc2beb2` (vor PR #40, der vier Dateien in Editor 
 
 1. **Ein Kochabend am Gerät** bringt mehr als jeder weitere Meilenstein. Fast alles Offene hängt an der Geräte-Prüfliste.
 2. **TestFlight-Secrets eintragen:** Erst dann landet jeder Stand automatisch auf dem iPhone, und ein Kochabend wird billig.
-3. **`PLAN.md` §8 und §9 „Offen“** auf diesen Stand bringen. Dann bleibt eine einzige Wahrheit statt dreier Dateien. `STATUS.md` kann bei jedem Merge mitgepflegt werden (Stufe G5 im Gauntlet).
+3. **`STATUS.md` bei jedem Merge mitpflegen** (Stufe G5 im Gauntlet), damit `PLAN.md`, `STATUS.md` und `ENTSCHEIDUNGEN.md` nicht wieder auseinanderlaufen.
 4. **Rezeptstapel:** Mit den 90 Rezepten erst beginnen, wenn mindestens drei Bestandsrezepte am Gerät geprüft sind. Sonst vervielfachen sich Fehler in Zeiten und Stufen.
