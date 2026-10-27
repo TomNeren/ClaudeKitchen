@@ -7,6 +7,15 @@
   "totalMinutes": 35,
   "verified": false,
   "origin": { "cuisine": "europe", "region": "Ikaria" },
+  "references": [
+    { "title": "Ikaria: Lessons on Food, Life, and Longevity from the Greek Island Where People Forget to Die", "author": "Diane Kochilas", "year": 2014 },
+    { "title": "Vefa's Kitchen", "author": "Vefa Alexiadou", "year": 2009 }
+  ],
+  "authenticityChecks": [
+    "Vorbild ist die griechische Linsensuppe Fakes: Linsen mit Tomate, Zwiebel, Knoblauch, Lorbeer und Oregano in viel Olivenöl",
+    "Rote Linsen und Zitrone sind Abwandlungen; traditionell braune Linsen und ein Schuss Rotweinessig zum Schluss",
+    "Mit Feta, Oliven und Brot serviert, Olivenöl roh darüber"
+  ],
   "ingredients": [
     { "id": "zwiebel", "name": "Zwiebel", "food": "onion", "quantity": 1, "unit": "Stk",
       "substitutes": [ { "name": "Schalotten", "ratio": 2 } ] },

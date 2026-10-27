@@ -6,7 +6,7 @@
   "baseServings": 2,
   "totalMinutes": 20,
   "verified": false,
-  "origin": { "cuisine": "china" },
+  "origin": { "cuisine": "china", "region": "China" },
   "references": [
     { "title": "Every Grain of Rice", "author": "Fuchsia Dunlop", "year": 2012 }
   ],

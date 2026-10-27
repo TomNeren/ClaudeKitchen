@@ -6,7 +6,15 @@
   "baseServings": 3,
   "totalMinutes": 30,
   "verified": false,
-  "origin": { "cuisine": "india" },
+  "origin": { "cuisine": "india", "region": "Punjab" },
+  "references": [
+    { "title": "India: The Cookbook", "author": "Pushpesh Pant", "year": 2010 }
+  ],
+  "authenticityChecks": [
+    "Vorbild ist Chana Palak aus dem Punjab: Kichererbsen und Spinat in einer Tomaten-Zwiebel-Masala",
+    "Olivenöl, Kokosmilch und Blumenkohlreis sind Abwandlungen; traditionell Ghee oder Senföl, ohne Kokos, mit Roti oder Reis",
+    "Gewürze: Kreuzkümmel, Kurkuma, Garam Masala zum Schluss; prüfen, ob Koriander, Chili und Amchur fehlen"
+  ],
   "ingredients": [
     { "id": "zwiebel", "name": "Zwiebel", "food": "onion", "quantity": 1, "unit": "Stk",
       "substitutes": [ { "name": "Schalotten", "ratio": 2 } ] },

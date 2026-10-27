@@ -2,10 +2,19 @@
   "schemaVersion": 1,
   "id": "ingwer-lachs-pak-choi",
   "name": "Ingwer-Lachs mit Pak Choi",
-  "tag": "Asiatisch · Dampf",
+  "tag": "Chinesisch · Dampf",
   "baseServings": 3,
   "totalMinutes": 25,
   "verified": false,
+  "origin": { "cuisine": "china", "region": "Kanton" },
+  "references": [
+    { "title": "Every Grain of Rice", "author": "Fuchsia Dunlop", "year": 2012 }
+  ],
+  "authenticityChecks": [
+    "Eigene Variante nach der kantonesischen Dämpftechnik: Fisch nur kurz gedämpft, mit Ingwer und Frühlingszwiebel",
+    "Lachs, Limette und Honig sind keine kantonesischen Zutaten; traditionell ein ganzer weißer Fisch wie Wolfsbarsch",
+    "Prüfen, ob das Dressing als Variante durchgeht oder ob heißes Öl über Ingwer und Frühlingszwiebel mit heller Sojasauce besser passt"
+  ],
   "ingredients": [
     { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 700, "unit": "g", "note": "in den Topf", "scales": false, "eaten": false },
     { "id": "lachs", "name": "Lachsfilet", "food": "salmon", "quantity": 3, "unit": "Stk", "note": "à 150 g",

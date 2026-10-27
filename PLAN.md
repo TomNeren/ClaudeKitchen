@@ -179,6 +179,11 @@ Alle Zitate prüft `Scripts/check_evidence_quotes.py`. Damit ändern Blutdruck (
 - **Grenze:** Ob ein Rezept authentisch ist, kann Claude nicht belegen, nur plausibel machen. Jedes Rezept
   startet mit `verified: false` und einer Prüfliste (Gewürze, Technik), die du oder jemand aus der jeweiligen
   Küche abhaken kann.
+- **Qualitätsprüfung:** `RecipeQualityTests` verlangt für jedes mitgelieferte Rezept `origin` mit Region,
+  Referenzen und Prüfliste, `verified: false`, ein Tag „<Küche> · <Art>“ passend zur Küche, 4 bis 10 Schritte mit
+  20 bis 160 Zeichen, keine Gedankenstriche und kein doppeltes Gericht. Auch die drei Startrezepte (Ingwer-Lachs,
+  Kichererbsen-Spinat-Curry, Linsen-Eintopf) tragen jetzt Herkunft und eine Prüfliste, die ihre Abwandlungen offen
+  nennt. Neue Rezepte entstehen mit `Prompts/rezepte-erweitern.md`.
 
 ### 3d. Einkauf und Vorrat
 
