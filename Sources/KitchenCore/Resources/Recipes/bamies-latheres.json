@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "id": "bamies-latheres",
+  "name": "Bamies latheres",
+  "tag": "Griechisch · Okra in Tomatensauce",
+  "baseServings": 4,
+  "totalMinutes": 80,
+  "verified": false,
+  "origin": { "cuisine": "europe", "region": "Griechenland" },
+  "references": [
+    { "title": "Opa (S. 42)", "author": "Liz Lazarides White" }
+  ],
+  "authenticityChecks": [
+    "Junge, ganze Okraschoten, am Stielansatz nur kegelförmig geputzt, damit sie nicht schleimen",
+    "Essig und Salz vor dem Garen, danach abbrausen",
+    "Viel Olivenöl, wenig Tomatensauce, am Ende Zitrone; warm oder lauwarm, nicht heiß, mit Brot und Feta"
+  ],
+  "ingredients": [
+    {
+      "id": "okra",
+      "name": "Okra, junge Schoten",
+      "food": "okra",
+      "quantity": 500,
+      "unit": "g",
+      "note": "frisch oder tiefgekühlt"
+    },
+    {
+      "id": "essig",
+      "name": "Rotweinessig",
+      "food": "red-wine-vinegar",
+      "quantity": 2,
+      "unit": "EL",
+      "note": "zum Vorbereiten der Okra"
+    },
+    {
+      "id": "zwiebel",
+      "name": "Zwiebel",
+      "food": "onion",
+      "quantity": 1,
+      "unit": "Stk",
+      "note": "halbiert"
+    },
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 3, "unit": "Zehen" },
+    { "id": "olivenoel", "name": "Olivenöl", "food": "olive-oil", "quantity": 5, "unit": "EL" },
+    {
+      "id": "tomatenmark",
+      "name": "Tomatenmark",
+      "food": "tomato-paste",
+      "quantity": 1,
+      "unit": "EL"
+    },
+    {
+      "id": "tomaten",
+      "name": "Tomaten aus der Dose, gehackt",
+      "food": "canned-tomatoes",
+      "quantity": 400,
+      "unit": "g"
+    },
+    { "id": "wasser", "name": "Wasser", "food": "water", "quantity": 100, "unit": "g" },
+    { "id": "zucker", "name": "Zucker", "food": "sugar", "quantity": 0.5, "unit": "TL" },
+    {
+      "id": "petersilie",
+      "name": "Petersilie",
+      "food": "parsley",
+      "quantity": 15,
+      "unit": "g",
+      "note": "gehackt"
+    },
+    {
+      "id": "zitrone",
+      "name": "Zitrone",
+      "food": "lemon",
+      "quantity": 0.5,
+      "unit": "Stk",
+      "note": "Saft"
+    },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    { "id": "pfeffer", "name": "Schwarzer Pfeffer", "food": "black-pepper" }
+  ],
+  "steps": [
+    {
+      "id": "s0",
+      "phase": "Okra vorbereiten",
+      "text": "Stielansätze der Okra kegelförmig abschneiden, ohne die Schoten zu öffnen. Mit Essig und Salz 30 Minuten stehen lassen, abbrausen, trocken tupfen.",
+      "note": "Der Essig mindert den Schleim. Frische Okra nicht anschneiden.",
+      "ingredientIDs": [
+        "essig"
+      ]
+    },
+    {
+      "id": "s1",
+      "phase": "Hacken",
+      "text": "Zwiebel und Knoblauch in den Topf geben und zerkleinern.",
+      "ingredientIDs": [
+        "zwiebel",
+        "knoblauch"
+      ],
+      "setting": { "speed": 5, "seconds": 4 }
+    },
+    {
+      "id": "s2",
+      "phase": "Anschwitzen",
+      "text": "Olivenöl zugeben und die Zwiebel weich dünsten.",
+      "note": "Ohne Messbecher.",
+      "ingredientIDs": [
+        "olivenoel"
+      ],
+      "setting": { "heat": 120, "speed": 1, "reverse": true, "seconds": 300 }
+    },
+    {
+      "id": "s3",
+      "phase": "Tomatensauce",
+      "text": "Tomatenmark, Tomaten, Wasser und Zucker zugeben und aufkochen.",
+      "note": "Messbecher einsetzen.",
+      "ingredientIDs": [
+        "tomatenmark",
+        "tomaten",
+        "wasser",
+        "zucker"
+      ],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 360 }
+    },
+    {
+      "id": "s4",
+      "phase": "Schmoren",
+      "text": "Okra zugeben und sanft schmoren, bis sie ganz weich ist.",
+      "note": "Messbecher einsetzen. Kein Zwischenrühren von Hand, die Schoten reißen leicht.",
+      "ingredientIDs": [
+        "okra"
+      ],
+      "setting": { "heat": 95, "speed": 1, "reverse": true, "seconds": 1800 }
+    },
+    {
+      "id": "s5",
+      "phase": "Abschmecken",
+      "text": "Petersilie und Zitronensaft zugeben, mit Salz und Pfeffer abschmecken und ohne Hitze ziehen lassen.",
+      "ingredientIDs": [
+        "petersilie",
+        "zitrone",
+        "salz",
+        "pfeffer"
+      ],
+      "setting": { "seconds": 300 }
+    },
+    {
+      "id": "s6",
+      "phase": "Anrichten",
+      "text": "Warm oder lauwarm mit Brot und nach Wunsch Feta servieren."
+    }
+  ]
+}

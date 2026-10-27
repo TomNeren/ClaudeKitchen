@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "id": "skordalia",
+  "name": "Skordalia",
+  "tag": "Griechisch · Knoblauch-Kartoffelcreme",
+  "baseServings": 4,
+  "totalMinutes": 50,
+  "verified": false,
+  "origin": { "cuisine": "europe", "region": "Griechenland" },
+  "references": [
+    { "title": "Opa (S. 52)", "author": "Liz Lazarides White" }
+  ],
+  "authenticityChecks": [
+    "Kartoffelbasis mit viel rohem Knoblauch, reichlich Olivenöl und Essig oder Zitrone",
+    "Cremig, aber nicht klebrig: Kartoffeln nur kurz zerdrücken, nicht pürieren",
+    "Als Dip zu gebratenem Fisch, Rote Bete oder frittiertem Gemüse"
+  ],
+  "ingredients": [
+    {
+      "id": "wasser",
+      "name": "Wasser",
+      "food": "water",
+      "quantity": 700,
+      "unit": "g",
+      "note": "in den Topf",
+      "scales": false,
+      "eaten": false
+    },
+    {
+      "id": "kartoffeln",
+      "name": "Kartoffeln, mehligkochend",
+      "food": "potato",
+      "quantity": 500,
+      "unit": "g",
+      "note": "geschält, in 3-cm-Stücken"
+    },
+    {
+      "id": "knoblauch",
+      "name": "Knoblauch",
+      "food": "garlic",
+      "quantity": 4,
+      "unit": "Zehen",
+      "note": "nach Geschmack mehr"
+    },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    {
+      "id": "olivenoel",
+      "name": "Olivenöl, mild",
+      "food": "olive-oil",
+      "quantity": 6,
+      "unit": "EL"
+    },
+    {
+      "id": "essig",
+      "name": "Rotweinessig",
+      "food": "red-wine-vinegar",
+      "quantity": 2,
+      "unit": "EL",
+      "substitutes": [
+        { "name": "Zitronensaft", "ratio": 1, "note": "frischer, weniger herb" }
+      ]
+    },
+    {
+      "id": "oel-servieren",
+      "name": "Olivenöl",
+      "food": "olive-oil",
+      "quantity": 1,
+      "unit": "EL",
+      "note": "zum Beträufeln"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "phase": "Vorbereiten",
+      "text": "Wasser in den Topf geben und den Dampfaufsatz vorbereiten.",
+      "ingredientIDs": [
+        "wasser"
+      ]
+    },
+    {
+      "id": "s2",
+      "phase": "Einlegen",
+      "text": "Kartoffelstücke in den Dampfaufsatz legen.",
+      "ingredientIDs": [
+        "kartoffeln"
+      ],
+      "accessory": "steamer"
+    },
+    {
+      "id": "s3",
+      "phase": "Dämpfen",
+      "text": "Modus „Dampfgaren“ wählen und starten.",
+      "note": "Deckel schließen. Die Kartoffeln sind gar, wenn ein Messer ohne Widerstand hineingleitet.",
+      "setting": { "program": "steam", "heat": "steam", "seconds": 1500 },
+      "accessory": "steamer"
+    },
+    {
+      "id": "s4",
+      "phase": "Knoblauch",
+      "text": "Dampfaufsatz mit den Kartoffeln abnehmen, Wasser ausgießen und den Topf abtrocknen. Knoblauch und Salz in den Topf geben und zerkleinern.",
+      "note": "Vorsicht: Wasser und Dampf sind heiß.",
+      "ingredientIDs": [
+        "knoblauch",
+        "salz"
+      ],
+      "setting": { "speed": 7, "seconds": 5 },
+      "freshPot": true
+    },
+    {
+      "id": "s5",
+      "phase": "Zerdrücken",
+      "text": "Die noch heißen Kartoffeln zugeben und kurz auf Stufe 5 zerdrücken.",
+      "note": "Nicht länger als 15 Sekunden rühren: Kartoffeln werden sonst klebrig wie Kleister.",
+      "ingredientIDs": [
+        "kartoffeln"
+      ],
+      "setting": { "speed": 5, "seconds": 15 }
+    },
+    {
+      "id": "s6",
+      "phase": "Öl und Essig",
+      "text": "Olivenöl und Essig langsam durch die Deckelöffnung einlaufen lassen und einarbeiten.",
+      "note": "Linkslauf schont die Kartoffelstärke. Das Öl in dünnem Strahl zugeben.",
+      "ingredientIDs": [
+        "olivenoel",
+        "essig"
+      ],
+      "setting": { "speed": 2, "reverse": true, "seconds": 30 }
+    },
+    {
+      "id": "s7",
+      "phase": "Anrichten",
+      "text": "Mit Salz und Essig abschmecken, in eine Schale geben und mit Olivenöl beträufeln. Zimmerwarm oder gekühlt mit Brot servieren.",
+      "ingredientIDs": [
+        "oel-servieren"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "id": "garides-ladolemono",
+  "name": "Garides ladolemono",
+  "tag": "Griechisch · Gedämpfte Garnelen mit Öl und Zitrone",
+  "baseServings": 4,
+  "totalMinutes": 25,
+  "verified": false,
+  "origin": { "cuisine": "europe", "region": "Griechenland" },
+  "references": [
+    { "title": "Opa (S. 45)", "author": "Liz Lazarides White" }
+  ],
+  "authenticityChecks": [
+    "Garnelen nur kurz gegart, fest und saftig, nicht gummiartig",
+    "Ladolemono aus gutem Olivenöl, Zitronensaft und Oregano, kräftig verquirlt",
+    "Warm oder lauwarm als Vorspeise (Meze) mit Zitronenspalten und Brot"
+  ],
+  "ingredients": [
+    {
+      "id": "wasser",
+      "name": "Wasser",
+      "food": "water",
+      "quantity": 700,
+      "unit": "g",
+      "note": "in den Topf",
+      "scales": false,
+      "eaten": false
+    },
+    {
+      "id": "lorbeer",
+      "name": "Lorbeerblatt",
+      "food": "bay-leaf",
+      "quantity": 1,
+      "unit": "Stk",
+      "scales": false,
+      "eaten": false
+    },
+    {
+      "id": "garnelen",
+      "name": "Garnelen, roh, mit Schale",
+      "food": "shrimp",
+      "quantity": 500,
+      "unit": "g",
+      "note": "Darm entfernt, Schale bleibt dran"
+    },
+    { "id": "olivenoel", "name": "Olivenöl", "food": "olive-oil", "quantity": 5, "unit": "EL" },
+    {
+      "id": "zitrone",
+      "name": "Zitrone",
+      "food": "lemon",
+      "quantity": 1,
+      "unit": "Stk",
+      "note": "Saft"
+    },
+    {
+      "id": "oregano",
+      "name": "Oregano, getrocknet",
+      "food": "oregano-dried",
+      "quantity": 1,
+      "unit": "TL"
+    },
+    {
+      "id": "petersilie",
+      "name": "Petersilie",
+      "food": "parsley",
+      "quantity": 10,
+      "unit": "g",
+      "note": "fein gehackt"
+    },
+    {
+      "id": "knoblauch",
+      "name": "Knoblauch",
+      "food": "garlic",
+      "quantity": 1,
+      "unit": "Zehen",
+      "note": "fein gehackt oder zerdrückt"
+    },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    { "id": "pfeffer", "name": "Schwarzer Pfeffer", "food": "black-pepper" },
+    {
+      "id": "zitronenspalten",
+      "name": "Zitrone",
+      "food": "lemon",
+      "quantity": 1,
+      "unit": "Stk",
+      "note": "in Spalten, zum Servieren"
+    }
+  ],
+  "steps": [
+    {
+      "id": "s1",
+      "phase": "Vorbereiten",
+      "text": "Wasser mit Lorbeer in den Topf geben und den Dampfaufsatz vorbereiten.",
+      "ingredientIDs": [
+        "wasser",
+        "lorbeer"
+      ]
+    },
+    {
+      "id": "s2",
+      "phase": "Ladolemono",
+      "text": "Olivenöl, Zitronensaft, Oregano, Petersilie, Knoblauch, Salz und Pfeffer in einer Schüssel kräftig verquirlen.",
+      "ingredientIDs": [
+        "olivenoel",
+        "zitrone",
+        "oregano",
+        "petersilie",
+        "knoblauch",
+        "salz",
+        "pfeffer"
+      ]
+    },
+    {
+      "id": "s3",
+      "phase": "Einlegen",
+      "text": "Garnelen in einer Lage in den Dampfaufsatz legen.",
+      "ingredientIDs": [
+        "garnelen"
+      ],
+      "accessory": "steamer"
+    },
+    {
+      "id": "s4",
+      "phase": "Dämpfen",
+      "text": "Modus „Dampfgaren“ wählen und starten.",
+      "note": "Deckel schließen. Die Garnelen sind gar, wenn sie durchgehend rosa und fest sind. Nicht länger dämpfen, sie werden sonst zäh. Nach fünf Minuten die dicksten Garnelen prüfen.",
+      "setting": { "program": "steam", "heat": "steam", "seconds": 360 },
+      "accessory": "steamer"
+    },
+    {
+      "id": "s5",
+      "phase": "Anrichten",
+      "text": "Garnelen sofort in die Schüssel mit dem Ladolemono geben, wenden und mit Zitronenspalten servieren.",
+      "note": "Vorsicht: Garnelen und Dampfaufsatz sind heiß.",
+      "ingredientIDs": [
+        "zitronenspalten"
+      ]
+    }
+  ]
+}
