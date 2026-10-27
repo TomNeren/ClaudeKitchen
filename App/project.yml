@@ -1,6 +1,6 @@
 name: ClaudeKitchen
 options:
-  bundleIdPrefix: de.tomneren
+  bundleIdPrefix: com.tomren
   deploymentTarget:
     iOS: "27.0"
   createIntermediateGroups: true
@@ -36,7 +36,7 @@ targets:
       - target: ClaudeKitchenWidgets
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: de.tomneren.ClaudeKitchen
+        PRODUCT_BUNDLE_IDENTIFIER: com.tomren.claudekitchen
         TARGETED_DEVICE_FAMILY: "1,2"
         GENERATE_INFOPLIST_FILE: YES
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
@@ -75,7 +75,7 @@ targets:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: de.tomneren.ClaudeKitchen.Widgets
+        PRODUCT_BUNDLE_IDENTIFIER: com.tomren.claudekitchen.widgets
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Omni Cook
         TARGETED_DEVICE_FAMILY: "1,2"

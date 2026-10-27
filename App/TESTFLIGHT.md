@@ -4,7 +4,7 @@ Der Workflow `.github/workflows/testflight.yml` baut jeden Stand von `main`, sig
 
 ## Einmalig in App Store Connect
 
-1. **App anlegen:** Apps > + > Neue App. Plattform iOS, Name zum Beispiel „Omni Cook“, Bundle-ID `de.tomneren.ClaudeKitchen`. Fehlt die Bundle-ID in der Auswahl, lege sie unter developer.apple.com > Identifiers an (dort auch `de.tomneren.ClaudeKitchen.Widgets`).
+1. **App anlegen:** Apps > + > Neue App. Plattform iOS, Name zum Beispiel „Omni Cook“, Bundle-ID `com.tomren.claudekitchen`. Fehlt die Bundle-ID in der Auswahl, lege sie unter developer.apple.com > Identifiers an (dort auch `com.tomren.claudekitchen.widgets`).
 2. **API-Schlüssel:** Benutzer und Zugriff > Integrationen > App Store Connect API > Teamschlüssel > +. Zugriff: **Admin**. Apple nennt für Zertifikate und Profile, die in der Cloud verwaltet werden, nur Admin; schwächere Rollen scheitern an der Signatur. Lade die `.p8`-Datei herunter (geht nur einmal) und notiere Schlüssel-ID und Issuer-ID.
 3. **TestFlight:** Unter der App > TestFlight > Interne Tests eine Gruppe anlegen und dich eintragen. Auf dem iPhone die TestFlight-App installieren.
 
