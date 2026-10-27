@@ -58,7 +58,7 @@ final class SpeechListener {
         guard let converter = AVAudioConverter(from: inputFormat, to: format) else { throw Failure.noAudioFormat }
         let feed = AudioFeed(converter: converter, format: format, continuation: continuation)
         self.feed = feed
-        Self.installTap(on: input, format: inputFormat, feed: feed)
+        try Self.installTap(on: input, format: inputFormat, feed: feed)
         engine.prepare()
         try engine.start()
 
@@ -114,8 +114,10 @@ final class SpeechListener {
     }
 
     /// Built outside the main actor: the tap runs on the audio thread and must not inherit main-actor isolation.
-    private nonisolated static func installTap(on input: AVAudioInputNode, format: AVAudioFormat, feed: AudioFeed) {
-        input.installTap(onBus: 0, bufferSize: 4096, format: format) { buffer, _ in
+    private nonisolated static func installTap(
+        on input: AVAudioInputNode, format: AVAudioFormat, feed: AudioFeed
+    ) throws {
+        try input.installAudioTap(onBus: 0, bufferSize: 4096, format: format) { buffer, _ in
             feed.feed(buffer)
         }
     }
@@ -136,8 +138,10 @@ private final class AudioFeed: @unchecked Sendable {
         self.continuation = continuation
     }
 
-    func feed(_ buffer: AVAudioPCMBuffer) {
+    func feed(_ tapBuffer: AVReadOnlyAudioPCMBuffer) {
         guard !muted.load(ordering: .relaxed) else { return }
+        // The converter reads only mutable buffers, so the read-only tap buffer is copied first.
+        let buffer = AVAudioPCMBuffer(copying: tapBuffer)
         let ratio = format.sampleRate / buffer.format.sampleRate
         let capacity = AVAudioFrameCount((Double(buffer.frameLength) * ratio).rounded(.up))
         guard let output = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: capacity) else { return }
