@@ -6,7 +6,7 @@
   "baseServings": 4,
   "totalMinutes": 55,
   "verified": false,
-  "origin": { "cuisine": "georgia" },
+  "origin": { "cuisine": "georgia", "region": "Georgien" },
   "references": [
     { "title": "The Georgian Feast", "author": "Darra Goldstein", "year": 1993 }
   ],
