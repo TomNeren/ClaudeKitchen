@@ -91,9 +91,21 @@ struct ShoppingView: View {
                             get: { plan.entry.servings }, set: { model.setServings($0, for: plan.recipe.id) }),
                         in: 1...max(24, plan.entry.servings)
                     ) {
-                        VStack(alignment: .leading) {
-                            Text(plan.recipe.name)
-                            Text(PlannedText.subtitle(for: plan.entry)).font(.footnote).foregroundStyle(.secondary)
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(plan.recipe.name)
+                                Text(PlannedText.subtitle(for: plan.entry)).font(.footnote).foregroundStyle(.secondary)
+                            }
+                            Spacer(minLength: 4)
+                            Menu {
+                                PlanDayPicker(day: plan.entry.day) { model.setDay($0, for: plan.recipe.id) }
+                            } label: {
+                                Label("Tag", systemImage: plan.entry.day == nil ? "calendar" : "calendar.badge.clock")
+                                    .labelStyle(.iconOnly)
+                                    .frame(minWidth: 44, minHeight: 44)
+                            }
+                            .buttonStyle(.borderless)
+                            .accessibilityLabel("Tag für \(plan.recipe.name)")
                         }
                     }
                     .swipeActions {

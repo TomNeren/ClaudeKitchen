@@ -34,10 +34,18 @@ final class ShoppingModel {
     private var pending: [(inout ShoppingState) -> Void] = []
     private var isLoaded = false
     private var saving: Task<Void, Never>?
+    private let reminders: PlanReminders
+    /// The plan the reminders were last scheduled for, so ticks and pantry changes do not reschedule them.
+    private var remindedPlan: MealPlan?
+    private var reminderUpdate: Task<Void, Never>?
 
-    init(store: ShoppingStore = .shared, catalog: FoodCatalog? = FoodCatalog.shared) {
+    init(
+        store: ShoppingStore = .shared, catalog: FoodCatalog? = FoodCatalog.shared,
+        reminders: PlanReminders = .shared
+    ) {
         self.store = store
         self.catalog = catalog
+        self.reminders = reminders
     }
 
     func load() async {
@@ -56,10 +64,16 @@ final class ShoppingModel {
     func update(recipes: [Recipe]) {
         self.recipes = recipes
         refresh()
+        // The reminders name the recipes, so they are scheduled again once the names are known.
+        if isLoaded {
+            remindedPlan = nil
+            save()
+        }
     }
 
+    /// Planned recipes by day, the undated ones last.
     var planned: [PlannedRecipe] {
-        state.plan.entries.compactMap { entry in
+        state.plan.scheduled.compactMap { entry in
             recipes.first { $0.id == entry.recipe }.map { PlannedRecipe(recipe: $0, entry: entry) }
         }
     }
@@ -68,13 +82,26 @@ final class ShoppingModel {
         state.plan.entries.contains { $0.recipe == id }
     }
 
-    /// The plan entry of `recipe`, keyed like `add`: a variant counts for its original.
-    func planEntry(for recipe: Recipe) -> MealPlan.Entry? {
-        state.plan.entries.first { $0.recipe == (recipe.variantOf ?? recipe.id) }
+    func planEntry(for id: RecipeID) -> MealPlan.Entry? {
+        state.plan.entries.first { $0.recipe == id }
     }
 
+    /// `recipe` is the library recipe; an own recipe saved from Claude is planned as itself, not as its original.
     func add(_ recipe: Recipe, servings: Int, goal: RewriteGoalID?) {
-        change { $0.plan.add(recipe.variantOf ?? recipe.id, servings: servings, goal: goal) }
+        change { $0.plan.add(recipe.id, servings: servings, goal: goal) }
+    }
+
+    /// Asks for notifications the first time a day is set, so the morning reminder can ring.
+    func setDay(_ day: PlanDay?, for id: RecipeID) {
+        change { $0.plan.setDay(day, for: id) }
+        guard day != nil else { return }
+        let reminders = self.reminders
+        Task {
+            // The change above was scheduled before permission existed; once granted, schedule again.
+            guard await reminders.requestAuthorization() else { return }
+            remindedPlan = nil
+            scheduleReminders()
+        }
     }
 
     func setServings(_ servings: Int, for id: RecipeID) {
@@ -135,12 +162,13 @@ final class ShoppingModel {
         change { $0.buyChecked(from: list) }
     }
 
-    /// Called when the cook finishes a recipe in the cooking mode.
-    func cooked(_ recipe: Recipe, servings: Int) {
+    /// Called when the cook finishes a recipe in the cooking mode. `recipe` is what was cooked (maybe a health
+    /// variant), `planned` the library recipe it started from.
+    func cooked(_ recipe: Recipe, as planned: RecipeID, servings: Int) {
         guard let catalog else { return }
-        let planned = state.plan.entries.first { $0.recipe == (recipe.variantOf ?? recipe.id) }
-        undo = Undo(label: "\(recipe.name) abgebucht", pantry: state.pantry, planEntry: planned, checked: [])
-        change { $0.cooked(recipe, servings: servings, catalog: catalog) }
+        let entry = state.plan.entries.first { $0.recipe == planned }
+        undo = Undo(label: "\(recipe.name) abgebucht", pantry: state.pantry, planEntry: entry, checked: [])
+        change { $0.cooked(recipe, as: planned, servings: servings, catalog: catalog) }
         dropStaleChecks()
     }
 
@@ -151,8 +179,7 @@ final class ShoppingModel {
         change { state in
             state.pantry = undo.pantry
             if let entry = undo.planEntry {
-                state.plan.remove(entry.recipe)
-                state.plan.add(entry.recipe, servings: entry.servings, goal: entry.goal)
+                state.plan.restore(entry)
             }
             state.checked.formUnion(undo.checked)
         }
@@ -191,13 +218,41 @@ final class ShoppingModel {
         }
     }
 
-    /// Saves one after the other, so an older state never lands on disk after a newer one.
+    /// Saves one after the other, so an older state never lands on disk after a newer one. Reschedules the morning
+    /// reminders when the plan changed; only after loading, so an empty plan never clears them.
     private func save() {
+        if remindedPlan != state.plan {
+            remindedPlan = state.plan
+            scheduleReminders()
+        }
         let snapshot = state
         let previous = saving
         saving = Task { [store] in
             await previous?.value
             await store.save(snapshot)
+        }
+    }
+
+    private func scheduleReminders() {
+        // Without the library the reminders would have no names; `update(recipes:)` schedules them again.
+        guard !recipes.isEmpty else {
+            remindedPlan = nil
+            return
+        }
+        let names = Dictionary(recipes.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+        let today = PlanDay(.now, calendar: .current)
+        let days = state.plan.reminders(from: today).map { reminder in
+            PlanReminders.Day(
+                day: reminder.day,
+                lines: reminder.entries.compactMap { entry in
+                    names[entry.recipe].map { "\($0) (\(Portions.text(entry.servings)))" }
+                })
+        }
+        let previous = reminderUpdate
+        let reminders = self.reminders
+        reminderUpdate = Task {
+            await previous?.value
+            await reminders.schedule(days.filter { !$0.lines.isEmpty })
         }
     }
 

@@ -29,6 +29,7 @@ struct RecipeLibraryView: View {
                         onCook: { plan in
                             path.append(.cooking(plan.recipe.id, servings: plan.entry.servings, goal: plan.entry.goal))
                         },
+                        onSetDay: { shopping.setDay($0, for: $1) },
                         onRemove: { shopping.remove($0) }
                     )
                     .padding(.vertical, 8)
@@ -198,7 +199,7 @@ struct RecipeLibraryView: View {
                 RecipeDetailView(
                     recipe: recipe, isOwn: model.isOwn(id),
                     onEdit: { editing = model.editorRequest(for: id) },
-                    isPlanned: shopping.isPlanned(id), planned: shopping.planEntry(for: recipe),
+                    isPlanned: shopping.isPlanned(id), planned: shopping.planEntry(for: id),
                     onAddToShopping: { shopping.add(recipe, servings: $0, goal: $1) },
                     onImprove: improveAction(for: recipe),
                     original: recipe.variantOf.flatMap { originalID in
@@ -217,7 +218,7 @@ struct RecipeLibraryView: View {
                 let cooked = variant ?? recipe
                 CookingView(recipe: cooked, servings: servings) {
                     // Books what the recipe used out of the pantry; the shopping screen offers undo.
-                    shopping.cooked(cooked, servings: servings)
+                    shopping.cooked(cooked, as: id, servings: servings)
                     // The log keeps the original recipe id, so a health variant counts for its source.
                     let entry = cookLog.recordCooked(recipe.id)
                     rating = RatingRequest(recipe: recipe.id, name: recipe.name, entry: entry)
