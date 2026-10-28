@@ -62,6 +62,8 @@ extension VoiceCommand {
         case .stepIngredients: "zutaten"
         case .substitute(let ingredient, let addressed):
             addressed ? "omni ersatz: \(ingredient)" : "ersatz: \(ingredient)"
+        case .explain(let ingredient, let addressed):
+            addressed ? "omni erklären: \(ingredient)" : "erklären: \(ingredient)"
         case .question: "omni frage"
         }
     }

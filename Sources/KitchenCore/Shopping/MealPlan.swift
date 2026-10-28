@@ -1,20 +1,34 @@
 import Foundation
 
-/// The recipes the cook means to make, with servings. Adding a planned recipe again adds its servings.
+/// The recipes the cook means to make, with servings and optionally the day. Adding a planned recipe again adds its
+/// servings.
+///
+/// Entries are keyed by the recipe as it is in the library: an own recipe saved from "Mit Claude verbessern" has its
+/// own entry, even though it names its original in `variantOf`. Health variants are not library recipes; they are
+/// the entry's `goal`.
 public struct MealPlan: Sendable, Hashable, Codable {
     public struct Entry: Sendable, Hashable, Codable, Identifiable {
         public var recipe: RecipeID
         public var servings: Int
         /// The health goal whose variant is cooked, nil for the original.
         public var goal: RewriteGoalID?
+        /// The day the cook means to make it, nil when not decided. Missing in files from before days existed.
+        public var day: PlanDay?
 
         public var id: RecipeID { recipe }
 
-        public init(recipe: RecipeID, servings: Int, goal: RewriteGoalID? = nil) {
+        public init(recipe: RecipeID, servings: Int, goal: RewriteGoalID? = nil, day: PlanDay? = nil) {
             self.recipe = recipe
             self.servings = servings
             self.goal = goal
+            self.day = day
         }
+    }
+
+    /// The recipes planned for one day, for the morning reminder.
+    public struct Reminder: Sendable, Hashable {
+        public var day: PlanDay
+        public var entries: [Entry]
     }
 
     public private(set) var entries: [Entry]
@@ -23,11 +37,51 @@ public struct MealPlan: Sendable, Hashable, Codable {
         self.entries = []
         for entry in entries {
             add(entry.recipe, servings: entry.servings, goal: entry.goal)
+            if let day = entry.day {
+                setDay(day, for: entry.recipe)
+            }
         }
     }
 
-    /// Servings below 1 count as 1. A recipe already planned keeps one entry: its servings add up and the latest
-    /// goal wins.
+    /// Dated entries first, by day, then the undated ones in the order they were planned.
+    public var scheduled: [Entry] {
+        let dated = entries.compactMap { entry in entry.day.map { (day: $0, entry: entry) } }
+        // A stable sort: recipes on the same day keep the order they were planned in.
+        let byDay = dated.enumerated().sorted { ($0.element.day, $0.offset) < ($1.element.day, $1.offset) }
+        return byDay.map(\.element.entry) + entries.filter { $0.day == nil }
+    }
+
+    /// Nil removes the day; an unplanned recipe is ignored.
+    public mutating func setDay(_ day: PlanDay?, for recipe: RecipeID) {
+        guard let index = entries.firstIndex(where: { $0.recipe == recipe }) else { return }
+        entries[index].day = day
+    }
+
+    /// Puts `entry` back exactly as it was, day included, replacing the recipe's current entry. For undo.
+    public mutating func restore(_ entry: Entry) {
+        if let index = entries.firstIndex(where: { $0.recipe == entry.recipe }) {
+            entries[index] = entry
+        } else {
+            entries.append(entry)
+        }
+    }
+
+    /// One reminder per day from `today` on that has recipes planned, earliest first. Days already past get none.
+    public func reminders(from today: PlanDay) -> [Reminder] {
+        var reminders: [Reminder] = []
+        for entry in scheduled {
+            guard let day = entry.day, day >= today else { continue }
+            if reminders.last?.day == day {
+                reminders[reminders.count - 1].entries.append(entry)
+            } else {
+                reminders.append(Reminder(day: day, entries: [entry]))
+            }
+        }
+        return reminders
+    }
+
+    /// Servings below 1 count as 1. A recipe already planned keeps one entry: its servings add up, the latest goal
+    /// wins and its day stays.
     public mutating func add(_ recipe: RecipeID, servings: Int, goal: RewriteGoalID? = nil) {
         if let index = entries.firstIndex(where: { $0.recipe == recipe }) {
             entries[index].servings += max(1, servings)
@@ -100,10 +154,12 @@ public struct ShoppingState: Sendable, Hashable, Codable {
         checked = []
     }
 
-    /// Takes what `recipe` used out of the pantry and the cooked servings off the plan.
-    public mutating func cooked(_ recipe: Recipe, servings: Int, catalog: FoodCatalog) {
+    /// Takes what `recipe` used out of the pantry and the cooked servings off the plan entry of `planned`, the
+    /// library recipe the cook started from. `recipe` can be its health variant, whose `variantOf` names it too; an
+    /// own recipe saved from Claude also has `variantOf` (its original) and must not take servings off that.
+    public mutating func cooked(_ recipe: Recipe, as planned: RecipeID, servings: Int, catalog: FoodCatalog) {
         pantry = pantry.cooking(recipe, servings: servings, catalog: catalog)
-        plan.cooked(recipe.variantOf ?? recipe.id, servings: servings)
+        plan.cooked(planned, servings: servings)
     }
 
     /// Drops ticks of items that are no longer on `list`, so they do not come back ticked later.

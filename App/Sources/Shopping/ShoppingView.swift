@@ -4,6 +4,8 @@ import SwiftUI
 /// The plan and the shopping list, sorted by aisle. Ticking items off and "Eingekauft" book them into the pantry.
 struct ShoppingView: View {
     @Bindable var model: ShoppingModel
+    /// Opens a planned recipe; nil leaves the rows without the action.
+    var onOpenRecipe: ((RecipeID) -> Void)?
     @Environment(\.dismiss) private var dismiss
     @State private var exportMessage = ""
     @State private var isShowingExportMessage = false
@@ -89,9 +91,21 @@ struct ShoppingView: View {
                             get: { plan.entry.servings }, set: { model.setServings($0, for: plan.recipe.id) }),
                         in: 1...max(24, plan.entry.servings)
                     ) {
-                        VStack(alignment: .leading) {
-                            Text(plan.recipe.name)
-                            Text(subtitle(for: plan.entry)).font(.footnote).foregroundStyle(.secondary)
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(plan.recipe.name)
+                                Text(PlannedText.subtitle(for: plan.entry)).font(.footnote).foregroundStyle(.secondary)
+                            }
+                            Spacer(minLength: 4)
+                            Menu {
+                                PlanDayPicker(day: plan.entry.day) { model.setDay($0, for: plan.recipe.id) }
+                            } label: {
+                                Label("Tag", systemImage: plan.entry.day == nil ? "calendar" : "calendar.badge.clock")
+                                    .labelStyle(.iconOnly)
+                                    .frame(minWidth: 44, minHeight: 44)
+                            }
+                            .buttonStyle(.borderless)
+                            .accessibilityLabel("Tag für \(plan.recipe.name)")
                         }
                     }
                     .swipeActions {
@@ -99,7 +113,15 @@ struct ShoppingView: View {
                             model.remove(plan.recipe.id)
                         }
                     }
+                    .swipeActions(edge: .leading) {
+                        if let onOpenRecipe {
+                            Button("Öffnen", systemImage: "book") { onOpenRecipe(plan.recipe.id) }
+                        }
+                    }
                     .contextMenu {
+                        if let onOpenRecipe {
+                            Button("Rezept öffnen", systemImage: "book") { onOpenRecipe(plan.recipe.id) }
+                        }
                         Button("Aus dem Plan entfernen", systemImage: "trash", role: .destructive) {
                             model.remove(plan.recipe.id)
                         }
@@ -118,11 +140,6 @@ extension ShoppingView {
             isShowingExportMessage = true
             isExporting = false
         }
-    }
-
-    fileprivate func subtitle(for entry: MealPlan.Entry) -> String {
-        let servings = Portions.text(entry.servings)
-        return entry.goal.map { "\(servings), \(HealthGoals.name($0))" } ?? servings
     }
 }
 

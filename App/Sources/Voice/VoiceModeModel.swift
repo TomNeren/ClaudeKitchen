@@ -66,7 +66,7 @@ final class VoiceModeModel {
                 state = .listening
                 for await sentence in sentences {
                     restarts = 0
-                    await handle(sentence)
+                    await handle(transcript: sentence)
                 }
                 guard !Task.isCancelled else { return }
                 // Audio was taken away (a call, Siri, another route). Listen again once it is back; returning from
@@ -101,17 +101,25 @@ final class VoiceModeModel {
         }
     }
 
-    private func handle(_ sentence: String) async {
+    /// One transcriber result can hold several sentences ("Weiter. Wie lange noch?"); each is handled on its own,
+    /// so the second one does not make the first too long to count as a command.
+    private func handle(transcript: String) async {
+        for (sentence, command) in VoiceCommand.parseSentences(transcript) {
+            await handle(sentence, command: command)
+        }
+    }
+
+    private func handle(_ sentence: String, command: VoiceCommand?) async {
         guard state == .listening else { return }
         let heardAt = Date.now
-        guard let command = VoiceCommand.parse(sentence) else {
+        guard let command else {
             // Ignored sentences too: they show what the rules missed.
             record(.init(date: heardAt, heard: sentence, command: nil))
             return
         }
         state = .answering
         defer { if state == .answering { state = .listening } }
-        let answer = await reply(to: command)
+        let answer = await reply(to: command, sentence: sentence)
         record(.init(date: heardAt, heard: sentence, command: command.logName, reply: answer?.0))
         guard case (let reply, let isUnchecked)? = answer, !Task.isCancelled else { return }
         exchange = Exchange(heard: sentence, reply: reply, isUnchecked: isUnchecked)
@@ -121,7 +129,7 @@ final class VoiceModeModel {
     }
 
     /// What to say, and whether it comes from the language model. Nil to stay silent.
-    private func reply(to command: VoiceCommand) async -> (String, Bool)? {
+    private func reply(to command: VoiceCommand, sentence: String) async -> (String, Bool)? {
         if let intent = command.intent {
             return (await cooking.perform(intent), false)
         }
@@ -143,6 +151,17 @@ final class VoiceModeModel {
                 return ("Für \(ingredient.name) ist im Rezept kein Ersatz hinterlegt.", false)
             }
             let question = "Was kann ich statt \(ingredient.name) nehmen, und wie viel?"
+            return (await CookingAssistant.answer(question, session: session, device: device), true)
+        case .explain(let name, let addressed):
+            if let found = SpiceGuide.shared?.entry(named: name, in: session, catalog: FoodCatalog.shared) {
+                return (SpiceGuideText.spoken(name: found.name, entry: found.entry), false)
+            }
+            // Without "Omni" an unknown name was probably conversation; with it, the model gets the question.
+            guard addressed else { return nil }
+            guard CookingAssistant.isAvailable else {
+                return ("Dazu steht nichts in der Gewürzkunde.", false)
+            }
+            let question = VoiceCommand.withoutWakeWord(sentence)
             return (await CookingAssistant.answer(question, session: session, device: device), true)
         case .question(let question):
             guard CookingAssistant.isAvailable else {
@@ -180,7 +199,7 @@ extension VoiceCommand {
         case .remainingTime: .remainingTime
         case .startTimer: .startTimer
         case .pauseTimer: .pauseTimer
-        case .stepIngredients, .substitute, .question: nil
+        case .stepIngredients, .substitute, .explain, .question: nil
         }
     }
 }

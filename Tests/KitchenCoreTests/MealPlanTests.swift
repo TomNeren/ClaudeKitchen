@@ -86,10 +86,91 @@ struct MealPlanTests {
             pantry: Pantry(items: [PantryItem(food: "lentils", stock: .grams(500))]))
         var variant = Self.dal
         variant.variantOf = "dal"
-        state.cooked(variant, servings: 2, catalog: Self.catalog)
+        state.cooked(variant, as: "dal", servings: 2, catalog: Self.catalog)
         #expect(state.pantry["lentils"]?.stock == .grams(300))
         #expect(state.plan.entries.isEmpty)
     }
+
+    /// An own recipe from "Mit Claude verbessern" names its original in `variantOf` but is planned on its own.
+    @Test func cookingAnOwnImprovedRecipeLeavesTheOriginalPlanned() {
+        var state = ShoppingState(
+            plan: MealPlan(entries: [.init(recipe: "dal", servings: 2), .init(recipe: "dal-besser", servings: 3)]))
+        var improved = Recipe(
+            id: "dal-besser", name: "Dal, verbessert", tag: "", baseServings: 2, totalMinutes: 10,
+            ingredients: Self.dal.ingredients, steps: [])
+        improved.variantOf = "dal"
+        state.cooked(improved, as: improved.id, servings: 3, catalog: Self.catalog)
+        #expect(state.plan.entries == [.init(recipe: "dal", servings: 2)])
+    }
+
+    @Test func daysSortThePlanAndSurviveAddingAgain() {
+        let monday = PlanDay(year: 2026, month: 11, day: 2)
+        var plan = MealPlan()
+        plan.add("soup", servings: 2)
+        plan.add("dal", servings: 2)
+        plan.add("curry", servings: 2)
+        plan.setDay(monday.adding(days: 2, calendar: Self.calendar), for: "soup")
+        plan.setDay(monday, for: "curry")
+        plan.add("soup", servings: 1)
+        #expect(plan.scheduled.map(\.recipe) == ["curry", "soup", "dal"])
+        #expect(plan.entries.first { $0.recipe == "soup" }?.day == PlanDay(year: 2026, month: 11, day: 4))
+        plan.setDay(nil, for: "curry")
+        #expect(plan.scheduled.map(\.recipe) == ["soup", "dal", "curry"])
+    }
+
+    @Test func remindersGroupByDayAndSkipThePast() {
+        let today = PlanDay(year: 2026, month: 10, day: 28)
+        let plan = MealPlan(entries: [
+            .init(recipe: "old", servings: 2, day: PlanDay(year: 2026, month: 10, day: 27)),
+            .init(recipe: "dal", servings: 2, day: today),
+            .init(recipe: "rice", servings: 2, day: today),
+            .init(recipe: "soup", servings: 2, day: PlanDay(year: 2026, month: 11, day: 1)),
+            .init(recipe: "someday", servings: 2),
+        ])
+        let reminders = plan.reminders(from: today)
+        #expect(reminders.map(\.day) == [today, PlanDay(year: 2026, month: 11, day: 1)])
+        #expect(reminders.first?.entries.map(\.recipe) == ["dal", "rice"])
+    }
+
+    @Test func restoreBringsBackTheDay() {
+        let day = PlanDay(year: 2026, month: 10, day: 30)
+        var plan = MealPlan(entries: [.init(recipe: "dal", servings: 2, day: day)])
+        let before = plan.entries[0]
+        plan.cooked("dal", servings: 2)
+        plan.restore(before)
+        #expect(plan.entries == [before])
+    }
+
+    @Test func plansWithoutDaysStillDecode() throws {
+        let json = #"{"entries": [{"recipe": "dal", "servings": 2}]}"#
+        let plan = try JSONDecoder().decode(MealPlan.self, from: Data(json.utf8))
+        #expect(plan.entries == [.init(recipe: "dal", servings: 2)])
+    }
+
+    @Test(arguments: [
+        (PlanDay(year: 2026, month: 10, day: 31), 1, PlanDay(year: 2026, month: 11, day: 1)),
+        (PlanDay(year: 2026, month: 12, day: 30), 3, PlanDay(year: 2027, month: 1, day: 2)),
+        (PlanDay(year: 2028, month: 3, day: 1), -1, PlanDay(year: 2028, month: 2, day: 29)),
+    ])
+    func daysAddAcrossMonthAndYear(start: PlanDay, count: Int, expected: PlanDay) {
+        #expect(start.adding(days: count, calendar: Self.calendar) == expected)
+    }
+
+    @Test func dayOfADateFollowsTheCalendarsTimeZone() throws {
+        var berlin = Calendar(identifier: .gregorian)
+        berlin.timeZone = try #require(TimeZone(identifier: "Europe/Berlin"))
+        // 23:30 UTC on 27 October is already 28 October in Berlin.
+        let date = try #require(ISO8601DateFormatter().date(from: "2026-10-27T23:30:00Z"))
+        #expect(PlanDay(date, calendar: berlin) == PlanDay(year: 2026, month: 10, day: 28))
+        #expect(
+            PlanDay(year: 2026, month: 10, day: 28).following(3, calendar: berlin).last?.description == "2026-10-30")
+    }
+
+    private static let calendar: Calendar = {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "UTC") ?? .current
+        return calendar
+    }()
 
     @Test func stateRoundTripsThroughJSON() throws {
         let state = ShoppingState(
