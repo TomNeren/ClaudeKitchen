@@ -624,6 +624,21 @@ Getroffen (2026-10-25):
 50. (deine Entscheidung) **TestFlight bei jedem Push auf `main`:** Jeder gemergte Stand geht nach TestFlight, kein
     Upload nur bei Tags. Beantwortet die offene Frage 7. Ob ein übersprungener Upload sichtbar gemacht wird, ist
     noch nicht entschieden.
+51. (nach dem Kochtest) **Sprachbefehle robuster:** Ein Ergebnis der Spracherkennung kann mehrere Sätze
+    enthalten („Weiter. Wie lange noch?“) und war dann als Ganzes zu lang für einen Befehl. Jetzt wird jeder Satz
+    einzeln ausgewertet, Füllwörter („okay“, „dann“, „jetzt“, „bitte“) zählen nicht mit, Alltagsformen wie
+    „Nächsten Schritt“ oder „Wie lange dauert es noch?“ gelten, und „Omni“ wird auch in den Schreibweisen
+    „Ommi“, „Omnie“ und „Homni“ und nach „Okay“ erkannt. „Omi“ bewusst nicht, das Wort fällt im Gespräch.
+52. (deine Entscheidung) **Kochplan im Blick:** Was über „Auf die Einkaufsliste“ geplant ist, steht als Leiste
+    „Geplant“ auf dem Startbildschirm und im Menü „Kochplan“ in der Leiste; ein geplantes Rezept öffnet mit den
+    geplanten Portionen und dem geplanten Ziel. Gekochtes fällt wie bisher aus dem Plan
+    (Abschnitt 3d). Noch offen: Wochentage im Plan (offene Frage 8).
+53. (deine Entscheidung) **Gewürzkunde:** `SpiceGuide` (`Resources/Guide/spice-guide.json`) erklärt Gewürze,
+    Mischungen und Würzzutaten außerhalb der deutschen Alltagsküche: was es ist, woraus eine Mischung besteht,
+    Geschmack, Umgang im Topf, Ersatz. Erreichbar über die Zutatenliste, den Abschnitt „Gewürze erklärt“, das
+    Info-Symbol im Kochschritt und per Sprache („Was ist Garam Masala?“). Ein Test verlangt einen Eintrag für
+    jede ungewöhnliche Würze der gebündelten Rezepte. Die Texte sind von mir aus Fachwissen geschrieben, nicht aus
+    einer zitierten Quelle; Zusammensetzungen von Mischungen schwanken je nach Hersteller und Familie.
 
 Die Herkunft dieser und weiterer Entscheidungen aus den einzelnen Sessions steht in `ENTSCHEIDUNGEN.md`.
 
@@ -646,6 +661,9 @@ Offen (mit Empfehlung; die Nummern bleiben, damit Verweise stimmen):
 7. ~~**TestFlight-Auslöser**~~ entschieden: bei jedem Push auf `main` (Entscheidung 50). Noch offen: einen
    übersprungenen Upload sichtbar machen (Hinweis in der Job-Zusammenfassung). Empfehlung: ja, damit ein grüner
    Lauf ohne Upload nicht wie ein erfolgreicher Upload aussieht.
+8. **Wochentage im Kochplan:** Rezepte einem Tag zuordnen („Mittwoch: Dal Tadka“) und am Tag erinnern.
+   Möglichkeiten: (a) optionaler Tag pro Planeintrag plus Mitteilung am Morgen; (b) nur Reihenfolge per Ziehen;
+   (c) so lassen. Empfehlung: (a), weil frische Zutaten wie Fisch oder Koriander früh gekocht werden müssen.
 
 ## 10. Gauntlet-Loop: Umsetzung der restlichen Meilensteine
 

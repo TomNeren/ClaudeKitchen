@@ -9,7 +9,8 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "KitchenCore", resources: [.copy("Resources/Recipes"), .copy("Resources/Evidence")]),
+            name: "KitchenCore",
+            resources: [.copy("Resources/Recipes"), .copy("Resources/Evidence"), .copy("Resources/Guide")]),
         .testTarget(name: "KitchenCoreTests", dependencies: ["KitchenCore"]),
     ],
     swiftLanguageModes: [.v6]

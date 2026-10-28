@@ -4,6 +4,8 @@ import SwiftUI
 /// The plan and the shopping list, sorted by aisle. Ticking items off and "Eingekauft" book them into the pantry.
 struct ShoppingView: View {
     @Bindable var model: ShoppingModel
+    /// Opens a planned recipe; nil leaves the rows without the action.
+    var onOpenRecipe: ((RecipeID) -> Void)?
     @Environment(\.dismiss) private var dismiss
     @State private var exportMessage = ""
     @State private var isShowingExportMessage = false
@@ -91,7 +93,7 @@ struct ShoppingView: View {
                     ) {
                         VStack(alignment: .leading) {
                             Text(plan.recipe.name)
-                            Text(subtitle(for: plan.entry)).font(.footnote).foregroundStyle(.secondary)
+                            Text(PlannedText.subtitle(for: plan.entry)).font(.footnote).foregroundStyle(.secondary)
                         }
                     }
                     .swipeActions {
@@ -99,7 +101,15 @@ struct ShoppingView: View {
                             model.remove(plan.recipe.id)
                         }
                     }
+                    .swipeActions(edge: .leading) {
+                        if let onOpenRecipe {
+                            Button("Öffnen", systemImage: "book") { onOpenRecipe(plan.recipe.id) }
+                        }
+                    }
                     .contextMenu {
+                        if let onOpenRecipe {
+                            Button("Rezept öffnen", systemImage: "book") { onOpenRecipe(plan.recipe.id) }
+                        }
                         Button("Aus dem Plan entfernen", systemImage: "trash", role: .destructive) {
                             model.remove(plan.recipe.id)
                         }
@@ -118,11 +128,6 @@ extension ShoppingView {
             isShowingExportMessage = true
             isExporting = false
         }
-    }
-
-    fileprivate func subtitle(for entry: MealPlan.Entry) -> String {
-        let servings = Portions.text(entry.servings)
-        return entry.goal.map { "\(servings), \(HealthGoals.name($0))" } ?? servings
     }
 }
 

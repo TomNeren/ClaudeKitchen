@@ -23,6 +23,16 @@ struct RecipeLibraryView: View {
         NavigationStack(path: $path) {
             let recipes = model.visibleRecipes
             ScrollView {
+                if model.query.isEmpty, !shopping.planned.isEmpty {
+                    PlannedStrip(
+                        planned: shopping.planned, onOpen: { open(.card($0)) },
+                        onCook: { plan in
+                            path.append(.cooking(plan.recipe.id, servings: plan.entry.servings, goal: plan.entry.goal))
+                        },
+                        onRemove: { shopping.remove($0) }
+                    )
+                    .padding(.vertical, 8)
+                }
                 if model.query.isEmpty, !recipes.isEmpty {
                     RecipeImageBand(recipes: recipes, cookLog: cookLog.log, transition: transition, onOpen: open)
                         .padding(.bottom, 16)
@@ -69,6 +79,9 @@ struct RecipeLibraryView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Einkauf", systemImage: "cart") { isShopping = true }
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    PlanMenu(planned: shopping.planned, onOpen: { open(.card($0)) }) { isShopping = true }
+                }
                 if !model.cuisines.isEmpty {
                     ToolbarItem(placement: .topBarTrailing) {
                         CuisineFilter(model: model)
@@ -90,7 +103,10 @@ struct RecipeLibraryView: View {
                 SettingsView()
             }
             .sheet(isPresented: $isShopping) {
-                ShoppingView(model: shopping)
+                ShoppingView(model: shopping) { id in
+                    isShopping = false
+                    open(.card(id))
+                }
             }
             .sheet(item: $editing) { request in
                 RecipeEditorView(recipe: request.recipe, isNew: request.isNew) { recipe in
@@ -182,7 +198,7 @@ struct RecipeLibraryView: View {
                 RecipeDetailView(
                     recipe: recipe, isOwn: model.isOwn(id),
                     onEdit: { editing = model.editorRequest(for: id) },
-                    isPlanned: shopping.isPlanned(id),
+                    isPlanned: shopping.isPlanned(id), planned: shopping.planEntry(for: recipe),
                     onAddToShopping: { shopping.add(recipe, servings: $0, goal: $1) },
                     onImprove: improveAction(for: recipe),
                     original: recipe.variantOf.flatMap { originalID in

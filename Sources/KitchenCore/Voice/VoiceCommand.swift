@@ -17,6 +17,9 @@ public enum VoiceCommand: Sendable, Equatable {
     /// "Mir fehlt Feta", "Was kann ich statt Kokosmilch nehmen?". `addressed` when said after the wake word: then an
     /// ingredient that is not in the recipe deserves an answer, otherwise the sentence was probably conversation.
     case substitute(ingredient: String, addressed: Bool = false)
+    /// "Was ist Garam Masala?", "Woraus besteht Khmeli Suneli?": answered from the spice guide. `addressed` as for
+    /// `substitute`: after the wake word a name the guide does not know goes to the language model as a question.
+    case explain(ingredient: String, addressed: Bool = false)
     /// Anything else said after the wake word, for the language model.
     case question(String)
 
@@ -27,12 +30,32 @@ public enum VoiceCommand: Sendable, Equatable {
     /// Longer sentences without the wake word are conversation, even with "mir fehlt" in them.
     static let maxSubstitutionWords = 8
 
+    /// What the transcriber hands over as one result can hold several sentences ("Weiter. Wie lange noch?"), which
+    /// as a whole are too long for a command. Each sentence is parsed on its own; a wake word said as a sentence of
+    /// its own ("Omni. Wie lange hält sich das?") addresses the sentence after it.
+    public static func parseSentences(_ transcript: String) -> [(sentence: String, command: VoiceCommand?)] {
+        var result: [(sentence: String, command: VoiceCommand?)] = []
+        var pendingWake: String?
+        for sentence in sentences(in: transcript) {
+            if isOnlyWakeWord(sentence) {
+                pendingWake = [pendingWake, sentence].compactMap { $0 }.joined(separator: " ")
+                continue
+            }
+            let addressed = pendingWake.map { "\($0) \(sentence)" } ?? sentence
+            pendingWake = nil
+            result.append((addressed, parse(addressed)))
+        }
+        if let pendingWake {
+            result.append((pendingWake, nil))
+        }
+        return result
+    }
+
     public static func parse(_ transcript: String) -> VoiceCommand? {
         var words = normalizedWords(transcript)
-        let addressed = words.first == wakeWord || (words.first == "hey" && words.dropFirst().first == wakeWord)
-        if addressed {
-            words.removeFirst(words.first == "hey" ? 2 : 1)
-        }
+        let lead = wakeLead(in: words)
+        let addressed = lead > 0
+        words.removeFirst(lead)
         guard !words.isEmpty else { return nil }
 
         if let command = fixedCommand(in: words) {
@@ -44,34 +67,131 @@ public enum VoiceCommand: Sendable, Equatable {
             if let ingredient = substitution(in: words, markers: plainSubstitutionMarkers) {
                 return .substitute(ingredient: ingredient, addressed: true)
             }
-            return .question(cleaned(transcript, droppingLeading: transcript.lowercased().hasPrefix("hey") ? 2 : 1))
+            if let ingredient = explained(in: words) {
+                return .explain(ingredient: ingredient, addressed: true)
+            }
+            return .question(cleaned(transcript, droppingLeading: lead))
         }
         guard words.count <= maxSubstitutionWords else { return nil }
-        return substitution(in: words, markers: plainSubstitutionMarkers + insteadMarkers)
-            .map { .substitute(ingredient: $0) }
+        if let ingredient = substitution(in: words, markers: plainSubstitutionMarkers + insteadMarkers) {
+            return .substitute(ingredient: ingredient)
+        }
+        return explained(in: words).map { .explain(ingredient: $0) }
+    }
+
+    /// Longest first, so "was ist eigentlich" is not read as "was ist" plus "eigentlich".
+    private static let explainMarkers = [
+        "was ist eigentlich", "was sind eigentlich", "was steckt in", "woraus besteht", "woraus bestehen",
+        "was ist denn", "was ist", "was sind",
+    ]
+
+    /// The name in a sentence that starts with "was ist" or "woraus besteht", without articles and "drin".
+    private static func explained(in words: [String]) -> String? {
+        let sentence = words.joined(separator: " ") + " "
+        guard let marker = explainMarkers.first(where: { sentence.hasPrefix($0 + " ") }) else { return nil }
+        let skip: Set = ["eigentlich", "denn", "genau", "in", "drin", "das", "der", "die", "dem", "den", "ein", "eine"]
+        let name = words.dropFirst(marker.split(separator: " ").count).filter { !skip.contains($0) }
+        return name.isEmpty ? nil : name.joined(separator: " ")
+    }
+
+    /// The sentence without a leading "Omni" (and "Hey", "Okay" before it), for handing it to the language model.
+    public static func withoutWakeWord(_ transcript: String) -> String {
+        cleaned(transcript, droppingLeading: wakeLead(in: normalizedWords(transcript)))
+    }
+
+    /// How the transcriber writes "Omni" besides the word itself.
+    static let wakeWordVariants: Set = [wakeWord, "omnie", "omny", "homni", "ommi", "omnis"]
+    /// Words that may come before the wake word ("Okay Omni", "Hey Omni").
+    private static let wakeOpeners: Set = ["hey", "hallo", "ok", "okay", "also", "ja", "so"]
+
+    /// The number of leading words up to and including the wake word, 0 when the sentence does not start with it.
+    private static func wakeLead(in words: [String]) -> Int {
+        let openers = words.prefix { wakeOpeners.contains($0) }.count
+        guard openers <= 2, openers < words.count, wakeWordVariants.contains(words[openers]) else { return 0 }
+        return openers + 1
+    }
+
+    private static func isOnlyWakeWord(_ sentence: String) -> Bool {
+        let words = normalizedWords(sentence)
+        return !words.isEmpty && wakeLead(in: words) == words.count
+    }
+
+    /// The sentences of a transcript, split after ".", "!", "?" and ";" when a space or the end follows, so "2.5"
+    /// stays one number.
+    static func sentences(in transcript: String) -> [String] {
+        var sentences: [String] = []
+        var current = ""
+        var previousWasTerminator = false
+        for character in transcript {
+            if previousWasTerminator, character.isWhitespace {
+                sentences.append(current)
+                current = ""
+                previousWasTerminator = false
+                continue
+            }
+            current.append(character)
+            previousWasTerminator = ".!?;".contains(character)
+        }
+        sentences.append(current)
+        return sentences.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !normalizedWords($0).isEmpty }
     }
 
     private static let patterns: [(VoiceCommand, [String])] = [
-        (.previous, ["zuruck", "vorheriger schritt", "schritt zuruck", "einen schritt zuruck", "noch mal zuruck"]),
+        (
+            .previous,
+            [
+                "zuruck", "vorheriger schritt", "vorherigen schritt", "schritt zuruck", "einen schritt zuruck",
+                "noch mal zuruck", "schritt davor",
+            ]
+        ),
         (
             .next,
-            ["weiter", "nachster schritt", "nachster", "was kommt jetzt", "was ist der nachste schritt", "fertig"]
+            [
+                "weiter", "nachster schritt", "nachsten schritt", "nachster", "was kommt jetzt",
+                "was ist der nachste schritt", "fertig", "erledigt",
+            ]
         ),
-        (.repeatStep, ["wiederholen", "nochmal", "noch mal", "was war das", "wie bitte", "was muss ich machen"]),
-        (.remainingTime, ["wie lange noch", "wie lange", "restzeit", "wie viel zeit", "wieviel zeit"]),
-        (.pauseTimer, ["timer pausieren", "timer anhalten", "timer stopp", "pause"]),
-        (.startTimer, ["timer starten", "timer start", "starte den timer", "timer los", "los"]),
+        (
+            .repeatStep,
+            [
+                "wiederholen", "wiederhole", "nochmal", "noch mal", "noch einmal", "was war das", "wie bitte",
+                "was muss ich machen", "was muss ich tun", "was soll ich machen", "was soll ich tun", "vorlesen",
+                "lies vor",
+            ]
+        ),
+        (
+            .remainingTime,
+            [
+                "wie lange noch", "wie lange", "wie lang noch", "wie lange dauert es noch", "wie lange dauert das noch",
+                "wie lange braucht das noch", "restzeit", "wie viel zeit", "wieviel zeit", "wann ist der timer fertig",
+            ]
+        ),
+        (.pauseTimer, ["timer pausieren", "timer anhalten", "timer stopp", "timer stoppen", "pause"]),
+        (
+            .startTimer,
+            ["timer starten", "timer start", "starte den timer", "starte timer", "timer an", "timer los", "los"]
+        ),
         (.stepIngredients, ["welche zutaten", "was kommt rein", "was brauche ich", "zutaten"]),
     ]
 
-    /// The first pattern found as whole words in a sentence that is not much more than that pattern; "pause" wins
-    /// over "start" by order. "Was mache ich, wenn der Reis nicht fertig ist?" is not "fertig".
+    /// Words that do not make a sentence longer than its command: "Okay, dann jetzt bitte weiter" is "weiter".
+    private static let fillerWords: Set = [
+        "ok", "okay", "bitte", "jetzt", "dann", "mal", "also", "ah", "ahm", "hm", "ja", "so", "und", "gut", "danke",
+        "na",
+    ]
+
+    /// The first pattern found as whole words in a sentence that is not much more than that pattern, filler words
+    /// aside; "pause" wins over "start" by order. "Was mache ich, wenn der Reis nicht fertig ist?" is not "fertig".
     private static func fixedCommand(in words: [String]) -> VoiceCommand? {
         let padded = " \(words.joined(separator: " ")) "
+        let fillers = words.count(where: fillerWords.contains)
         for (command, phrases) in patterns {
             let fits = phrases.contains { phrase in
-                padded.contains(" \(phrase) ")
-                    && words.count - phrase.split(separator: " ").count <= maxExtraWords
+                let phraseWords = phrase.split(separator: " ").map(String.init)
+                let extras =
+                    (words.count - phraseWords.count) - (fillers - phraseWords.count(where: fillerWords.contains))
+                return padded.contains(" \(phrase) ") && extras <= maxExtraWords
             }
             if fits { return command }
         }

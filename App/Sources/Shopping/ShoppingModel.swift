@@ -68,6 +68,11 @@ final class ShoppingModel {
         state.plan.entries.contains { $0.recipe == id }
     }
 
+    /// The plan entry of `recipe`, keyed like `add`: a variant counts for its original.
+    func planEntry(for recipe: Recipe) -> MealPlan.Entry? {
+        state.plan.entries.first { $0.recipe == (recipe.variantOf ?? recipe.id) }
+    }
+
     func add(_ recipe: Recipe, servings: Int, goal: RewriteGoalID?) {
         change { $0.plan.add(recipe.variantOf ?? recipe.id, servings: servings, goal: goal) }
     }

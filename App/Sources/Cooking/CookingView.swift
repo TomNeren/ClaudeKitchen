@@ -6,6 +6,7 @@ import UIKit
 struct CookingView: View {
     @State private var model: CookingScreenModel
     @State private var voice: VoiceModeModel
+    @State private var explaining: SpiceGuideRequest?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     private let onFinish: @MainActor () -> Void
@@ -54,6 +55,9 @@ struct CookingView: View {
                         .animation(Motion.voiceStatus, value: voice.exchange)
                 }
                 .modifier(CookingChrome(model: model, voice: voice))
+                .sheet(item: $explaining) { request in
+                    SpiceGuideSheet(name: request.name, entry: request.entry)
+                }
         }
     }
 
@@ -85,6 +89,12 @@ struct CookingView: View {
             number: index + 1, total: session.recipe.steps.count, step: step,
             ingredients: session.ingredients(for: step).map {
                 ($0.ingredient.id, $0.ingredient.name, AmountFormatter.string(for: $0.amount))
+            },
+            explain: { id in
+                guard let ingredient = session.recipe.ingredients.first(where: { $0.id == id }),
+                    let entry = SpiceGuide.shared?.entry(for: ingredient.food)
+                else { return nil }
+                return { explaining = SpiceGuideRequest(name: ingredient.name, entry: entry) }
             }
         )
     }
@@ -216,6 +226,8 @@ private struct StepPage: View {
     let total: Int
     let step: Step
     let ingredients: [(id: IngredientID, name: String, amount: String)]
+    /// How to open the spice guide for an ingredient, nil when the guide has nothing on it.
+    let explain: (IngredientID) -> (() -> Void)?
 
     var body: some View {
         ScrollView {
@@ -247,6 +259,15 @@ private struct StepPage: View {
                 ForEach(ingredients, id: \.id) { item in
                     HStack(alignment: .firstTextBaseline) {
                         Text(item.name)
+                        if let open = explain(item.id) {
+                            // Large target for wet hands: the button is the full 44 pt, the icon stays small.
+                            Button("Was ist \(item.name)?", systemImage: "info.circle", action: open)
+                                .labelStyle(.iconOnly)
+                                .foregroundStyle(Palette.cool)
+                                .frame(minWidth: 44, minHeight: 44)
+                                .contentShape(.rect)
+                                .buttonStyle(.borderless)
+                        }
                         Spacer()
                         Text(item.amount)
                             .monospacedDigit()
@@ -254,7 +275,7 @@ private struct StepPage: View {
                     }
                     .font(.title3)
                     .foregroundStyle(Palette.ink)
-                    .accessibilityElement(children: .combine)
+                    .accessibilityElement(children: .contain)
                 }
             }
             .padding(20)

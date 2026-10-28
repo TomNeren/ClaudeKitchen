@@ -16,11 +16,13 @@ struct RecipeDetailView: View {
     private let original: (name: String, open: () -> Void)?
     /// True once the recipe is in the shopping plan, from the library or after tapping the button here.
     @State private var isPlanned: Bool
+    @State private var explaining: SpiceGuideRequest?
 
     /// `recipe` seeds the screen model once; the screen does not follow later changes to it.
     init(
         recipe: Recipe, isOwn: Bool = false, onEdit: (() -> Void)? = nil,
-        isPlanned: Bool = false, onAddToShopping: ((_ servings: Int, _ goal: RewriteGoalID?) -> Void)? = nil,
+        isPlanned: Bool = false, planned: MealPlan.Entry? = nil,
+        onAddToShopping: ((_ servings: Int, _ goal: RewriteGoalID?) -> Void)? = nil,
         onImprove: (() -> Void)? = nil, original: (name: String, open: () -> Void)? = nil,
         onStartCooking: @escaping (_ servings: Int, _ goal: RewriteGoalID?) -> Void
     ) {
@@ -30,7 +32,7 @@ struct RecipeDetailView: View {
         self.onAddToShopping = onAddToShopping
         self.onImprove = onImprove
         self.original = original
-        self.model = RecipeDetailModel(recipe: recipe)
+        self.model = RecipeDetailModel(recipe: recipe, planned: planned)
         self.onStartCooking = onStartCooking
     }
 
@@ -45,7 +47,12 @@ struct RecipeDetailView: View {
                 if let variant = model.variant {
                     VariantSection(variant: variant, original: model.recipe, profile: model.profile)
                 }
-                IngredientList(ingredients: model.ingredients, servings: model.servings)
+                IngredientList(
+                    ingredients: model.ingredients, servings: model.servings, explained: explainedFoods,
+                    onExplain: explain)
+                if !explanations.isEmpty {
+                    SpiceGuideSection(entries: explanations, onExplain: explain)
+                }
                 if !warnings.isEmpty {
                     WarningList(issues: warnings, recipe: model.displayed)
                 }
@@ -82,6 +89,9 @@ struct RecipeDetailView: View {
                 }
             }
         }
+        .sheet(item: $explaining) { request in
+            SpiceGuideSheet(name: request.name, entry: request.entry)
+        }
         .safeAreaBar(edge: .bottom) {
             Button {
                 onStartCooking(model.servings, model.goal)
@@ -97,6 +107,23 @@ struct RecipeDetailView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 8)
         }
+    }
+
+    /// The spices and seasonings of the shown recipe that the guide explains, in ingredient order.
+    private var explanations: [(ingredient: Ingredient, entry: SpiceGuide.Entry)] {
+        SpiceGuide.shared?.entries(for: model.displayed) ?? []
+    }
+
+    private var explainedFoods: Set<FoodID> {
+        Set(
+            model.displayed.ingredients.compactMap { ingredient in
+                SpiceGuide.shared?.entry(for: ingredient.food)?.food
+            })
+    }
+
+    private func explain(_ ingredient: Ingredient) {
+        guard let entry = SpiceGuide.shared?.entry(for: ingredient.food) else { return }
+        explaining = SpiceGuideRequest(name: ingredient.name, entry: entry)
     }
 
     /// Grows with Dynamic Type instead of clipping: a minimum height, not a fixed one.
@@ -465,29 +492,99 @@ private struct OriginSection: View {
 private struct IngredientList: View {
     let ingredients: [(ingredient: Ingredient, text: String)]
     let servings: Int
+    /// Foods the spice guide explains; their rows open it.
+    let explained: Set<FoodID>
+    let onExplain: (Ingredient) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             SectionTitle(text: "Zutaten für \(Portions.text(servings))")
             VStack(spacing: 0) {
                 ForEach(ingredients, id: \.ingredient.id) { item in
-                    HStack(alignment: .firstTextBaseline) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(item.ingredient.name).foregroundStyle(Palette.ink)
-                            if let note = item.ingredient.note {
-                                Text(note).font(.footnote).foregroundStyle(Palette.muted)
-                            }
+                    if let food = item.ingredient.food, explained.contains(food) {
+                        Button {
+                            onExplain(item.ingredient)
+                        } label: {
+                            row(item, isExplained: true)
                         }
-                        Spacer()
-                        Text(item.text)
-                            .monospacedDigit()
-                            .foregroundStyle(Palette.muted)
-                            .multilineTextAlignment(.trailing)
+                        .buttonStyle(.plain)
+                        .accessibilityHint("Zeigt, was \(item.ingredient.name) ist")
+                    } else {
+                        row(item, isExplained: false)
                     }
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 16)
-                    .accessibilityElement(children: .combine)
                     if item.ingredient.id != ingredients.last?.ingredient.id {
+                        Divider().padding(.leading, 16)
+                    }
+                }
+            }
+            .background(Palette.surface, in: .rect(cornerRadius: 16))
+        }
+        .padding(.horizontal, 16)
+    }
+
+    private func row(_ item: (ingredient: Ingredient, text: String), isExplained: Bool) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(item.ingredient.name).foregroundStyle(Palette.ink)
+                    if isExplained {
+                        Image(systemName: "info.circle")
+                            .foregroundStyle(Palette.cool)
+                            .accessibilityHidden(true)
+                    }
+                }
+                if let note = item.ingredient.note {
+                    Text(note).font(.footnote).foregroundStyle(Palette.muted)
+                }
+            }
+            Spacer()
+            Text(item.text)
+                .monospacedDigit()
+                .foregroundStyle(Palette.muted)
+                .multilineTextAlignment(.trailing)
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .frame(minHeight: 44)
+        .contentShape(.rect)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+/// The recipe's unusual spices and seasonings at a glance, each opening its explanation.
+private struct SpiceGuideSection: View {
+    let entries: [(ingredient: Ingredient, entry: SpiceGuide.Entry)]
+    let onExplain: (Ingredient) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            SectionTitle(text: "Gewürze erklärt")
+            VStack(spacing: 0) {
+                ForEach(entries, id: \.entry.food) { item in
+                    Button {
+                        onExplain(item.ingredient)
+                    } label: {
+                        HStack(alignment: .firstTextBaseline, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(item.ingredient.name).foregroundStyle(Palette.ink)
+                                Text("\(SpiceGuideText.kind(item.entry.kind)) · \(item.entry.taste)")
+                                    .font(.footnote)
+                                    .foregroundStyle(Palette.muted)
+                                    .lineLimit(2)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(Palette.muted)
+                                .accessibilityHidden(true)
+                        }
+                        .padding(.vertical, 12)
+                        .padding(.horizontal, 16)
+                        .frame(minHeight: 44)
+                        .contentShape(.rect)
+                    }
+                    .buttonStyle(.plain)
+                    if item.entry.food != entries.last?.entry.food {
                         Divider().padding(.leading, 16)
                     }
                 }

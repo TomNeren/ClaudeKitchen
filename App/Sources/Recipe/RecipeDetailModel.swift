@@ -21,10 +21,11 @@ final class RecipeDetailModel {
     private(set) var variant: RecipeVariant?
 
     /// With `vegetarianByDefault`, a recipe the vegetarian goal changes or offers something for opens in that
-    /// variant; the original stays one choice away in the goal menu.
+    /// variant; the original stays one choice away in the goal menu. A `planned` recipe opens with the servings and
+    /// the goal it was planned with instead.
     init(
         recipe: Recipe, profile: DeviceProfile = .omniCook, advisor: HealthAdvisor? = HealthGoals.advisor,
-        vegetarianByDefault: Bool = HealthGoals.vegetarianByDefault
+        vegetarianByDefault: Bool = HealthGoals.vegetarianByDefault, planned: MealPlan.Entry? = nil
     ) {
         self.recipe = recipe
         self.profile = profile
@@ -32,6 +33,13 @@ final class RecipeDetailModel {
         self.vegetarian = vegetarianByDefault
         servingsRange = profile.servingsRange(for: recipe)
         servings = recipe.baseServings
+        if let planned {
+            servings = planned.servings
+            goal = planned.goal
+            // didSet does not run inside init; applyGoal also clamps the planned servings to what the pot holds.
+            applyGoal()
+            return
+        }
         // `affects` is cheap, so recipes without meat or fish skip the rewrite entirely.
         if vegetarianByDefault, recipe.variantOf == nil, advisor?.affects(recipe, goal: RewriteGoal.vegetarian) == true
         {

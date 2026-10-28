@@ -1,0 +1,314 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "food": "garam-masala",
+      "kind": "blend",
+      "summary": "Nordindische Mischung aus gerösteten, gemahlenen Gewürzen. „Garam“ heißt warm: gemeint ist die wärmende Wirkung, nicht Schärfe. Jede Familie und jede Marke mischt etwas anders.",
+      "components": [
+        "Kreuzkümmel",
+        "Koriandersaat",
+        "Kardamom, grün und schwarz",
+        "Zimt oder Cassia",
+        "Gewürznelken",
+        "Schwarzer Pfeffer",
+        "Muskatnuss oder Macis",
+        "Lorbeerblatt"
+      ],
+      "taste": "Warm, süßlich-würzig, duftend, kaum scharf.",
+      "tip": "Kommt meist erst zum Schluss ins Gericht, sonst verfliegt das Aroma.",
+      "substitute": "Je 1 TL Kreuzkümmel und Koriander, gemahlen, mit je einer Prise Zimt, Nelke, Kardamom und schwarzem Pfeffer mischen."
+    },
+    {
+      "food": "khmeli-suneli",
+      "kind": "blend",
+      "summary": "Georgische Kräuter- und Gewürzmischung, Grundwürze vieler georgischer Eintöpfe und Walnusssaucen.",
+      "components": [
+        "Bockshornklee, Kraut und Saat",
+        "Koriandersaat",
+        "Utskho Suneli (Schabziegerklee)",
+        "Ringelblumenblüten („Imeretischer Safran“)",
+        "Dill",
+        "Petersilie",
+        "Bohnenkraut",
+        "Minze",
+        "Basilikum",
+        "Lorbeerblatt",
+        "Schwarzer Pfeffer"
+      ],
+      "taste": "Kräuterig, nussig, leicht bitter, nicht scharf.",
+      "substitute": "Gemahlenen Koriander, getrocknetes Bockshornkleekraut (Kasuri Methi) und Bohnenkraut mischen, dazu etwas Dill und Petersilie."
+    },
+    {
+      "food": "utskho-suneli",
+      "kind": "spice",
+      "summary": "Gemahlene Samen und Schoten des Blauen Bockshornklees. In der Schweiz und in Süddeutschland als Schabziegerklee oder Brotklee bekannt.",
+      "taste": "Nussig, leicht süß, an Ahornsirup erinnernd, milder als gewöhnlicher Bockshornklee.",
+      "substitute": "Gemahlene Bockshornkleesaat, etwa die halbe Menge, da kräftiger und bitterer."
+    },
+    {
+      "food": "asafoetida",
+      "kind": "spice",
+      "summary": "Getrocknetes Harz einer Doldenblütler-Pflanze (Ferula), als Pulver verkauft. Auch Hing oder Teufelsdreck genannt. Das Pulver ist meist mit Mehl gestreckt, also oft nicht glutenfrei.",
+      "taste": "Roh stechend und schwefelig, in heißem Fett mild nach Zwiebel und Knoblauch.",
+      "tip": "Nur eine Prise, immer kurz in heißem Fett anbraten. Dose gut verschlossen lagern, der Geruch wandert.",
+      "substitute": "Eine Prise Zwiebel- und Knoblauchpulver, oder einfach weglassen."
+    },
+    {
+      "food": "amchur",
+      "kind": "spice",
+      "summary": "Pulver aus getrockneten, unreifen grünen Mangos.",
+      "taste": "Fruchtig sauer, leicht herb.",
+      "tip": "Wird wie ein Säuerungsmittel verwendet, ähnlich wie Zitronensaft.",
+      "substitute": "Ein Spritzer Zitronen- oder Limettensaft zum Schluss."
+    },
+    {
+      "food": "pul-biber",
+      "kind": "spice",
+      "summary": "Türkische Paprikaflocken, grob geschrotet, oft leicht geölt und gesalzen. Auch als Aleppo-Pfeffer verkauft.",
+      "taste": "Fruchtig, mild bis mittelscharf.",
+      "substitute": "Edelsüßes Paprikapulver mit einer Prise Chiliflocken."
+    },
+    {
+      "food": "gochugaru",
+      "kind": "spice",
+      "summary": "Koreanische Chiliflocken aus sonnengetrockneten roten Chilis ohne Samen, Grundlage von Kimchi.",
+      "taste": "Fruchtig, leicht rauchig und süßlich, mittelscharf.",
+      "substitute": "Pul Biber, oder edelsüßes Paprikapulver mit etwas Cayennepfeffer."
+    },
+    {
+      "food": "gochujang",
+      "kind": "paste",
+      "summary": "Koreanische fermentierte Chilipaste aus Chili, Klebreis, Sojabohnen und Salz.",
+      "taste": "Scharf, süßlich, tief würzig (Umami).",
+      "substitute": "Miso mit etwas Chilipaste oder Sriracha und einer Prise Zucker verrühren."
+    },
+    {
+      "food": "doubanjiang",
+      "kind": "paste",
+      "summary": "Fermentierte Paste aus Saubohnen und Chili aus Sichuan, die bekannteste kommt aus Pixian. Herz des Mapo Tofu.",
+      "taste": "Salzig, scharf, tief fermentiert.",
+      "tip": "Bei mittlerer Hitze in Öl anbraten, bis das Öl rot wird. Sehr salzig: erst danach abschmecken.",
+      "substitute": "Gochujang mit etwas Miso. Schmeckt anders, aber in die richtige Richtung."
+    },
+    {
+      "food": "douchi",
+      "kind": "paste",
+      "summary": "Fermentierte, gesalzene schwarze Sojabohnen aus China, getrocknet oder in Gläsern.",
+      "taste": "Sehr salzig, würzig, leicht bitter.",
+      "tip": "Kurz abspülen und grob hacken, dann mit Knoblauch anbraten.",
+      "substitute": "Ein Teelöffel dunkles Miso oder ein Schuss dunkle Sojasauce."
+    },
+    {
+      "food": "sichuan-pepper",
+      "kind": "spice",
+      "summary": "Getrocknete Fruchtschalen eines Rautengewächses (Zanthoxylum). Trotz des Namens kein echter Pfeffer.",
+      "taste": "Zitronig, harzig. Lässt Lippen und Zunge prickeln und leicht taub werden, das ist gewollt.",
+      "tip": "Ganz kurz ohne Fett rösten und dann mahlen, so wird das Aroma deutlich stärker.",
+      "substitute": "Ein echter Ersatz fehlt. Notfalls schwarzer Pfeffer mit etwas abgeriebener Zitronenschale."
+    },
+    {
+      "food": "galangal",
+      "kind": "spice",
+      "summary": "Wurzel aus der Familie des Ingwers, in Thailand und Indonesien Grundwürze für Currypasten und Suppen. Frisch oder tiefgekühlt im Asialaden.",
+      "taste": "Scharf-frisch, harzig, an Kiefer und Zitrus erinnernd, weniger süß als Ingwer.",
+      "tip": "In Scheiben mitkochen und nicht mitessen, die Scheiben bleiben holzig.",
+      "substitute": "Ingwer mit etwas abgeriebener Limettenschale."
+    },
+    {
+      "food": "lemongrass",
+      "kind": "herb",
+      "summary": "Die Halme eines tropischen Grases.",
+      "taste": "Zitronig-frisch, ohne Säure.",
+      "tip": "Nur den unteren, hellen Teil nehmen und mit dem Messerrücken anquetschen. Grobe Stücke vor dem Essen herausnehmen.",
+      "substitute": "Streifen von Bio-Zitronenschale."
+    },
+    {
+      "food": "kaffir-lime-leaves",
+      "kind": "herb",
+      "summary": "Blätter der Kaffirlimette, auch Makrut-Limette. Im Asialaden frisch oder tiefgekühlt, tiefgekühlt halten sie Monate.",
+      "taste": "Intensiv zitrusartig und blumig.",
+      "tip": "Im Ganzen mitkochen oder ohne Mittelrippe hauchfein schneiden.",
+      "substitute": "Abgeriebene Limettenschale, etwa ½ TL pro Blatt."
+    },
+    {
+      "food": "salam-leaves",
+      "kind": "herb",
+      "summary": "Blätter des Salambaums, oft „indonesisches Lorbeerblatt“ genannt. Getrocknet im Asialaden.",
+      "taste": "Mild, leicht herb und würzig, zurückhaltender als Lorbeer.",
+      "tip": "Im Ganzen mitkochen und vor dem Servieren herausnehmen.",
+      "substitute": "Weglassen oder ein halbes Lorbeerblatt. Lorbeer schmeckt aber deutlich anders."
+    },
+    {
+      "food": "candlenut",
+      "kind": "other",
+      "summary": "Kemiri, die Nuss des Lichtnussbaums. In Indonesien und Malaysia bindet sie Würzpasten und macht sie cremig.",
+      "taste": "Mild, nussig, ölig.",
+      "tip": "Roh nicht essen, sie ist dann leicht giftig. Immer mitgaren, wie im Rezept vorgesehen.",
+      "substitute": "Macadamianüsse, notfalls Cashewkerne."
+    },
+    {
+      "food": "shrimp-paste",
+      "kind": "paste",
+      "summary": "Fermentierte, gesalzene Garnelen als Paste oder fester Block (Terasi, Belacan, Kapi).",
+      "taste": "Roh streng riechend, im fertigen Gericht tief salzig-würzig.",
+      "tip": "Vor Gebrauch kurz trocken rösten oder in Öl anbraten. Gut verpackt lagern.",
+      "substitute": "Etwas mehr Fischsauce."
+    },
+    {
+      "food": "fish-sauce",
+      "kind": "liquid",
+      "summary": "Klare Würzsauce aus fermentierten Sardellen und Salz. In Südostasien wird sie verwendet wie bei uns Salz.",
+      "taste": "Salzig und würzig (Umami). Der strenge Geruch verfliegt beim Kochen.",
+      "tip": "Erst nach und nach zugeben und abschmecken, sie ist sehr salzig.",
+      "substitute": "Helle Sojasauce, eventuell mit einer zerdrückten Sardelle."
+    },
+    {
+      "food": "palm-sugar",
+      "kind": "other",
+      "summary": "Zucker aus dem Saft von Palmblüten, oft in festen Blöcken oder Scheiben.",
+      "taste": "Karamellig, leicht rauchig, weniger süß als Haushaltszucker.",
+      "tip": "Den Block mit dem Messer abschaben oder fein hacken.",
+      "substitute": "Brauner Zucker oder Kokosblütenzucker."
+    },
+    {
+      "food": "holy-basil",
+      "kind": "herb",
+      "summary": "Heiliges Basilikum (Tulsi, thailändisch Krapow), gibt dem Pad Krapow seinen Namen.",
+      "taste": "Pfeffrig, nelkenartig, leicht scharf.",
+      "tip": "Erst ganz zum Schluss unterheben, es welkt schnell.",
+      "substitute": "Thai-Basilikum, notfalls normales Basilikum mit etwas schwarzem Pfeffer."
+    },
+    {
+      "food": "thai-basil",
+      "kind": "herb",
+      "summary": "Thai-Basilikum (Horapa) mit lila Stielen und Blüten.",
+      "taste": "Anis und Lakritz, robuster als italienisches Basilikum.",
+      "tip": "Erst zum Schluss unterheben.",
+      "substitute": "Normales Basilikum, eventuell mit ein paar Blättern Minze."
+    },
+    {
+      "food": "katsuobushi",
+      "kind": "other",
+      "summary": "Getrockneter, geräucherter und fermentierter Bonito, in hauchdünne Flocken gehobelt. Mit Kombu die Grundlage von Dashi.",
+      "taste": "Rauchig, fischig-würzig (Umami).",
+      "tip": "Nur kurz ziehen lassen, dann absieben. Langes Kochen macht die Brühe bitter.",
+      "substitute": "Instant-Dashi. Vegetarisch: Kombu mit getrockneten Shiitake."
+    },
+    {
+      "food": "kombu",
+      "kind": "other",
+      "summary": "Getrockneter Seetang (Riementang), Grundlage japanischer Brühen.",
+      "taste": "Mild meerig, tief würzig (Umami).",
+      "tip": "Nicht sprudelnd kochen, sonst wird die Brühe schleimig und bitter. Der weiße Belag ist Geschmack, nicht abwaschen. Sehr jodreich: Bei Schilddrüsenerkrankungen ärztlich abklären.",
+      "substitute": "Instant-Dashi. Ohne Ersatz fehlt der Brühe viel Tiefe."
+    },
+    {
+      "food": "miso",
+      "kind": "paste",
+      "summary": "Japanische fermentierte Paste aus Sojabohnen, Salz und Koji, oft mit Reis oder Gerste. Helles Miso (Shiro) ist mild-süß, dunkles (Aka) kräftig.",
+      "taste": "Salzig, würzig (Umami), je nach Sorte süßlich bis herb.",
+      "tip": "Nicht mehr kochen lassen: zum Schluss in etwas Brühe glatt rühren und unterziehen.",
+      "substitute": "Kein gleichwertiger Ersatz. Notfalls Sojasauce, aber ohne die Cremigkeit."
+    },
+    {
+      "food": "mirin",
+      "kind": "liquid",
+      "summary": "Süßer japanischer Reiswein zum Kochen, mit wenig Alkohol.",
+      "taste": "Süß, mild, leicht würzig.",
+      "tip": "Gibt Glanz und rundet salzige Saucen ab.",
+      "substitute": "Trockener Sherry oder Weißwein, pro EL mit ½ TL Zucker."
+    },
+    {
+      "food": "sake",
+      "kind": "liquid",
+      "summary": "Japanischer Reiswein mit etwa 15 % Alkohol. Zum Kochen reicht einfacher Kochsake.",
+      "taste": "Mild, leicht süßlich.",
+      "tip": "Verkocht beim Garen, nimmt Fischgeruch und macht Fleisch zarter.",
+      "substitute": "Trockener Sherry oder trockener Weißwein."
+    },
+    {
+      "food": "shaoxing-wine",
+      "kind": "liquid",
+      "summary": "Bernsteinfarbener chinesischer Reiswein aus Shaoxing, zum Kochen.",
+      "taste": "Nussig, leicht süßlich, ähnlich wie Sherry.",
+      "substitute": "Trockener Sherry (Fino oder Amontillado)."
+    },
+    {
+      "food": "aji-amarillo-paste",
+      "kind": "paste",
+      "summary": "Paste aus der gelben peruanischen Chili Ají Amarillo, im Lateinamerika-Laden oder online.",
+      "taste": "Fruchtig, sonnig, mittelscharf.",
+      "substitute": "Gelbe Paprika mit einer kleinen Chili pürieren."
+    },
+    {
+      "food": "chipotle-in-adobo",
+      "kind": "paste",
+      "summary": "Geräucherte, getrocknete Jalapeños in würziger Tomaten-Essig-Sauce (Adobo), aus der Dose.",
+      "taste": "Rauchig, scharf, leicht säuerlich.",
+      "tip": "Reste in Portionen einfrieren, eine Dose reicht für viele Gerichte.",
+      "substitute": "Geräuchertes Paprikapulver mit etwas Chili und einem Teelöffel Tomatenmark."
+    },
+    {
+      "food": "cane-vinegar",
+      "kind": "liquid",
+      "summary": "Philippinischer Essig aus Zuckerrohr (Sukang Iloko).",
+      "taste": "Mild, leicht süßlich, weniger spitz als Weinessig.",
+      "substitute": "Reisessig oder Apfelessig."
+    },
+    {
+      "food": "oyster-sauce",
+      "kind": "liquid",
+      "summary": "Dickflüssige Sauce aus eingekochtem Austernextrakt, Zucker und Salz.",
+      "taste": "Süß-salzig, würzig (Umami).",
+      "substitute": "Vegetarische Austernsauce aus Pilzen, oder Sojasauce mit einer Prise Zucker."
+    },
+    {
+      "food": "pepper-paste",
+      "kind": "paste",
+      "summary": "Türkisches Paprikamark (Biber Salçası) aus eingekochten roten Paprika, mild (tatlı) oder scharf (acı).",
+      "taste": "Süßlich, fruchtig, je nach Sorte scharf.",
+      "tip": "In Öl kurz mitrösten, das vertieft den Geschmack.",
+      "substitute": "Tomatenmark mit edelsüßem Paprikapulver."
+    },
+    {
+      "food": "sesame-oil",
+      "kind": "liquid",
+      "summary": "Dunkles Öl aus gerösteten Sesamsamen, ein Würzöl.",
+      "taste": "Kräftig nussig und geröstet.",
+      "tip": "Nicht zum Braten: nur ein paar Tropfen zum Schluss.",
+      "substitute": "Kein Ersatz. Lieber weglassen als durch helles Sesamöl ersetzen, das schmeckt kaum."
+    },
+    {
+      "food": "turmeric",
+      "kind": "spice",
+      "summary": "Gemahlene Wurzel der Kurkumapflanze (Gelbwurz), Verwandte des Ingwers.",
+      "taste": "Erdig, leicht bitter. Färbt kräftig gelb.",
+      "tip": "Kurz in Fett anschwitzen. Färbt Holz, Kunststoff und Silikon dauerhaft."
+    },
+    {
+      "food": "cardamom",
+      "kind": "spice",
+      "summary": "Grüne Kapseln mit kleinen schwarzen Samen, ein Ingwergewächs. Bekannt aus der Weihnachtsbäckerei.",
+      "taste": "Blumig, frisch, an Eukalyptus und Zitrone erinnernd.",
+      "tip": "Kapseln leicht anquetschen und im Ganzen mitkochen, beim Essen herauslesen.",
+      "substitute": "Eine kleine Prise gemahlener Kardamom pro Kapsel."
+    },
+    {
+      "food": "cumin",
+      "kind": "spice",
+      "summary": "Kreuzkümmel (Cumin). Nicht verwechseln mit dem heimischen Kümmel aus Brot und Sauerkraut: anderes Gewürz, ganz anderer Geschmack.",
+      "taste": "Erdig, warm, leicht bitter.",
+      "tip": "Ganze Samen in heißem Fett rösten, bis sie duften und etwas dunkler werden, aber nicht schwarz.",
+      "substitute": "Gemahlener Kreuzkümmel, etwa ⅔ der Menge. Normaler Kümmel ist kein Ersatz."
+    },
+    {
+      "food": "birds-eye-chili",
+      "kind": "spice",
+      "summary": "Kleine, sehr scharfe Thai-Chilis.",
+      "taste": "Sehr scharf, fruchtig.",
+      "tip": "Für weniger Schärfe längs aufschneiden und die Kerne entfernen, danach Hände waschen.",
+      "substitute": "Andere rote Chili, dann eher mehr nehmen, sie ist milder."
+    }
+  ]
+}

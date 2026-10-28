@@ -75,3 +75,64 @@ struct VoiceCommandTests {
         #expect(substitutions.first?.amount == .measured(6, .piece))
     }
 }
+
+@Suite("Voice commands in real transcripts")
+struct VoiceTranscriptTests {
+    @Test(arguments: [
+        ("Nächsten Schritt", VoiceCommand.next), ("Okay, dann jetzt bitte weiter", .next), ("Erledigt", .next),
+        ("Wie lange dauert es noch?", .remainingTime), ("Wann ist der Timer fertig?", .remainingTime),
+        ("Starte Timer", .startTimer), ("Timer stoppen", .pauseTimer), ("Noch einmal bitte", .repeatStep),
+        ("Was soll ich machen?", .repeatStep), ("Zurück zum vorherigen Schritt", .previous),
+        ("Okay Omni, weiter", .next), ("Ommi, wie lange noch?", .remainingTime),
+    ])
+    func recognisesEverydayPhrasings(spoken: String, expected: VoiceCommand) {
+        #expect(VoiceCommand.parse(spoken) == expected)
+    }
+
+    @Test func splitsSeveralSentencesInOneResult() {
+        let parsed = VoiceCommand.parseSentences("Weiter. Wie lange noch? Und dann war sie einfach weg, stell dir vor.")
+        #expect(
+            parsed.map(\.sentence) == ["Weiter.", "Wie lange noch?", "Und dann war sie einfach weg, stell dir vor."])
+        #expect(parsed.map(\.command) == [.next, .remainingTime, nil])
+    }
+
+    @Test func wakeWordAsItsOwnSentenceAddressesTheNext() {
+        let parsed = VoiceCommand.parseSentences("Omni. Kann ich das einfrieren?")
+        #expect(parsed.map(\.command) == [.question("Kann ich das einfrieren")])
+        #expect(VoiceCommand.parseSentences("Omni.").map(\.command) == [nil])
+    }
+
+    @Test func keepsDecimalsInOneSentence() {
+        #expect(VoiceCommand.sentences(in: "Nimm 2.5 Gramm. Weiter") == ["Nimm 2.5 Gramm.", "Weiter"])
+    }
+
+    @Test func fillerWordsDoNotTurnConversationIntoCommands() {
+        #expect(VoiceCommand.parse("Und dann sind wir einfach weiter gefahren bis zum Strand") == nil)
+        #expect(VoiceCommand.parse("Die nächste Zwiebel ist schon weich") == nil)
+        #expect(VoiceCommand.parse("Omi hat gestern angerufen") == nil)
+    }
+}
+
+@Suite("Spice questions by voice")
+struct VoiceExplainTests {
+    @Test(arguments: [
+        ("Was ist Garam Masala?", "garam masala", false), ("Woraus besteht Khmeli Suneli?", "khmeli suneli", false),
+        ("Was ist eigentlich Asafoetida", "asafoetida", false),
+        ("Was steckt in Garam Masala drin?", "garam masala", false),
+        ("Omni, was ist Galgant?", "galgant", true),
+    ])
+    func recognisesExplanationQuestions(spoken: String, ingredient: String, addressed: Bool) {
+        #expect(VoiceCommand.parse(spoken) == .explain(ingredient: ingredient, addressed: addressed))
+    }
+
+    @Test func dropsTheWakeWordForTheModel() {
+        #expect(VoiceCommand.withoutWakeWord("Okay Omni, was ist Ras el-Hanout?") == "was ist Ras el-Hanout")
+        #expect(VoiceCommand.withoutWakeWord("Was ist Sumach?") == "Was ist Sumach")
+    }
+
+    @Test func keepsStepQuestionsAndConversationApart() {
+        #expect(VoiceCommand.parse("Was ist der nächste Schritt?") == .next)
+        #expect(VoiceCommand.parse("Was ist das?") == nil)
+        #expect(VoiceCommand.parse("Was ist denn mit dir los, du bist heute so still beim Essen") == nil)
+    }
+}
