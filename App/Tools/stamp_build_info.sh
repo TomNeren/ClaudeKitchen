@@ -8,7 +8,8 @@ cd "${SRCROOT}"
 
 commit=$(git rev-parse --short=7 HEAD 2>/dev/null || echo unknown)
 date=$(git log -1 --format=%cs 2>/dev/null || true)
-if [ "$commit" != unknown ] && [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+# Only changes to tracked files count: build output inside the checkout (as in CI) is untracked noise.
+if [ "$commit" != unknown ] && [ -n "$(git status --porcelain --untracked-files=no 2>/dev/null)" ]; then
     commit="${commit}+"
 fi
 
