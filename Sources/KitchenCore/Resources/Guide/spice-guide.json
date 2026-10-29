@@ -55,6 +55,22 @@
       "substitute": "Eine Prise Zwiebel- und Knoblauchpulver, oder einfach weglassen."
     },
     {
+      "food": "ancho-chili-dried",
+      "kind": "spice",
+      "summary": "Getrocknete Poblano-Chili: breit, runzelig, dunkelrot bis braun. Gibt vielen mexikanischen Saucen Körper und Farbe.",
+      "taste": "Mild bis mittelscharf, fruchtig-süß mit Rosinen- und Kakaonote.",
+      "tip": "Stiel und Samen entfernen, kurz trocken rösten und in heißem Wasser einweichen, dann pürieren. Zu lang geröstet wird er bitter.",
+      "substitute": "Mildes Paprikapulver mit einer Prise Chilipulver, aber weniger tief im Geschmack."
+    },
+    {
+      "food": "guajillo-chili-dried",
+      "kind": "spice",
+      "summary": "Getrocknete Mirasol-Chili: schlank, glatt, rotbraun. Neben Ancho die zweite Grundlage vieler mexikanischer Chilisaucen.",
+      "taste": "Mittelscharf, herb-fruchtig mit Beerennote und leichter Säure.",
+      "tip": "Wie Ancho rösten, einweichen und pürieren; die Haut bleibt zäh, die Paste daher bei Bedarf durchs Sieb streichen.",
+      "substitute": "Mehr Ancho mit einer Prise Chilipulver, oder reines Chilipulver sparsam dosiert."
+    },
+    {
       "food": "amchur",
       "kind": "spice",
       "summary": "Pulver aus getrockneten, unreifen grünen Mangos.",

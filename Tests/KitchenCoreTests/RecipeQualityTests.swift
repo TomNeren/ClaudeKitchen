@@ -50,6 +50,7 @@ struct RecipeQualityTests {
         "Bulgarisch": (.europe, "Bulgarien"),
         "Mexikanisch": (.mexicoPeru, "Mexiko"),
         "Peruanisch": (.mexicoPeru, "Peru"),
+        "Tex-Mex": (.mexicoPeru, nil),
     ]
 
     /// The cook's own recipes, not traditional dishes (`Recipe.origin` is nil for them). They skip the origin,

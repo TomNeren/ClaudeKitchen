@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "chili-con-carne",
+  "name": "Chili con carne (Texas Red)",
+  "tag": "Tex-Mex · Eintopf",
+  "baseServings": 4,
+  "totalMinutes": 165,
+  "verified": false,
+  "origin": { "cuisine": "mexicoPeru", "region": "Texas" },
+  "references": [
+    { "title": "A Bowl of Red", "author": "Frank X. Tolbert", "year": 1953 },
+    { "title": "The Tex-Mex Cookbook", "author": "Robb Walsh", "year": 2004 }
+  ],
+  "authenticityChecks": [
+    "Keine Bohnen und keine Tomaten: Texas Red ist Fleisch in Chilisauce, Bohnen höchstens als Beilage",
+    "Sauce aus selbst gerösteten Ancho- und Guajillo-Chilis statt Fertigpulver",
+    "Abwandlungen: Maistortilla statt Masa Harina zum Binden, Rapsöl statt Rindertalg, Anbraten im Topf bräunt schwächer als in der Pfanne",
+    "Tex-Mex aus San Antonio, kein mexikanisches Gericht im engeren Sinn; vegetarischer Ersatz ist keine Tradition"
+  ],
+  "ingredients": [
+    { "id": "ancho", "name": "Ancho-Chili, getrocknet", "food": "ancho-chili-dried", "quantity": 30, "unit": "g",
+      "note": "ohne Stiel und Samen" },
+    { "id": "guajillo", "name": "Guajillo-Chili, getrocknet", "food": "guajillo-chili-dried", "quantity": 20, "unit": "g",
+      "note": "ohne Stiel und Samen",
+      "substitutes": [
+        { "name": "Chilipulver, rein", "ratio": 0.4, "note": "weniger tief und rauchig, ohne Röstschritt" }
+      ] },
+    { "id": "wasser-chili", "name": "Wasser, heiß", "food": "water", "quantity": 300, "unit": "g", "note": "zum Einweichen" },
+    { "id": "knoblauch", "name": "Knoblauch", "food": "garlic", "quantity": 4, "unit": "Zehen" },
+    { "id": "kreuzkuemmel", "name": "Kreuzkümmel, gemahlen", "food": "cumin", "quantity": 2, "unit": "TL" },
+    { "id": "oregano", "name": "Oregano, getrocknet", "food": "oregano-dried", "quantity": 1, "unit": "TL",
+      "note": "mexikanischer Oregano, wenn erhältlich" },
+    { "id": "tortilla", "name": "Maistortilla", "food": "corn-tortilla", "quantity": 1, "unit": "Stk",
+      "note": "in Stücken, bindet die Sauce" },
+    { "id": "oel", "name": "Rapsöl", "food": "canola-oil", "quantity": 2, "unit": "EL" },
+    { "id": "zwiebel", "name": "Zwiebel", "food": "onion", "quantity": 1, "unit": "Stk", "note": "fein gewürfelt" },
+    { "id": "rind", "name": "Rindfleisch, Schmorfleisch", "food": "beef-stew", "quantity": 700, "unit": "g",
+      "note": "Schulter, in 2 cm Würfeln",
+      "substitutes": [
+        { "name": "Räuchertofu, gewürfelt", "ratio": 1, "note": "Rauch ersetzt das Fleischaroma; nur 25 Min schmoren" },
+        { "name": "Kidneybohnen, gegart (Dose)", "ratio": 1, "note": "nicht texanisch, aber Tex-Mex; abgetropft, nur 25 Min schmoren" }
+      ] },
+    { "id": "wasser-schmoren", "name": "Wasser", "food": "water", "quantity": 400, "unit": "g", "note": "zum Schmoren" },
+    { "id": "salz", "name": "Salz", "food": "salt" },
+    { "id": "limette", "name": "Limette", "food": "lime", "quantity": 1, "unit": "Stk", "note": "Saft" }
+  ],
+  "steps": [
+    { "id": "s1", "phase": "Rösten", "text": "Chilis in einer trockenen Pfanne je Seite 20 bis 30 Sekunden rösten, bis sie duften.",
+      "note": "Nicht dunkel werden lassen, verbrannte Chilis machen die Sauce bitter. Die Pfanne ist nicht das Gerät." },
+    { "id": "s2", "phase": "Einweichen", "text": "Geröstete Chilis mit dem heißen Wasser in den Topf geben und weich ziehen lassen.",
+      "note": "Ohne Messbecher.",
+      "ingredientIDs": ["ancho", "guajillo", "wasser-chili"],
+      "setting": { "heat": 95, "seconds": 900 } },
+    { "id": "s3", "phase": "Pürieren", "text": "Knoblauch, Kreuzkümmel, Oregano und Tortilla zugeben und zu einer glatten Paste pürieren.",
+      "note": "Messbecher einsetzen und Deckel fest zu. Heißes Püree spritzt, deshalb vorher ein paar Minuten abkühlen lassen.",
+      "ingredientIDs": ["knoblauch", "kreuzkuemmel", "oregano", "tortilla"],
+      "setting": { "speed": 8, "seconds": 60 } },
+    { "id": "s4", "phase": "Umfüllen", "text": "Chilipaste in eine Schüssel füllen. Topf kurz auswischen." },
+    { "id": "s5", "phase": "Anbraten", "text": "Öl, Zwiebel und Rindfleisch in den Topf geben und kräftig anbraten.",
+      "note": "Ohne Messbecher. Die Würfel gut trocken tupfen, sonst kochen sie nur.",
+      "ingredientIDs": ["oel", "zwiebel", "rind"],
+      "setting": { "heat": 150, "speed": 1, "reverse": true, "seconds": 480 }, "freshPot": true },
+    { "id": "s6", "phase": "Schmoren", "text": "Chilipaste, Wasser und Salz zugeben und schmoren, bis das Fleisch weich ist.",
+      "note": "Messbecher einsetzen. Vegetarisch genügen 25 Minuten (1500 Sekunden).",
+      "ingredientIDs": ["ancho", "guajillo", "wasser-chili", "knoblauch", "kreuzkuemmel", "oregano", "tortilla", "wasser-schmoren", "salz"],
+      "setting": { "heat": 95, "speed": 1, "reverse": true, "seconds": 5400 } },
+    { "id": "s7", "phase": "Einkochen", "text": "Ohne Messbecher einkochen, bis die Sauce dick am Fleisch haftet.",
+      "ingredientIDs": [],
+      "setting": { "heat": 100, "speed": 1, "reverse": true, "seconds": 1800 } },
+    { "id": "s8", "phase": "Abschmecken", "text": "Mit Limettensaft und Salz abschmecken und heiß servieren.",
+      "note": "Bohnen, Reis oder Maistortillas gehören daneben, nicht in den Topf.",
+      "ingredientIDs": ["limette"] }
+  ]
+}
