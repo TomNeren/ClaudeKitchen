@@ -89,7 +89,9 @@ private struct BuildInfoSection: View {
                     .textSelection(.enabled)
             }
             if let date = info.commitDate {
-                LabeledContent("Vom", value: date.formatted(.dateTime.day().month(.wide).year().timeZone(.gmt)))
+                // BuildInfo stores the commit day at midnight UTC; format in UTC so it shows that same day.
+                LabeledContent(
+                    "Vom", value: date.formatted(Date.FormatStyle(date: .long, time: .omitted, timeZone: .gmt)))
             }
         } header: {
             Text("Über die App")
