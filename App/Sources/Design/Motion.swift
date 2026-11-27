@@ -19,6 +19,8 @@ enum Motion {
     /// Switching between the original and a health variant: rows appear and move, tap-driven. Not used with
     /// Reduce Motion, where the content switches in place.
     static let variantChange: Animation = .spring(duration: 0.35, bounce: 0)
+    /// Jumping to a typed page in the PDF page strip: a scroll, tap-driven. Without animation under Reduce Motion.
+    static let pageJump: Animation = .spring(duration: 0.4, bounce: 0)
     /// The voice status pill: appears, changes text and disappears as a fade, so it never pulls the eye from the step.
     static let voiceStatus: Animation = .easeInOut(duration: 0.3)
 }

@@ -1,8 +1,9 @@
 import Foundation
 import KitchenCore
 import Observation
+import PDFKit
 
-/// One import: text or link in, a checked recipe out. Nothing is saved until the cook confirms.
+/// One import: text, link or PDF pages in, a checked recipe out. Nothing is saved until the cook confirms.
 @MainActor @Observable
 final class ImportRecipeModel {
     enum Phase {
@@ -14,13 +15,23 @@ final class ImportRecipeModel {
         case failed(String)
     }
 
-    var text = ""
+    var text = "" {
+        didSet { if text != pdfText { textOrigin = nil } }
+    }
     var link = ""
+    /// The PDF chosen as a source, with the pages to read. Its text lands in `text`, so the cook sees and can
+    /// correct it before anything is sent.
+    private(set) var pdf: PDFSource?
+    /// Where the current `text` came from, while it is still unchanged.
+    private(set) var textOrigin: ScannedText.Source?
+    /// The text as last read from the PDF, to notice when the cook edits it.
+    private var pdfText: String?
     private(set) var phase: Phase = .editing
     /// Read once per screen; the Keychain is not queried on every render.
     private(set) var hasKey: Bool
 
     private let client: ClaudeClient
+    private let reader = PDFRecipeReader()
     private let store: any RecipeStore
     let profile: DeviceProfile
     private let catalog: FoodCatalog?
@@ -64,6 +75,54 @@ final class ImportRecipeModel {
 
     func refreshKey() {
         hasKey = APIKeyStore.hasKey
+    }
+
+    /// Opens a PDF picked in the file importer. The file is read at once, since its access ends with this call.
+    func openPDF(at url: URL) {
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+        guard let data = try? Data(contentsOf: url), let document = PDFDocument(data: data), !document.isLocked,
+            document.pageCount > 0
+        else {
+            phase = .failed(Self.message(for: PDFRecipeReader.ReaderError.unreadable))
+            return
+        }
+        pdf = PDFSource(name: url.deletingPathExtension().lastPathComponent, data: data, document: document)
+    }
+
+    func closePDF() {
+        pdf = nil
+    }
+
+    func togglePage(_ index: Int) {
+        pdf?.selection.toggle(index)
+    }
+
+    var canReadPDF: Bool {
+        if case .working = phase { return false }
+        return pdf.map { !$0.selection.pages.isEmpty } ?? false
+    }
+
+    /// Reads the chosen pages into `text`, replacing what was there. Needs no API key; nothing leaves the device.
+    func readPDF() {
+        guard canReadPDF, let pdf else { return }
+        conversion = Task { await runReading(pdf) }
+    }
+
+    private func runReading(_ pdf: PDFSource) async {
+        phase = .working("Seiten werden gelesen")
+        do {
+            let result = try await reader.read(pdf.data, pages: pdf.selection.pages)
+            try Task.checkCancellation()
+            pdfText = result.text
+            text = result.text
+            textOrigin = result.source
+            phase = .editing
+        } catch is CancellationError {
+            phase = .editing
+        } catch {
+            phase = .failed(Self.message(for: error))
+        }
     }
 
     /// Starts the conversion. Text wins over the link when both are given.
@@ -134,6 +193,10 @@ final class ImportRecipeModel {
 
     static func message(for error: Error) -> String {
         switch error {
+        case PDFRecipeReader.ReaderError.unreadable:
+            return "Die PDF-Datei lässt sich nicht öffnen. Ist sie beschädigt oder mit einem Passwort geschützt?"
+        case PDFRecipeReader.ReaderError.noText:
+            return "Auf den gewählten Seiten war kein Text zu finden. Wähl die Seiten mit dem Rezept."
         case ClaudeClient.ClientError.missingKey:
             return "Kein API-Schlüssel hinterlegt. Trag ihn in den Einstellungen ein."
         case ClaudeClient.ClientError.network(let detail):
@@ -163,5 +226,26 @@ final class ImportRecipeModel {
         default:
             return error.localizedDescription
         }
+    }
+}
+
+/// A PDF chosen for an import. `PDFDocument` is not `Sendable`, so it stays on the main actor for page previews;
+/// the reader gets the raw data.
+struct PDFSource {
+    let name: String
+    let data: Data
+    let document: PDFDocument
+    var selection: PageSelection
+
+    init(name: String, data: Data, document: PDFDocument) {
+        self.name = name
+        self.data = data
+        self.document = document
+        selection = PageSelection(pageCount: document.pageCount)
+    }
+
+    /// The printed page number when the PDF carries one, otherwise the position counted from 1.
+    func label(of index: Int) -> String {
+        document.page(at: index)?.label ?? "\(index + 1)"
     }
 }

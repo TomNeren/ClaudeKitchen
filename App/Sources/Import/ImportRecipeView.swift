@@ -1,5 +1,7 @@
 import KitchenCore
+import PDFKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// Sheet for turning any recipe into an Omni Cook recipe with Claude.
 struct ImportRecipeView: View {
@@ -8,6 +10,7 @@ struct ImportRecipeView: View {
     /// Claude's recipe open in the editor, before anything is saved.
     @State private var editing: Recipe?
     @State private var savedFromEditor = false
+    @State private var choosingPDF = false
     private let onSaved: @MainActor () -> Void
 
     init(model: ImportRecipeModel = ImportRecipeModel(), onSaved: @escaping @MainActor () -> Void) {
@@ -45,6 +48,9 @@ struct ImportRecipeView: View {
                 return saved
             }
         }
+        .fileImporter(isPresented: $choosingPDF, allowedContentTypes: [.pdf]) { result in
+            if case .success(let url) = result { model.openPDF(at: url) }
+        }
         .onAppear { model.refreshKey() }
         // Closing the sheet stops a running conversion, so no paid request runs on unseen.
         .onDisappear { model.cancel() }
@@ -55,7 +61,13 @@ struct ImportRecipeView: View {
         switch model.phase {
         case .editing:
             EditingForm(
-                text: $model.text, link: $model.link, hasKey: model.hasKey, linkIsInsecure: model.linkIsInsecure)
+                text: $model.text, link: $model.link, hasKey: model.hasKey, linkIsInsecure: model.linkIsInsecure,
+                textOrigin: model.textOrigin
+            ) {
+                PDFSection(
+                    pdf: model.pdf, canRead: model.canReadPDF, choose: { choosingPDF = true },
+                    toggle: model.togglePage, read: model.readPDF, close: model.closePDF)
+            }
         case .working(let label):
             ProgressView(label)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -111,11 +123,13 @@ struct ImportRecipeView: View {
     }
 }
 
-private struct EditingForm: View {
+private struct EditingForm<PDFContent: View>: View {
     @Binding var text: String
     @Binding var link: String
     let hasKey: Bool
     let linkIsInsecure: Bool
+    let textOrigin: ScannedText.Source?
+    @ViewBuilder let pdfSection: PDFContent
 
     var body: some View {
         Form {
@@ -138,16 +152,160 @@ private struct EditingForm: View {
                         .foregroundStyle(Palette.accent)
                 }
             }
+            pdfSection
             Section {
                 TextEditor(text: $text)
                     .frame(minHeight: 240)
             } header: {
                 Text("Oder Rezepttext")
             } footer: {
-                Text(
-                    "Zutaten und Zubereitung, zum Beispiel aus einer Website oder einem Kochbuch kopiert. Claude rechnet die Schritte auf den Omni Cook um; vor dem Speichern prüft die App alle Werte."
-                )
+                switch textOrigin {
+                case .textLayer:
+                    Text("Aus der Textschicht der PDF gelesen. Schau kurz drüber, bevor du umwandelst.")
+                case .recognition:
+                    Text(
+                        "Per Texterkennung vom Scan gelesen. Prüf vor allem Mengen und Zahlen, bevor du umwandelst.")
+                case nil:
+                    Text(
+                        "Zutaten und Zubereitung, zum Beispiel aus einer Website oder einem Kochbuch kopiert. Claude rechnet die Schritte auf den Omni Cook um; vor dem Speichern prüft die App alle Werte."
+                    )
+                }
             }
+        }
+    }
+}
+
+/// A PDF as the third source: pick a file, choose the recipe's pages, read their text into the editor.
+private struct PDFSection: View {
+    let pdf: PDFSource?
+    let canRead: Bool
+    let choose: () -> Void
+    let toggle: (Int) -> Void
+    let read: () -> Void
+    let close: () -> Void
+
+    var body: some View {
+        Section {
+            if let pdf {
+                HStack {
+                    Label(pdf.name, systemImage: "doc.richtext")
+                        .lineLimit(1)
+                    Spacer()
+                    Button("PDF entfernen", systemImage: "xmark.circle.fill", action: close)
+                        .labelStyle(.iconOnly)
+                        .foregroundStyle(.secondary)
+                }
+                if pdf.selection.pageCount > 1 {
+                    PageStrip(pdf: pdf, toggle: toggle)
+                }
+                Button("Text übernehmen", systemImage: "text.viewfinder", action: read)
+                    .disabled(!canRead)
+            } else {
+                Button("PDF wählen", systemImage: "doc.badge.plus", action: choose)
+            }
+        } header: {
+            Text("Oder PDF-Seite")
+        } footer: {
+            if let pdf, pdf.selection.pageCount > 1 {
+                Text(
+                    "Tipp auf die Seiten mit dem Rezept, höchstens \(PageSelection.maximum). Ohne brauchbare Textschicht erkennt das iPhone den Text selbst."
+                )
+            } else {
+                Text("Zum Beispiel ein eingescanntes Kochbuch. Der Text bleibt auf dem Gerät, bis du umwandelst.")
+            }
+        }
+    }
+}
+
+/// The pages of the PDF as thumbnails to tap, with a field to jump in long scans.
+private struct PageStrip: View {
+    let pdf: PDFSource
+    let toggle: (Int) -> Void
+    @State private var jump = ""
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                LazyHStack(spacing: 12) {
+                    ForEach(0..<pdf.selection.pageCount, id: \.self) { index in
+                        Button {
+                            toggle(index)
+                        } label: {
+                            PageThumbnail(
+                                document: pdf.document, index: index, label: pdf.label(of: index),
+                                isSelected: pdf.selection.contains(index))
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(!pdf.selection.contains(index) && pdf.selection.isFull)
+                        .id(index)
+                    }
+                }
+                .padding(.vertical, 4)
+            }
+            .scrollIndicators(.hidden)
+            .frame(height: 190)
+            if pdf.selection.pageCount > 8 {
+                TextField("Zu Seite springen", text: $jump)
+                    .keyboardType(.numberPad)
+                    .onSubmit { scroll(proxy) }
+                    .onChange(of: jump) { scroll(proxy) }
+            }
+        }
+    }
+
+    /// Jumps to the page whose printed label or position matches the typed number.
+    private func scroll(_ proxy: ScrollViewProxy) {
+        let wanted = jump.trimmingCharacters(in: .whitespaces)
+        guard !wanted.isEmpty else { return }
+        let target =
+            (0..<pdf.selection.pageCount).first { pdf.label(of: $0) == wanted }
+            ?? Int(wanted).map { $0 - 1 }.flatMap { (0..<pdf.selection.pageCount).contains($0) ? $0 : nil }
+        guard let target else { return }
+        withAnimation(reduceMotion ? nil : Motion.pageJump) { proxy.scrollTo(target, anchor: .center) }
+    }
+}
+
+private struct PageThumbnail: View {
+    let document: PDFDocument
+    let index: Int
+    let label: String
+    let isSelected: Bool
+    @State private var image: UIImage?
+
+    var body: some View {
+        VStack(spacing: 6) {
+            ZStack(alignment: .topTrailing) {
+                Group {
+                    if let image {
+                        Image(uiImage: image).resizable().scaledToFit()
+                    } else {
+                        Rectangle().fill(.quaternary)
+                    }
+                }
+                .frame(width: 110, height: 150)
+                .clipShape(.rect(cornerRadius: 6))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 6)
+                        .strokeBorder(
+                            isSelected ? Palette.accent : Color.secondary.opacity(0.3), lineWidth: isSelected ? 3 : 1)
+                }
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.white, Palette.accent)
+                        .padding(6)
+                }
+            }
+            Text("S. \(label)")
+                .font(.caption.weight(isSelected ? .semibold : .regular))
+                .monospacedDigit()
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Seite \(label)")
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+        .task(id: index) {
+            image = document.page(at: index)?.thumbnail(of: CGSize(width: 220, height: 300), for: .cropBox)
         }
     }
 }
