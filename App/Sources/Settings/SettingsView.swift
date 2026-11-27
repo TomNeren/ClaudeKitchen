@@ -1,3 +1,4 @@
+import KitchenCore
 import SwiftUI
 
 /// The Anthropic API key for the recipe import (stored only in this device's Keychain) and the voice log.
@@ -60,6 +61,8 @@ struct SettingsView: View {
                         "Hilft beim Nachschärfen der Befehle: Jeder Satz, den der Kochmodus hört, steht hier mit dem, was die App verstanden hat. Das Protokoll bleibt auf diesem Gerät, bis du es teilst oder löschst."
                     )
                 }
+
+                BuildInfoSection(info: BuildInfo(infoDictionary: Bundle.main.infoDictionary ?? [:]))
             }
             .navigationTitle("Einstellungen")
             .toolbarTitleDisplayMode(.inline)
@@ -69,6 +72,39 @@ struct SettingsView: View {
                 }
             }
         }
+    }
+}
+
+/// Version, build and git commit of the installed app, so a device build can be matched to the repo.
+private struct BuildInfoSection: View {
+    let info: BuildInfo
+
+    var body: some View {
+        Section {
+            LabeledContent("Version", value: info.version ?? "unbekannt")
+            LabeledContent("Build", value: info.build ?? "unbekannt")
+            LabeledContent("Stand") {
+                Text(commitText)
+                    .monospaced()
+                    .textSelection(.enabled)
+            }
+            if let date = info.commitDate {
+                // BuildInfo stores the commit day at midnight UTC; format in UTC so it shows that same day.
+                LabeledContent(
+                    "Vom", value: date.formatted(Date.FormatStyle(date: .long, time: .omitted, timeZone: .gmt)))
+            }
+        } header: {
+            Text("Über die App")
+        } footer: {
+            if info.hasLocalChanges {
+                Text("Gebaut mit Änderungen, die noch nicht im Repo sind.")
+            }
+        }
+    }
+
+    private var commitText: String {
+        guard let commit = info.commit else { return "unbekannt" }
+        return info.hasLocalChanges ? "\(commit)+" : commit
     }
 }
 

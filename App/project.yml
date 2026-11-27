@@ -47,6 +47,8 @@ targets:
         # Only HTTPS through the system (Claude API): exempt, so TestFlight asks no export questions.
         INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        # The build-info phase reads .git and edits the built Info.plist, which the script sandbox forbids.
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: >-
           UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown
@@ -58,6 +60,11 @@ targets:
         NSRemindersFullAccessUsageDescription: Deine Einkaufsliste landet als eigene Liste in Erinnerungen, damit du sie im Laden abhaken kannst.
         NSMicrophoneUsageDescription: Im Kochmodus hörst du auf Zuruf wie „weiter“, damit du das iPhone nicht anfassen musst.
         NSSpeechRecognitionUsageDescription: Deine Sprachbefehle im Kochmodus werden auf dem iPhone in Text umgewandelt.
+    postBuildScripts:
+      # Settings shows the commit, so a device build can be matched to the repo (BuildInfo in KitchenCore).
+      - name: Stamp build info
+        script: sh "${SRCROOT}/Tools/stamp_build_info.sh"
+        basedOnDependencyAnalysis: false
     scheme: {}
 
   ClaudeKitchenWidgets:
