@@ -8,7 +8,7 @@ Stand: 27.10.2026, `main` auf `35c3cfe` (Merge von PR #46). Zusammengetragen aus
 - **Qualität:** 244 Tests in 32 Suiten sind grün (unter Linux am 27.10. nachgeprüft). Auf `main` sind die CI-Jobs `kitchencore-linux` und `app-ios` grün.
 - **Inhalt:** 30 Rezepte aus neun Küchenräumen plus ein eigenes Rezept. Alle 30 haben ein Foto (BFL).
 - **Gerät:** Nichts ist bisher am iPhone geprüft. Die Geräte-Prüfliste in `PLAN.md` §10 ist komplett offen.
-- **TestFlight:** Der Workflow läuft bei jedem Push auf `main` (so entschieden, Nr. 50), überspringt den Upload aber, weil die Secrets fehlen.
+- **TestFlight:** Hochgeladen wird lokal mit `Scripts/testflight.sh` auf dem Mac mini (Nr. 50, geändert am 27.11.). Bisher ist kein Build in TestFlight; es fehlen Xcode-Konto, Bundle-IDs und App-Eintrag.
 
 ## Meilensteine
 
@@ -46,12 +46,12 @@ Keine außer diesem Doku-PR. PR #40 wurde am 27.10. mit dem aktuellen `main` zus
 
 ### TestFlight einrichten (TFL)
 
-1. `git pull` ausführen, dann `xcodegen generate --spec App/project.yml`.
-2. In Xcode mit der Apple-ID des Schulkontos anmelden.
-3. `App/Config/Local.xcconfig` mit der Team-ID des Schulkontos anlegen.
-4. Die App mit der Bundle-ID `com.tomren.claudekitchen` in App Store Connect anlegen.
-5. Einmal ein Archiv von Hand hochladen.
-6. Vier Secrets im GitHub-Environment `testflight` eintragen: `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_PRIVATE_KEY`, `APPLE_TEAM_ID`.
+1. Auf dem Mac mini in Xcode mit der Apple-ID des Schulteams anmelden.
+2. `App/Config/Local.xcconfig` mit der Team-ID des Schulteams anlegen.
+3. Bundle-IDs `com.tomren.claudekitchen` und `…claudekitchen.widgets` anlegen, dann die App in App Store Connect.
+4. `Scripts/testflight.sh` als Probelauf, danach `Scripts/testflight.sh --upload --group "Ich"`.
+
+Einzelheiten: `App/TESTFLIGHT.md`.
 
 ### Am Gerät prüfen
 
