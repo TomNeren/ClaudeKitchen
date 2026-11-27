@@ -5,7 +5,8 @@
 # Usage:
 #   Scripts/testflight.sh                              build and export only (dry run)
 #   Scripts/testflight.sh --upload                     also upload, assign to no group
-#   Scripts/testflight.sh --upload --group "Ich"       assign to a TestFlight group after processing
+#   Scripts/testflight.sh --upload --group "Name"      assign to a manual TestFlight group after processing
+#                                                      (internal groups with access to all builds get it anyway)
 #
 # Environment:
 #   CLAUDEKITCHEN_REPO        checkout to build from (default: the repo of this script)
@@ -159,7 +160,7 @@ git -C "$WT" rev-parse HEAD >"$LAST_FILE"
 
 if [[ -n "$GROUP" ]]; then
   "${ASC[@]}" builds add-groups --app "$ASC_APP_ID" --version "$VERSION" --build-number "$BUILD_NR" \
-    --platform IOS --group "$GROUP" >>"$LOG_DIR/upload.log" 2>&1 \
+    --platform IOS --group "$GROUP" --skip-internal >>"$LOG_DIR/upload.log" 2>&1 \
     || fail "Build $BUILD_NR uploaded, but group \"$GROUP\" not assigned ($LOG_DIR/upload.log)."
   say "Build $BUILD_NR uploaded and assigned to \"$GROUP\""
 else

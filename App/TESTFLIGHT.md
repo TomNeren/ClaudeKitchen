@@ -9,14 +9,14 @@ Builds für TestFlight entstehen auf deinem Mac mit `Scripts/testflight.sh`, nic
 3. **Bundle-IDs:** Unter developer.apple.com > Identifiers `com.tomren.claudekitchen` und `com.tomren.claudekitchen.widgets` anlegen. Xcode kann das beim ersten Archiv auch selbst, wenn das Konto die Rechte hat.
 4. **App-Eintrag:** In App Store Connect unter Apps > + > Neue App anlegen, Plattform iOS, Name „Omni Cook“, Bundle-ID `com.tomren.claudekitchen`. Die Bundle-ID lässt sich danach nicht mehr ändern.
 5. **asc:** Der vorhandene Team-Key (Profil `lehrerapp`, Rolle App-Manager) reicht für Upload und Testgruppen. Prüfen mit `asc apps list --bundle-id com.tomren.claudekitchen`. Ein eigenes Profil ist möglich, aber nicht nötig; dann `ASC_PROFILE` setzen.
-6. **Testgruppe:** Unter der App > TestFlight > Interne Tests eine Gruppe anlegen, etwa „Ich“, und dich eintragen. Auf dem iPhone die TestFlight-App installieren.
+6. **Testgruppe:** Unter der App > TestFlight > Interne Tests eine Gruppe anlegen, etwa „Ich“, mit Zugriff auf alle Builds, und dich eintragen. Dann landet jeder Build automatisch dort. Auf dem iPhone die TestFlight-App installieren.
 
 ## Hochladen
 
 ```zsh
 Scripts/testflight.sh                         # Probelauf: nur bauen und exportieren
-Scripts/testflight.sh --upload                # hochladen, keiner Gruppe zuweisen
-Scripts/testflight.sh --upload --group "Ich"  # hochladen und der Gruppe zuweisen
+Scripts/testflight.sh --upload                # hochladen; die interne Gruppe „Ich“ bekommt ihn automatisch
+Scripts/testflight.sh --upload --group "X"    # zusätzlich einer Gruppe ohne automatische Verteilung zuweisen
 ```
 
 - Gebaut wird außerhalb des Repos, unter `/Volumes/Work/Developer-Daten/<Benutzer>/sitzungs-builds/claudekitchen-testflight`. Dort liegen auch die Logs. Mit `CLAUDEKITCHEN_BUILD_ROOT` lässt sich der Ort ändern.
