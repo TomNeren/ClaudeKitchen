@@ -649,6 +649,14 @@ Getroffen (2026-10-25):
     Rezept kam beim Einplanen als sein Original in den Plan, weil der Plan über `variantOf` auf das Original
     abbildete. Der Plan führt jetzt das Rezept aus der Bibliothek; Gesundheitsvarianten bleiben das Ziel des
     Eintrags, und beim Kochen nennt die App ausdrücklich, von welchem Eintrag abgebucht wird.
+56. (deine Entscheidung, E101) **PDF-Seite als dritter Importweg:** Neben Link und Text lässt sich eine PDF wählen,
+    etwa ein eingescanntes Kochbuch. Bei mehreren Seiten tippst du die Seiten mit dem Rezept an (höchstens vier, bei
+    langen Scans mit Sprung zur Seitenzahl). Die App liest zuerst die Textschicht der PDF; ist sie leer oder
+    unbrauchbar (kaputte Schriftkodierung, gesperrte Buchstaben), erkennt Apple Vision den Text auf dem Gerät
+    (`RecognizeDocumentsRequest`, Deutsch und Englisch, Spalten in Lesereihenfolge). Silbentrennung am Zeilenende und
+    Ligaturen werden repariert. Der Text landet im Textfeld, damit du ihn vor dem Umwandeln prüfen kannst; erst
+    „Umwandeln“ schickt ihn an Claude. Die Prüfung der Textschicht und die Reparatur stehen in KitchenCore
+    (`ScannedText`, `PageSelection`) mit Tests.
 
 Die Herkunft dieser und weiterer Entscheidungen aus den einzelnen Sessions steht in `ENTSCHEIDUNGEN.md`.
 
@@ -783,3 +791,6 @@ Fehlerliste.
 - [ ] M12: Zutaten per Schnellzeile („200 g Rote Linsen“, „½ TL Kurkuma“, „Salz“) und per eingefügter Liste aus einem Webrezept; Ergebnis stimmt
 - [ ] M12: Schnellwahl für 120 °C, Stufe 5 und 3 Min mit je einem Tipp; Haptik beim Wählen; Schritt duplizieren per Wischen
 - [ ] M12: Import aus Text, in der Vorschau „Bearbeiten“, eine Menge und eine Temperatur ändern, sichern: das geänderte Rezept steht oben in der Bibliothek; Abbrechen führt unverändert zur Vorschau zurück
+- [ ] E101: PDF aus dem Ordner Kochbücher wählen, zwei Seiten antippen, „Text übernehmen“: Text steht im Feld mit Hinweis „Textschicht“; Silbentrennung zusammengefügt; Umwandeln ergibt das Rezept
+- [ ] E101: PDF ohne Textschicht (z. B. nur Bild): Hinweis „Texterkennung“, Mengen und Zahlen stimmen; Spalten in sinnvoller Reihenfolge
+- [ ] E101: Sprung zur Seitenzahl in einem langen Scan; fünfte Seite lässt sich nicht wählen; VoiceOver liest „Seite 12, ausgewählt“
