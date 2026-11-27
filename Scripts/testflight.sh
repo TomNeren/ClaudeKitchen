@@ -152,7 +152,7 @@ print -r -- "$NOTES" >"$LOG_DIR/test-notes.txt"
 
 say "Upload and processing (10 to 30 minutes)"
 "${ASC[@]}" builds upload --app "$ASC_APP_ID" --ipa "$IPA" \
-  --version "$VERSION" --build-number "$BUILD_NR" --test-notes "@file:$LOG_DIR/test-notes.txt" \
+  --version "$VERSION" --build-number "$BUILD_NR" --test-notes "@file:$LOG_DIR/test-notes.txt" --locale de-DE \
   --wait --output json >"$LOG_DIR/upload.json" 2>"$LOG_DIR/upload.log" \
   || fail "Upload failed or test notes not set ($LOG_DIR/upload.log); check App Store Connect before retrying."
 git -C "$WT" rev-parse HEAD >"$LAST_FILE"
