@@ -149,6 +149,7 @@ Alle vom 27.10.
 |---|---|---|---|
 | 26.10. | TestFlight über das Entwicklerkonto der Schule. Upload bei jedem Push auf `main`, nie bei PRs. Secrets nur im Environment `testflight` (Nr. 40). | Der Nutzer ist einziger Nutzer, ein Umzug geht per App-Transfer. | GRD |
 | 27.10. | **(neu)** Bundle-ID `com.tomren.claudekitchen`, Widget `…claudekitchen.widgets`. | Verworfen: `de.tomneren.*`. Einheitlich mit den anderen Apps, nach dem Anlegen nicht mehr änderbar. | TFL |
+| 27.11. | Upload per `Scripts/testflight.sh` auf dem Mac mini statt GitHub-Workflow, weiter Schulteam (Nr. 50 geändert). | Der Workflow hat nie hochgeladen, der vorhandene App-Manager-Key reicht nicht für Cloud-Signierung, ein Runner wäre im öffentlichen Repo riskant. | TFL2 |
 
 ## 12. Arbeitsweise
 
@@ -170,7 +171,7 @@ Aus `PLAN.md` §9 „Offen“, ergänzt um den Stand aus den Sessions.
 4. **BLS-4.0-Lizenz:** offen. Bis dahin gilt USDA.
 5. **Authentizität prüfen:** offen. Empfehlung: Der Nutzer prüft beim ersten Kochen.
 6. **Parallele Timer M13:** offen. Empfehlung: (a), also M13a und M13b bauen.
-7. **TestFlight-Auslöser:** entschieden, bei jedem Push auf `main` (`PLAN.md` Nr. 50, 27.10.). Offen bleibt, einen übersprungenen Upload sichtbar zu machen (TFL).
+7. **TestFlight-Auslöser:** entschieden, von Hand per Skript auf dem Mac mini (`PLAN.md` Nr. 50, geändert am 27.11.).
 8. **(neu)** Sollen die Netzwerk-Freigaben für die Supermärkte wieder entfernt werden? Unbeantwortet (SUP).
 
 ## Quellen (Sessions)
@@ -183,6 +184,7 @@ Aus `PLAN.md` §9 „Offen“, ergänzt um den Stand aus den Sessions.
 | GRD | Gesunde Rezepte Datenbank | Cloud | session_01CGQrhkCBUCXJy8HmiW2gJn |
 | SUP | Supermarkt online-Shop Vergleich | Cloud | session_01PjUqXVer8PJWnL9WeGTL63 |
 | TFL | TestFlight Ablauf | Cloud | session_01JDMuuKKeH5aJ2Ehsco9MQf |
+| TFL2 | TestFlight lokal per Skript | Cloud, Remote Control | session_01JDMuuLcjxQH978s78vJjPo |
 | IOS | Fix iOS 27 deprecation warnings | Cloud | session_01JDMuuJihaFpCxMm9oC5a3r |
 | ZWA | Zwei Abschnitte zusammenführen | Cloud | session_01JDMuuJhinf7KtyQqy4zvQ5 |
 | RWA | Rezept-Wächter und Prompt für 90 neue Rezepte | lokal | session_01JDMuuKHwq8QCLTvSMeJPh8 |

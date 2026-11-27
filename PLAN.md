@@ -584,9 +584,8 @@ Getroffen (2026-10-25):
     unter „Erst fragen“. Am Ende eine Tabelle mit Produkt, Menge, Preis und Fehlendem.
 40. (deine Entscheidung) **TestFlight über das Schulkonto:** Du verwaltest das Entwicklerkonto der Schule und bist
     der einzige Nutzer. Die Bundle-ID `com.tomren.claudekitchen` hängt nicht an der Schule; ein späterer Umzug auf ein
-    eigenes Konto geht per App-Transfer. Der Workflow `testflight.yml` lädt jeden Stand von `main` hoch, nie Pull
-    Requests; die Zugangsdaten liegen im GitHub-Environment `testflight`, das nur `main` nutzen darf. Ohne sie wird
-    der Upload übersprungen. Einrichtung: `App/TESTFLIGHT.md`.
+    eigenes Konto geht per App-Transfer. Hochgeladen wird mit `Scripts/testflight.sh` (Nr. 50). Einrichtung:
+    `App/TESTFLIGHT.md`.
 41. (deine Entscheidung) **Import vor dem Speichern bearbeiten:** In der Import-Vorschau öffnet „Bearbeiten“ Claudes Rezept im Editor. „Sichern“ dort speichert und schließt den Import, „Abbrechen“ führt zurück zur Vorschau. So lassen sich auch Fehler beheben, die das Speichern blockieren, statt neu zu importieren (kostet keinen weiteren API-Aufruf).
 
 42. (deine Entscheidung) **Nur iPhone und iPad:** Mac (Designed for iPad), Apple Vision und Catalyst sind in
@@ -621,9 +620,12 @@ Getroffen (2026-10-25):
     (keine Auswahl heißt keiner), eine größere Packung wird genommen, wenn sie billiger ist, Buttons werden vor dem
     Klick geprüft, Ersatz kommt mit Preis (TK bei Fisch und Fleisch ist in Ordnung), am Ende gleicht der Agent den
     Warenkorb mit der Auswahl ab. Ergänzt Entscheidung 39.
-50. (deine Entscheidung) **TestFlight bei jedem Push auf `main`:** Jeder gemergte Stand geht nach TestFlight, kein
-    Upload nur bei Tags. Beantwortet die offene Frage 7. Ob ein übersprungener Upload sichtbar gemacht wird, ist
-    noch nicht entschieden.
+50. (deine Entscheidung, geändert am 27.11.) **TestFlight per Skript auf dem Mac mini:** Ursprünglich lud ein
+    GitHub-Workflow jeden Push auf `main` hoch. Er lief nie bis zum Upload, weil die Secrets fehlten, und der
+    vorhandene Team-Key (App-Manager) reicht nicht für Cloud-Signierung. Jetzt baut `Scripts/testflight.sh` auf dem
+    Mac mini `origin/main`, signiert über das Xcode-Konto des Schulteams und lädt per `asc` hoch, mit Testnotizen
+    aus den Commits. Kein Schlüssel in GitHub, kein Self-hosted Runner (öffentliches Repo, Fork-PRs). Verworfen:
+    Admin-Key als GitHub-Secret (mehr Rechte als nötig im öffentlichen Repo) und Runner auf dem Mac mini.
 51. (nach dem Kochtest) **Sprachbefehle robuster:** Ein Ergebnis der Spracherkennung kann mehrere Sätze
     enthalten („Weiter. Wie lange noch?“) und war dann als Ganzes zu lang für einen Befehl. Jetzt wird jeder Satz
     einzeln ausgewertet, Füllwörter („okay“, „dann“, „jetzt“, „bitte“) zählen nicht mit, Alltagsformen wie
